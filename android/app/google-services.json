@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "882491380012",
+    "project_id": "met-school-codemates",
+    "storage_bucket": "met-school-codemates.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882491380012:android:b23d08458aaacac9341c89",
+        "android_client_info": {
+          "package_name": "com.codemates.met_school"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9N-Hi7uMH39J7JSX9XrGUycjmcrTWl7s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
