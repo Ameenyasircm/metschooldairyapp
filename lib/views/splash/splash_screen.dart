@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> implements SplashView {
       body: Center(
         child: Image.asset(
           'assets/images/MetLogPng.png',
-          width: 200, // Adjust size as needed
+          width: 250, // Adjust size as needed
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
               return const Icon(Icons.school, size: 100, color: Colors.deepPurple);
