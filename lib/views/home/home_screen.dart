@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../presenters/home_presenter.dart';
+import '../auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,6 +63,21 @@ class _HomeScreenState extends State<HomeScreen> implements HomeView {
         ),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Navigator.pushNamed(context, '/login');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+            child: const Text(
+              "Login",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
