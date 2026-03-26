@@ -5,7 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../providers/admin_provider.dart';
 
 class AdminHome extends StatelessWidget {
-  const AdminHome({super.key});
+  String userid,userName;
+   AdminHome({super.key,required this.userid,required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +22,17 @@ class AdminHome extends StatelessWidget {
 
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: _buildBody(context, admin),
+            child: _buildBody(context, admin,userName,userid),
           );
         },
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, AdminProvider admin) {
+  Widget _buildBody(BuildContext context, AdminProvider admin,String userName,String userId) {
     switch (admin.currentIndex) {
       case 1:
-        return const StaffManagementPage();
+        return  StaffManagementPage(userName: userName, userId: userId,);
       case 2:
         return const Center(child: Text("Academic Setup Screen"));
       case 3:

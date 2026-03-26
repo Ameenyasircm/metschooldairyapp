@@ -5,7 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../providers/admin_provider.dart';
 
 class StaffManagementPage extends StatelessWidget {
-  const StaffManagementPage({super.key});
+  final String userName, userId;
+  const StaffManagementPage({super.key, required this.userName, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class StaffManagementPage extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: adminProv.getStaffStream(), // Logic from Provider
+                  stream: adminProv.getStaffStream(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) return const Center(child: Text("Error loading data"));
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -150,7 +151,12 @@ class StaffManagementPage extends StatelessWidget {
       pageBuilder: (context, anim1, anim2) {
         return Align(
           alignment: Alignment.centerRight,
-          child: StaffFormDialog(staff: staff, docId: docId),
+          child: StaffFormDialog(
+            staff: staff,
+            docId: docId,
+            userId: userId, // Passing from Page to Dialog
+            userName: userName, // Passing from Page to Dialog
+          ),
         );
       },
       transitionBuilder: (context, anim1, anim2, child) {
@@ -192,27 +198,32 @@ class StaffManagementPage extends StatelessWidget {
 
 // --- SIDE DRAWER FORM ---
 class StaffFormDialog extends StatefulWidget {
+  final String userId, userName;
   final Map<String, dynamic>? staff;
   final String? docId;
-  const StaffFormDialog({super.key, this.staff, this.docId});
+  const StaffFormDialog({
+    super.key,
+    this.staff,
+    this.docId,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
   State<StaffFormDialog> createState() => _StaffFormDialogState();
 }
 
 class _StaffFormDialogState extends State<StaffFormDialog> {
-  // Controllers
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
   final empIdCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
   final qualCtrl = TextEditingController();
   final expCtrl = TextEditingController();
-  final subjectCtrl = TextEditingController(); // For simple comma-separated input
+  final subjectCtrl = TextEditingController();
 
-  // Dropdown States
-  String? selectedRole; // admin | staff | teacher
-  String? selectedCategory; // KG | LP | UP | HS
+  String? selectedRole;
+  String? selectedCategory;
   String? selectedGender;
 
   @override
@@ -238,6 +249,7 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
     addressCtrl.clear();
     qualCtrl.clear();
     expCtrl.clear();
+    subjectCtrl.clear();
     setState(() {
       selectedRole = null;
       selectedCategory = null;
@@ -254,7 +266,10 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.4,
         height: double.infinity,
-        decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)]),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)],
+        ),
         padding: const EdgeInsets.all(40),
         child: Column(
           children: [
@@ -267,7 +282,6 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                   _buildTextField(nameCtrl, "Full Name", Icons.person_outline),
                   _buildTextField(phoneCtrl, "Phone Number", Icons.phone_outlined),
                   _buildDropdown("Role", ['admin', 'staff', 'teacher'], selectedRole, (v) => setState(() => selectedRole = v)),
-
                   const SizedBox(height: 20),
                   _buildSectionTitle("Staff Profile Details"),
                   _buildTextField(empIdCtrl, "Employee ID", Icons.badge_outlined),
@@ -287,13 +301,12 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
     );
   }
 
-  // --- Helper UI Components ---
-
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(widget.staff == null ? "Add New Staff" : "Edit Staff", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(widget.staff == null ? "Add New Staff" : "Edit Staff",
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
       ],
     );
@@ -301,10 +314,12 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
 
   Widget _buildSectionTitle(String title) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 10),
-    child: Text(title, style: const TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold, fontSize: 14)),
+    child: Text(title,
+        style: const TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold, fontSize: 14)),
   );
 
-  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon, {bool isNumber = false, int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon,
+      {bool isNumber = false, int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
@@ -325,7 +340,8 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
       padding: const EdgeInsets.only(bottom: 15),
       child: DropdownButtonFormField<String>(
         value: value,
-        decoration: InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+        decoration:
+        InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
         items: items.map((e) => DropdownMenuItem(value: e, child: Text(e.toUpperCase()))).toList(),
         onChanged: onChanged,
       ),
@@ -337,7 +353,8 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
       width: double.infinity,
       height: 55,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
         onPressed: () async {
           final userData = {
             'name': nameCtrl.text,
@@ -345,22 +362,34 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
             'role': selectedRole,
             'uid': widget.docId,
             'createdAt': FieldValue.serverTimestamp(),
+            'createdById': widget.userId,
+            'createdByName': widget.userName,
           };
 
           final profileData = {
             'employee_id': empIdCtrl.text,
-            'designation': selectedRole, // Mapping role to designation for now
+            'designation': selectedRole,
             'category': selectedCategory,
             'gender': selectedGender,
             'qualification': qualCtrl.text,
             'address': addressCtrl.text,
             'uid': widget.docId,
+            'phone': phoneCtrl.text,
+            'createdAt': FieldValue.serverTimestamp(),
+            'createdById': widget.userId,
+            'createdByName': widget.userName,
             'total_experience': int.tryParse(expCtrl.text) ?? 0,
           };
 
           await prov.saveStaffFull(docId: widget.docId, userData: userData, profileData: profileData);
-          _clearForm();
-          if (mounted) Navigator.pop(context);
+
+          if (mounted) {
+            _clearForm();
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Staff details saved successfully"), backgroundColor: Colors.green),
+            );
+          }
         },
         child: const Text("Save Staff Member", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
