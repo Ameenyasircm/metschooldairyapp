@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+
+  /// NEW FIGMA COLORS BELOW
+
+  static const Color blue1 = Color(0xff00796B);
+
+
+
+
+
+
+
+
+
   // Main Colors
   static const Color primaryBlue = Color(0xFF1A73E8);
   static const Color darkBlue = Color(0xFF0D47A1);
@@ -18,5 +31,7 @@ class AppColors {
 
   static const Color silverGrey = Color(0xFFB5B7B9); // Silver / Grey
   static const Color lightBackground = Color(0xFFF8F9FA); // Off-white background
+
+
 
 }
