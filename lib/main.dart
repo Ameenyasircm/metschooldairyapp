@@ -5,6 +5,7 @@ import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
+import 'package:met_school/views/splash/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'features/admin/views/admin_home.dart';
 import 'firebase_options.dart';
@@ -42,8 +43,8 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.deepPurple,
         ),
       ),
-      // home: const SplashScreen(),
-      home:  AdminHome(userid: '777', userName: 'wise',),
+      home:  SplashScreen(),
+      // home:  AdminHome(userid: '777', userName: 'wise',),
     );
   }
 }
