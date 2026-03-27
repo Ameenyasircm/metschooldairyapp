@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:met_school/features/auth/presentation/screens/login_screen.dart';
 import 'package:met_school/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
+import '../../core/router/app_navigation.dart';
 import 'home_provider.dart';
 import 'widgets/carousel.dart';
 import 'widgets/home_widgets.dart';
@@ -26,10 +28,15 @@ class HomeScreen extends StatelessWidget {
         actions: [
           const Icon(Icons.search, color: Colors.black),
           const SizedBox(width: 10),
-          const CircleAvatar(
-              backgroundColor: primary,
-              radius: 18,
-              child: Icon(Icons.person, color: Colors.white, size: 18)
+          GestureDetector(
+            onTap: (){
+              NavigationService.push(context,LoginScreen());
+            },
+            child: const CircleAvatar(
+                backgroundColor: primary,
+                radius: 18,
+                child: Icon(Icons.person, color: Colors.white, size: 18)
+            ),
           ),
           const SizedBox(width: 15),
         ],

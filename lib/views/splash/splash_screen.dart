@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../home/home_screen.dart';
-
+import '../../features/auth/presentation/screens/login_screen.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -22,7 +22,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // 🔥 TODO: Replace with real logic (Firebase / token check)
     bool isLoggedIn = 1==1;
-
     if (!mounted) return;
 
     if (isLoggedIn) {
@@ -31,10 +30,10 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else {
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (_) => const LoginScreen()),
-      // );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => LoginScreen()),
+      );
     }
   }
 

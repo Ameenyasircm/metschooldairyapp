@@ -9,5 +9,13 @@ class AuthProvider with ChangeNotifier {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
+  bool _obscurePassword = true;
+
+  bool get obscurePassword => _obscurePassword;
+
+  void togglePassword() {
+    _obscurePassword = !_obscurePassword;
+    notifyListeners();
+  }
 
 }

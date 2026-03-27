@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:met_school/features/admin/views/staff_management.dart';
+import 'package:met_school/features/modules/admin/views/staff_management.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../providers/admin_provider.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../providers/admin_provider.dart';
+
 
 class AdminHome extends StatelessWidget {
   String userid,userName;
