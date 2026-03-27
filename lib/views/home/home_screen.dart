@@ -3,6 +3,7 @@ import 'package:met_school/features/auth/presentation/screens/login_screen.dart'
 import 'package:met_school/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
 import '../../core/router/app_navigation.dart';
+import '../../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import 'home_provider.dart';
 import 'widgets/carousel.dart';
 import 'widgets/home_widgets.dart';
@@ -30,7 +31,8 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(width: 10),
           GestureDetector(
             onTap: (){
-              NavigationService.push(context,LoginScreen());
+              // NavigationService.push(context,LoginScreen());
+              NavigationService.push(context,TeacherNavbarScreen());
             },
             child: const CircleAvatar(
                 backgroundColor: primary,

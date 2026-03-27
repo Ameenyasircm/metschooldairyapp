@@ -13,6 +13,10 @@ class AppColors {
   static const Color black = Colors.black;
   static const Color red = Colors.red;
   static const Color grey5E = Color(0xFF56615E);
+  static const Color reddish = Color(0xFFFA746F);
+  static const Color blueish = Color(0xffAEE2FF);
+  static const Color greyGreen = Color(0xffDAE5E1);
+  static const Color mint = Color(0xff97F3E2);
 
 
 
