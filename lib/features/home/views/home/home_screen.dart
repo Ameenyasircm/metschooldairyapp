@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:met_school/core/utils/navigation/navigation_helper.dart';
+import 'package:met_school/features/about/about_us_screen.dart';
 import 'package:met_school/features/auth/presentation/screens/login_screen.dart';
-import 'package:met_school/views/home/widgets/home_grid.dart';
+import 'package:met_school/features/home/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
-import '../../core/router/app_navigation.dart';
-import '../../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
+import '../../../../core/router/app_navigation.dart';
+import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import 'home_provider.dart';
 import 'widgets/carousel.dart';
 import 'widgets/home_widgets.dart';
@@ -68,13 +70,15 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 25),
 
             // Quick Actions Row
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                QuickActionIcon(icon: Icons.info_outline, label: "ABOUT US"),
-                QuickActionIcon(icon: Icons.photo_library_outlined, label: "GALLERY"),
-                QuickActionIcon(icon: Icons.alternate_email, label: "CONTACT"),
-                QuickActionIcon(icon: Icons.payments_outlined, label: "FEE PAY"),
+                QuickActionIcon(icon: Icons.info_outline, label: "ABOUT US",onTap: (){
+                  callNext(AboutUsScreen(), context);
+                },),
+                 QuickActionIcon(icon: Icons.photo_library_outlined, label: "GALLERY",onTap: (){},),
+                 QuickActionIcon(icon: Icons.alternate_email, label: "CONTACT",onTap: (){},),
+                 QuickActionIcon(icon: Icons.payments_outlined, label: "FEE PAY",onTap: (){},),
               ],
             ),
 

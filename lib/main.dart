@@ -7,10 +7,10 @@ import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
-import 'package:met_school/views/home/home_provider.dart';
-import 'package:met_school/views/splash/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'features/home/views/home/home_provider.dart';
 import 'features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
+import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

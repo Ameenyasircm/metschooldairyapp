@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/winner_model.dart';
+import '../../../../../data/models/winner_model.dart';
+
 
 class QuickActionIcon extends StatelessWidget {
   final IconData icon;
   final String label;
-  const QuickActionIcon({super.key, required this.icon, required this.label});
+  final VoidCallback onTap; // 👈 add this
+
+  const QuickActionIcon({super.key, required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xffE0F2F1),
-            borderRadius: BorderRadius.circular(12),
+    return GestureDetector( // 👈 wrap with GestureDetector
+      onTap: onTap,child:
+    Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xffE0F2F1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xff00796B)),
           ),
-          child: Icon(icon, color: const Color(0xff00796B)),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-      ],
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 }
