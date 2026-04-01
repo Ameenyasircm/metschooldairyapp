@@ -6,6 +6,8 @@ import 'package:met_school/features/home/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/router/app_navigation.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
+import '../contact_screen/contact_us_screen.dart';
+import '../gallary/gallery_screen.dart';
 import 'home_provider.dart';
 import 'widgets/carousel.dart';
 import 'widgets/home_widgets.dart';
@@ -76,8 +78,12 @@ class HomeScreen extends StatelessWidget {
                 QuickActionIcon(icon: Icons.info_outline, label: "ABOUT US",onTap: (){
                   callNext(AboutUsScreen(), context);
                 },),
-                 QuickActionIcon(icon: Icons.photo_library_outlined, label: "GALLERY",onTap: (){},),
-                 QuickActionIcon(icon: Icons.alternate_email, label: "CONTACT",onTap: (){},),
+                 QuickActionIcon(icon: Icons.photo_library_outlined, label: "GALLERY",onTap: (){
+                   callNext(AcademicGalleryScreen(), context);
+                 },),
+                 QuickActionIcon(icon: Icons.alternate_email, label: "CONTACT",onTap: (){
+                   callNext(ContactUsScreen(), context);
+                 },),
                  QuickActionIcon(icon: Icons.payments_outlined, label: "FEE PAY",onTap: (){},),
               ],
             ),

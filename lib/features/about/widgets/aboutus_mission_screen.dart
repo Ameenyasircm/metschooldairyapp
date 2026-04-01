@@ -7,53 +7,54 @@ class MissionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("OUR PURPOSE", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-          const SizedBox(height: 8),
-          const Text(
-            "The Mission of The Atelier",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.black),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            "We believe in a student-centric approach that fosters critical thinking and practical skills.",
-            style: TextStyle(color: AppColors.grey5E, fontSize: 14),
-          ),
-          const SizedBox(height: 24),
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Text("Our Purpose", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 160,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
             children: [
-              _buildMissionCard(Icons.lightbulb_outline, "Motivation", "Encouraging curiosity in every student."),
-              const SizedBox(width: 16),
-              _buildMissionCard(Icons.people_outline, "Mentorship", "Guiding the next generation of leaders."),
+              _buildMissionCard(Icons.lightbulb, "Motivation", "Encouraging curiosity in every student."),
+              _buildMissionCard(Icons.people, "Mentorship", "Guiding the next generation of leaders."),
+              _buildMissionCard(Icons.rocket_launch, "Innovation", "Driving technology-first education."),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildMissionCard(IconData icon, String title, String desc) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.greenE1.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.black)),
-            const SizedBox(height: 4),
-            Text(desc, style: const TextStyle(fontSize: 12, color: AppColors.grey5E)),
-          ],
-        ),
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.greenE1.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: AppColors.primary, size: 20),
+          ),
+          const Spacer(),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 4),
+          Text(desc, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+        ],
       ),
     );
   }
