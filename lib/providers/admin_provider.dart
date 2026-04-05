@@ -8,6 +8,10 @@ class AdminProvider with ChangeNotifier {
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
 
+  AdminProvider(){
+    fetchSubjects();
+  }
+
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
 
@@ -23,22 +27,123 @@ class AdminProvider with ChangeNotifier {
     return fireStore.collection('staff_profiles').orderBy('name').snapshots();
   }
 
+  // ================= CONTROLLERS =================
+  final nameCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
+  final usernameCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController();
+
+  /// teacher
+  final empIdCtrl = TextEditingController();
+  final qualCtrl = TextEditingController();
+  final expCtrl = TextEditingController();
+  final subjectCtrl = TextEditingController();
+  final addressCtrl = TextEditingController();
+
+  String? selectedRole;
+  String? selectedCategory;
+
+// ================= CLEAR =================
+  void clearStaffForm() {
+    nameCtrl.clear();
+    phoneCtrl.clear();
+    usernameCtrl.clear();
+    passwordCtrl.clear();
+    emailCtrl.clear();
+
+    empIdCtrl.clear();
+    qualCtrl.clear();
+    expCtrl.clear();
+    subjectCtrl.clear();
+    addressCtrl.clear();
+
+    selectedRole = null;
+    selectedCategory = null;
+    selectedGender = null; // ✅ ADD THIS
+    selectedSubjects.clear();
+    joiningDate = null;
+
+    notifyListeners();
+  }
+
+  List<String> subjectsList = [];
+  List<String> selectedSubjects = [];
+
+  DateTime? joiningDate;
+  Future<void> fetchSubjects() async {
+    final snapshot = await fireStore.collection('subjects').get();
+
+    subjectsList = snapshot.docs
+        .map((e) => e['name'].toString())
+        .toList();
+
+    notifyListeners();
+  }
+
+  final emailCtrl = TextEditingController();
+  final gender = "Male"; // or String? selectedGender
+  String status = "active";
+  String? selectedGender;
+
   Future<void> saveStaffFull({
     String? docId,
-    required Map<String, dynamic> userData,
-    required Map<String, dynamic> profileData,
+    required String userId,
+    required String userName,
   }) async {
     final batch = fireStore.batch();
 
-    // If docId is null, we generate a new one
-    DocumentReference userRef = docId == null ? fireStore.collection('users').doc() : fireStore.collection('users').doc(docId);
+    /// 🔥 UID
+    final newId = "SF${DateTime.now().millisecondsSinceEpoch}";
 
-    DocumentReference profileRef = fireStore.collection('staff_profiles').doc(userRef.id);
+    final userRef = fireStore.collection('users').doc(newId);
+    final profileRef = fireStore.collection('staff_profiles').doc(newId);
+
+    /// 🔥 FORMAT DATE
+    final joiningDateStr = joiningDate != null
+        ? "${joiningDate!.year}-${joiningDate!.month.toString().padLeft(2, '0')}-${joiningDate!.day.toString().padLeft(2, '0')}"
+        : "";
+
+    /// 🔹 USERS COLLECTION
+    final userData = {
+      "uid": newId,
+      "name": nameCtrl.text,
+      "phone": phoneCtrl.text,
+      "email": emailCtrl.text,
+      "role": selectedRole,
+      "password": passwordCtrl.text,
+      "status": status,
+      "createdAt": FieldValue.serverTimestamp(),
+      "createdById": userId,
+      "createdByName": userName,
+    };
 
     batch.set(userRef, userData, SetOptions(merge: true));
+
+    /// 🔹 STAFF PROFILE COLLECTION
+    final profileData = {
+      "uid": newId,
+      "employee_id": empIdCtrl.text, // e.g. MET-002
+      "designation": selectedRole,
+      "category": selectedCategory,
+      "gender": selectedGender,
+      "subjects": selectedSubjects,
+      "qualification": qualCtrl.text,
+      "address": addressCtrl.text,
+      "joining_date": joiningDateStr,
+      "total_experience": int.tryParse(expCtrl.text) ?? 0,
+      "status": status,
+      "createdAt": FieldValue.serverTimestamp(),
+    };
+
     batch.set(profileRef, profileData, SetOptions(merge: true));
 
     await batch.commit();
+
+    clearStaffForm();
+  }
+
+  String generateStaffId() {
+    return "SF${DateTime.now().millisecondsSinceEpoch}";
   }
 
   // Delete Staff

@@ -56,8 +56,8 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          'assets/images/metSchoolPng.png',
-          width: 250,
+          'assets/images/LoGoGreenNew.png',
+          width: kIsWeb?400:250,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return const Icon(
