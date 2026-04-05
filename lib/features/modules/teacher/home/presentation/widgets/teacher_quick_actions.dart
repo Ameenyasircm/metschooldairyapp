@@ -7,6 +7,7 @@ import 'package:met_school/features/modules/teacher/students/presentation/screen
 import 'package:provider/provider.dart';
 
 import '../../../students/presentation/provider/student_provider.dart';
+import '../../../students/presentation/screens/my_students_screen.dart';
 import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
@@ -28,10 +29,7 @@ Widget buildQuickActions(BuildContext context) {
               onTap: (){
                 switch(index){
                   case 0:
-                    final provider = context.read<StudentProvider>();
-                    provider. searchQuery = '';
-                    provider.fetchInitial();
-                    NavigationService.push(context, TechStudentListScreen());
+                    NavigationService.push(context, MyStudentsScreen());
                     break;
                   case 1:
                     break;

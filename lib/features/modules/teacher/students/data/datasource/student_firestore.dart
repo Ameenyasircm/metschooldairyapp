@@ -14,13 +14,9 @@ class StudentFirestore {
   }) async {
     Query query = _db.collection('students');
 
-    if (search.isNotEmpty) {
-      query = query
-          .where('name', isGreaterThanOrEqualTo: search)
-          .where('name', isLessThanOrEqualTo: search + '\uf8ff');
-    }
+    query = query.orderBy('name');
 
-    query = query.orderBy('name').limit(limit);
+    query = query.limit(limit);
 
     if (!isFirst && lastDoc != null) {
       query = query.startAfterDocument(lastDoc!);

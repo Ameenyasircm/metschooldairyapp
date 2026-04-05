@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/core/constants/app_spacing.dart';
+import 'package:met_school/core/widgets/buttons/gradient_button.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../../core/constants/app_padding.dart';
@@ -25,7 +26,7 @@ class TechStudentListScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.white,
         automaticallyImplyLeading: false,
-        title: Text("Student List",style: AppTypography.body1.copyWith(
+        title: Text("Students List",style: AppTypography.body1.copyWith(
             fontWeight: FontWeight.w600
         ),),
         leading: const BackButton(),
@@ -55,7 +56,7 @@ class TechStudentListScreen extends StatelessWidget {
               ),
               child: TextField(
                 decoration:  InputDecoration(
-                  hintText: "Search by name",
+                  hintText: "Search by Name/Admission No.",
                   hintStyle: AppTypography.body2.copyWith(
                     color: AppColors.greyB2,
                   ),
@@ -98,13 +99,21 @@ class TechStudentListScreen extends StatelessWidget {
                   child: ListView.builder(
                     padding: AppPadding.pvM,
                     itemCount: provider.students.length +
-                        (provider.hasMore ? 1 : 0),
+                        (provider.hasMore && provider.searchQuery.isEmpty ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index < provider.students.length) {
+                        final student = provider.students[index];
                         return StudentTile(
-                          student: provider.students[index],
+                          student: student,
+                          isSelected: provider.isSelected(student.studentId),
+                          isSelectable: provider.isClassTeacher,
+                          onTap: () {
+                            context.read<StudentProvider>()
+                                .toggleSelection(student.studentId);
+                          },
                         );
-                      } else {
+                      }
+                      else {
                         return Padding(
                           padding: AppPadding.pM,
                           child: Center(child: CustomLoader()),
@@ -118,6 +127,16 @@ class TechStudentListScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: provider.selectedStudentIds.isNotEmpty
+          ? Padding(
+        padding: AppPadding.p12,
+        child: gradientButton(
+          onPressed: (){
+
+          },
+            text:"Assign (${provider.selectedStudentIds.length}) Students"),
+      ): null,
+
     );
   }
 }
