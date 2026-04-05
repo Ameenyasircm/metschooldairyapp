@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../providers/admin_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import 'academic_year_management.dart';
 
 class AdminHome extends StatelessWidget {
   String userid, userName, phone;
@@ -37,14 +38,23 @@ class AdminHome extends StatelessWidget {
     switch (admin.currentIndex) {
       case 1:
         return StaffManagementPage(userName: userName, userId: userId);
+
       case 2:
         return const Center(child: Text("Academic Setup Screen"));
+
       case 3:
         return const Center(child: Text("Gallery Screen"));
+
+    /// ✅ NEW
+      case 4:
+        return const AcademicYearScreen();
+
+      case 5:
+        return const Center(child: Text("Student Management Screen"));
+
       default:
         return _buildDashboardGrid(context);
-    }
-  }
+    }  }
 
   /// ================= DASHBOARD =================
   Widget _buildDashboardGrid(BuildContext context) {
@@ -107,6 +117,23 @@ class AdminHome extends StatelessWidget {
                         icon: Icons.collections_outlined,
                         color: Colors.orange,
                         index: 3,
+                      ),
+                      _buildModuleCard(
+                        context,
+                        title: "Academic Year",
+                        subtitle: "Manage Academic Years",
+                        icon: Icons.calendar_today_outlined,
+                        color: Colors.purple,
+                        index: 4,
+                      ),
+
+                      _buildModuleCard(
+                        context,
+                        title: "Student Management",
+                        subtitle: "Manage Students Data",
+                        icon: Icons.school_outlined,
+                        color: Colors.teal,
+                        index: 5,
                       ),
                     ],
                   );
