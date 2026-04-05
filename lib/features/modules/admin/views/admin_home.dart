@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../providers/admin_provider.dart';
+import '../../../../providers/auth_provider.dart';
 
 class AdminHome extends StatelessWidget {
   String userid, userName, phone;
@@ -50,7 +51,7 @@ class AdminHome extends StatelessWidget {
     return Column(
       children: [
         /// 🔥 TOP HEADER (NEW THEME)
-        _buildTopHeader(),
+        _buildTopHeader(context),
 
         /// BODY
         Expanded(
@@ -119,7 +120,7 @@ class AdminHome extends StatelessWidget {
   }
 
   /// ================= NEW HEADER =================
-  Widget _buildTopHeader() {
+  Widget _buildTopHeader(BuildContext context) {
     return Container(
       height: 160,
       width: double.infinity,
@@ -156,15 +157,39 @@ class AdminHome extends StatelessWidget {
           ),
 
           /// RIGHT ICON
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.admin_panel_settings,
-                color: Colors.white, size: 32),
-          )
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.admin_panel_settings,
+                    color: Colors.white, size: 32),
+              ),
+              const SizedBox(width: 20),
+
+              /// 🔴 LOGOUT BUTTON
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF0F766E),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  context.read<AuthProvider>().logout(context);
+                },
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text("Logout"),
+              ),
+            ],
+          ),
+
         ],
       ),
     );
