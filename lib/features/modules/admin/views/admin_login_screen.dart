@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:met_school/core/theme/app_typography.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../providers/auth_provider.dart';
@@ -159,7 +160,7 @@ class _LoginFormState extends State<_LoginForm> {
             const Text("PASSWORD"),
             TextButton(
               onPressed: () {},
-              child: const Text("Forgot?"),
+              child:Text("Forgot Password?",style: AppTypography.caption,),
             )
           ],
         ),

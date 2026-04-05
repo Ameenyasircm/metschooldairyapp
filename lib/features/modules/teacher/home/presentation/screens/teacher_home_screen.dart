@@ -17,7 +17,8 @@ import '../widgets/grade_overview_card.dart';
 import '../widgets/teacher_quick_actions.dart';
 
 class TeacherHomeScreen extends StatelessWidget {
-  const TeacherHomeScreen({super.key});
+  final String staffName;
+  const TeacherHomeScreen({super.key,required this.staffName});
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +30,8 @@ class TeacherHomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildHeaderT(context),
+              buildHeaderT(context,staffName),
               AppSpacing.vl,
-              _buildGreeting(context),
-              AppSpacing.vxl,
               buildSectionTitle('Quick Actions'),
               AppSpacing.vm,
               buildQuickActions(context),
@@ -64,13 +63,13 @@ class TeacherHomeScreen extends StatelessWidget {
   Widget _buildGreeting(BuildContext context) {
     return Consumer<TeacherHomeViewModel>(
       builder: (context, vm, _) {
-        final greeting = '${vm.greetingText}\n${vm.teacherName}';
+        final greeting = '${vm.greetingText}';
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               greeting,
-              style: AppTypography.h3.copyWith(color: AppColors.darkGreen, height: 1.2),
+              style: AppTypography.h5.copyWith(color: AppColors.darkGreen, height: 1.2),
             ),
             AppSpacing.vs,
             Text(

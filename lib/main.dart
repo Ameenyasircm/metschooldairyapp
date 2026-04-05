@@ -8,6 +8,7 @@ import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
 import 'package:provider/provider.dart';
+import 'core/utils/snackbarNotification/snackbar_notification.dart';
 import 'features/home/views/home/home_provider.dart';
 import 'features/modules/admin/views/admin_home.dart';
 import 'features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: false,
       designSize: const Size(360, 813),
       child: MaterialApp(
+        scaffoldMessengerKey: SnackbarService().messengerKey,
         debugShowCheckedModeBanner: false,
         title: 'MET SCHOOL',
         theme: ThemeData(

@@ -16,6 +16,8 @@ class AppTextField extends StatelessWidget {
   final IconData prefixIcon;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
 
   const AppTextField({
@@ -24,6 +26,8 @@ class AppTextField extends StatelessWidget {
     required this.hintText,
     required this.prefixIcon,
     this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
     this.suffixIcon,
     this.validator,
   });
@@ -38,6 +42,8 @@ class AppTextField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: AppTypography.body1.copyWith(
           color: AppColors.darkGreen,
         ),
