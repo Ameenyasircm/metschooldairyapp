@@ -12,6 +12,9 @@ import 'core/utils/snackbarNotification/snackbar_notification.dart';
 import 'features/home/views/home/home_provider.dart';
 import 'features/modules/admin/views/admin_home.dart';
 import 'features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
+import 'features/modules/teacher/students/data/datasource/student_firestore.dart';
+import 'features/modules/teacher/students/data/repository/student_repository.dart';
+import 'features/modules/teacher/students/presentation/provider/student_provider.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 void main() async {
@@ -28,6 +31,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ParentProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => StudentProvider(
+            StudentRepository(StudentFirestore()),
+          ),
+        ),
       ],
       child: const MyApp(),
     ),

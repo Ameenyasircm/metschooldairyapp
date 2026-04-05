@@ -137,7 +137,8 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                              },
                               child: Text(
                                 'Forgot Password?',
                                 style: AppTypography.caption.copyWith(

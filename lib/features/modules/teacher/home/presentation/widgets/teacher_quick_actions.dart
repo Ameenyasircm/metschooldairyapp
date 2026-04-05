@@ -1,8 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/router/app_navigation.dart';
 import 'package:met_school/features/modules/teacher/home/presentation/widgets/quick_action_card.dart';
+import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../../students/presentation/provider/student_provider.dart';
 import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
@@ -20,7 +24,25 @@ Widget buildQuickActions(BuildContext context) {
         ),
         itemCount: actions.length,
         itemBuilder: (context, index) {
-          return QuickActionCard(action: actions[index]);
+          return InkWell(
+              onTap: (){
+                switch(index){
+                  case 0:
+                    final provider = context.read<StudentProvider>();
+                    provider. searchQuery = '';
+                    provider.fetchInitial();
+                    NavigationService.push(context, TechStudentListScreen());
+                    break;
+                  case 1:
+                    break;
+                  case 2:
+                    break;
+                  default:
+                    break;
+
+                }
+              },
+              child: QuickActionCard(action: actions[index]));
         },
       );
     },

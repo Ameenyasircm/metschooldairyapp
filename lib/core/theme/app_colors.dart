@@ -20,6 +20,7 @@ class AppColors {
 
   static const Color primaryRed = Colors.red;
   static const Color greyAccent = Color(0xFF424242);
+  static const greyB2 = Color(0xFFB2B2B2);
   // Match the light teal color in the image
   static const Color textTeal = Color(0xFF40DFD0);
   // Base color of the images in the image
