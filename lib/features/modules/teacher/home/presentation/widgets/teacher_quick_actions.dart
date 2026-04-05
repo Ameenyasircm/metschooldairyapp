@@ -29,6 +29,9 @@ Widget buildQuickActions(BuildContext context) {
               onTap: (){
                 switch(index){
                   case 0:
+                    final provider = context.read<StudentProvider>();
+                    provider. searchMyStdQuery = '';
+                    provider.fetchMyStudentsInitial();
                     NavigationService.push(context, MyStudentsScreen());
                     break;
                   case 1:

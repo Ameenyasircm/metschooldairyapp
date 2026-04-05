@@ -13,23 +13,29 @@ class StudentTile extends StatelessWidget {
   final bool isSelected;
   final bool isSelectable;
   final VoidCallback? onTap;
-   const StudentTile({super.key, required this.student,required this.isSelected,
-    required this.isSelectable,this.onTap,});
+
+  const StudentTile({
+    super.key,
+    required this.student,
+    this.isSelected = false,
+    this.isSelectable = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: isSelectable ? onTap : null,
       child: Container(
-        margin:EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        padding:AppPadding.p12,
+        margin: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        padding: AppPadding.p12,
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.shade50 : Colors.white,
-          borderRadius:AppRadius.radiusS,
+          borderRadius: AppRadius.radiusS,
           border: Border.all(
             color: isSelected ? Colors.blue : Colors.grey.shade300,
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               blurRadius: 4,
               color: Colors.black12,
@@ -40,10 +46,11 @@ class StudentTile extends StatelessWidget {
           children: [
             if (isSelectable)
               Checkbox(
-                activeColor:Colors.blue,
+                activeColor: Colors.blue,
                 value: isSelected,
                 onChanged: (_) => onTap?.call(),
               ),
+
             // 🔹 Main Info
             Expanded(
               child: Column(
@@ -51,17 +58,17 @@ class StudentTile extends StatelessWidget {
                 children: [
                   Text(
                     student.name,
-                    style:AppTypography.body1.copyWith(
-                      fontWeight: FontWeight.w600
+                    style: AppTypography.body1.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                AppSpacing.h4,
-                  Text(student.parentPhone,style: AppTypography.captionL,),
-                  Text(student.bloodGroup,style: AppTypography.captionL,),
+                  AppSpacing.h4,
+                  Text(student.parentPhone, style: AppTypography.captionL),
+                  Text(student.bloodGroup, style: AppTypography.captionL),
                 ],
               ),
             ),
-      
+
             // 🔹 Right Side Info
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -69,10 +76,11 @@ class StudentTile extends StatelessWidget {
                 Text(
                   student.admissionNumber,
                   style: AppTypography.body2.copyWith(
-                    fontWeight: FontWeight.w700,color: AppColors.primary
-                  )
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
                 ),
-               AppSpacing.h4,
+                AppSpacing.h4,
                 Text(
                   student.dob,
                   style: AppTypography.captionL,

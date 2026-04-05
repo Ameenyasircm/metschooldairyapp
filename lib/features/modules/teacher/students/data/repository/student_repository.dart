@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../datasource/student_firestore.dart';
+import '../models/tech_division_model.dart';
 import '../models/tech_student_model.dart';
 
 class StudentRepository {
@@ -6,21 +8,27 @@ class StudentRepository {
 
   StudentRepository(this.firestore);
 
-  Future<List<TechStudentModel>> getStudents({
-    String search = '',
-    bool isFirst = false,
+  Future<QuerySnapshot> getStudents({
+    DocumentSnapshot? lastDoc,
+    int limit = 10,
+    bool isMyStudents = false,
+    String? divisionId,
   }) async {
-    final docs = await firestore.fetchStudents(
-      search: search,
-      isFirst: isFirst,
+    return await firestore.fetchCollection(
+      collectionPath: isMyStudents ? 'enrollments' : 'students',
+      limit: limit,
+      startAfter: lastDoc,
+      queryBuilder: (query) {
+        var q = query.orderBy('name');
+        if (isMyStudents && divisionId != null) {
+          q = q.where('division_id', isEqualTo: divisionId);
+        }
+        return q;
+      },
     );
-
-    return docs
-        .map((e) => TechStudentModel.fromMap(e.data() as Map<String, dynamic>))
-        .toList();
   }
 
-  void resetPagination() {
-    firestore.reset();
+  Future<DivisionModel?> getTeacherClassDivision({required String teacherId}) async {
+    return await firestore.getTeacherClass(teacherId: teacherId);
   }
 }
