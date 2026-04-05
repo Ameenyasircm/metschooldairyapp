@@ -37,7 +37,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
 
           /// 🔥 HEADER (MATCH LOGIN THEME)
           Container(
-            height: 120,
+            height: 100, // Slightly reduced height for a cleaner web feel
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 40),
             decoration: const BoxDecoration(
@@ -47,19 +47,46 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Academic Year Management",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: Row(
+              children: [
+                /// --- BACK BUTTON ---
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(50),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+                const SizedBox(width: 20),
+
+                /// --- TITLE ---
+                const Text(
+                  "Academic Year Management",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
-
           /// BODY
           Expanded(
             child: Padding(
