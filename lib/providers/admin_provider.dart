@@ -45,4 +45,70 @@ class AdminProvider with ChangeNotifier {
   Future<void> removeStaff(String docId) async {
     await fireStore.collection('staff_profiles').doc(docId).delete();
   }
+
+  List<QueryDocumentSnapshot> academicYears = [];
+  bool isLoading = false;
+
+  /// ================= FETCH =================
+  Future<void> fetchAcademicYears() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final snapshot = await fireStore
+          .collection("academic_years")
+          .orderBy("start_date", descending: true)
+          .get();
+
+      academicYears = snapshot.docs;
+    } catch (e) {
+      debugPrint("Error fetching years: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  /// ================= ADD =================
+  Future<void> addAcademicYear({
+    required String yearName,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      await fireStore.collection("academic_years").add({
+        "year_name": yearName,
+        "is_current": false,
+        "start_date": startDate,
+        "end_date": endDate,
+      });
+
+      await fetchAcademicYears();
+    } catch (e) {
+      debugPrint("Error adding year: $e");
+    }
+  }
+
+  /// ================= SET CURRENT =================
+  Future<void> setCurrentYear(String docId) async {
+    try {
+      /// 🔥 Make all false first
+      final snapshot = await fireStore.collection("academic_years").get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.update({"is_current": false});
+      }
+
+      /// ✅ Set selected one true
+      await fireStore
+          .collection("academic_years")
+          .doc(docId)
+          .update({"is_current": true});
+
+      await fetchAcademicYears();
+    } catch (e) {
+      debugPrint("Error setting current year: $e");
+    }
+  }
+
 }

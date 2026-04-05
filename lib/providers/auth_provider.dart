@@ -6,6 +6,8 @@ import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/admin/views/admin_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/modules/admin/views/admin_login_screen.dart';
+
 import '../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 
@@ -149,4 +151,18 @@ class AuthProvider with ChangeNotifier {
       );
     }
   }
+
+
+  Future<void> logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    /// Clear saved data
+    await prefs.clear();
+
+    /// Navigate to login
+    if (context.mounted) {
+      callNextReplacement(AdminLoginScreen(), context);
+    }
+  }
+
 }
