@@ -4,8 +4,6 @@ import '../data/models/quick_action.dart';
 
 class TeacherHomeViewModel extends ChangeNotifier {
   int _selectedIndex = 0;
-  final String teacherName = "Professor Sarah";
-
   int get selectedIndex => _selectedIndex;
 
   String get greetingText {

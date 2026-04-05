@@ -30,7 +30,7 @@ class TeacherHomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildHeaderT(context),
+              buildHeaderT(context,staffName),
               AppSpacing.vl,
               buildSectionTitle('Quick Actions'),
               AppSpacing.vm,
@@ -63,7 +63,7 @@ class TeacherHomeScreen extends StatelessWidget {
   Widget _buildGreeting(BuildContext context) {
     return Consumer<TeacherHomeViewModel>(
       builder: (context, vm, _) {
-        final greeting = '${vm.greetingText}\n${vm.teacherName}';
+        final greeting = '${vm.greetingText}';
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
