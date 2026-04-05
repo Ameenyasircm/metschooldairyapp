@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:met_school/core/utils/navigation/navigation_helper.dart';
+import 'package:met_school/features/modules/admin/views/admin_login_screen.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../home/views/home/home_screen.dart';
@@ -21,19 +24,23 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3));
 
     // 🔥 TODO: Replace with real logic (Firebase / token check)
-    bool isLoggedIn = 1==1;
+    bool isLoggedIn = 1 == 1;
     if (!mounted) return;
 
-    if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
-      );
+    if (!kIsWeb) {
+      if (isLoggedIn) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+      }
+    }else{
+      callNextReplacement(AdminLoginScreen(), context);
     }
   }
 

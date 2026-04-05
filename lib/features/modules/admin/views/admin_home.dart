@@ -5,36 +5,37 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../providers/admin_provider.dart';
 
-
 class AdminHome extends StatelessWidget {
-  String userid,userName;
-   AdminHome({super.key,required this.userid,required this.userName});
+  String userid, userName, phone;
+
+  AdminHome({
+    super.key,
+    required this.userid,
+    required this.userName,
+    required this.phone,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.offWhite,
+      backgroundColor: const Color(0xFFF3F4F6),
+
       body: Consumer<AdminProvider>(
         builder: (context, admin, child) {
-          // --- NAVIGATION LOGIC ---
-          // Index 0: Dashboard Grid
-          // Index 1: Staff Management
-          // Index 2: Academic Setup (Placeholder)
-          // Index 3: Gallery (Placeholder)
-
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: _buildBody(context, admin,userName,userid),
+            child: _buildBody(context, admin, userName, userid),
           );
         },
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, AdminProvider admin,String userName,String userId) {
+  Widget _buildBody(
+      BuildContext context, AdminProvider admin, String userName, String userId) {
     switch (admin.currentIndex) {
       case 1:
-        return  StaffManagementPage(userName: userName, userId: userId,);
+        return StaffManagementPage(userName: userName, userId: userId);
       case 2:
         return const Center(child: Text("Academic Setup Screen"));
       case 3:
@@ -44,121 +45,182 @@ class AdminHome extends StatelessWidget {
     }
   }
 
-  // --- 1. DASHBOARD GRID VIEW ---
+  /// ================= DASHBOARD =================
   Widget _buildDashboardGrid(BuildContext context) {
-    return SingleChildScrollView(
-      key: const ValueKey(0),
-      padding: const EdgeInsets.all(60),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 50),
-          LayoutBuilder(builder: (context, constraints) {
-            int crossAxisCount = constraints.maxWidth > 1200 ? 4 : (constraints.maxWidth > 800 ? 2 : 1);
-            return GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 30,
-              mainAxisSpacing: 30,
-              childAspectRatio: 1.4,
-              children: [
-                _buildModuleCard(
-                  context,
-                  title: "System Overview",
-                  subtitle: "Active Year: 2026-27",
-                  icon: Icons.analytics_outlined,
-                  color: AppColors.primaryBlue,
-                  index: 0,
-                ),
-                _buildModuleCard(
-                  context,
-                  title: "Staff Management",
-                  subtitle: "Manage Teachers & Roles",
-                  icon: Icons.badge_outlined,
-                  color: AppColors.darkBlue,
-                  index: 1,
-                ),
-                _buildModuleCard(
-                  context,
-                  title: "Academic Setup",
-                  subtitle: "Grades & Divisions",
-                  icon: Icons.account_tree_outlined,
-                  color: AppColors.successGreen,
-                  index: 2,
-                ),
-                _buildModuleCard(
-                  context,
-                  title: "School Gallery",
-                  subtitle: "Upload Event Photos",
-                  icon: Icons.collections_outlined,
-                  color: AppColors.warningOrange,
-                  index: 3,
-                ),
-              ],
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // --- 2. UI COMPONENTS ---
-
-  Widget _buildHeader() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Admin Command Center",
-          style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.textBlack),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          "Welcome back, Muhammed Wise. Here is what's happening today.",
-          style: TextStyle(fontSize: 18, color: AppColors.textGrey),
+        /// 🔥 TOP HEADER (NEW THEME)
+        _buildTopHeader(),
+
+        /// BODY
+        Expanded(
+          child: SingleChildScrollView(
+            key: const ValueKey(0),
+            padding: const EdgeInsets.all(40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+
+                LayoutBuilder(builder: (context, constraints) {
+                  int crossAxisCount = constraints.maxWidth > 1200
+                      ? 4
+                      : (constraints.maxWidth > 800 ? 2 : 1);
+
+                  return GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 25,
+                    mainAxisSpacing: 25,
+                    childAspectRatio: 1.3,
+                    children: [
+                      _buildModuleCard(
+                        context,
+                        title: "System Overview",
+                        subtitle: "Active Year: 2026-27",
+                        icon: Icons.analytics_outlined,
+                        color: const Color(0xFF14B8A6),
+                        index: 0,
+                      ),
+                      _buildModuleCard(
+                        context,
+                        title: "Staff Management",
+                        subtitle: "Manage Teachers & Roles",
+                        icon: Icons.badge_outlined,
+                        color: const Color(0xFF0F766E),
+                        index: 1,
+                      ),
+                      _buildModuleCard(
+                        context,
+                        title: "Academic Setup",
+                        subtitle: "Grades & Divisions",
+                        icon: Icons.account_tree_outlined,
+                        color: Colors.green,
+                        index: 2,
+                      ),
+                      _buildModuleCard(
+                        context,
+                        title: "School Gallery",
+                        subtitle: "Upload Event Photos",
+                        icon: Icons.collections_outlined,
+                        color: Colors.orange,
+                        index: 3,
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildModuleCard(BuildContext context,
-      {required String title,
+  /// ================= NEW HEADER =================
+  Widget _buildTopHeader() {
+    return Container(
+      height: 160,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          /// LEFT TEXT
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                "Admin Dashboard",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Manage your system efficiently",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+
+          /// RIGHT ICON
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.admin_panel_settings,
+                color: Colors.white, size: 32),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// ================= CARD =================
+  Widget _buildModuleCard(
+      BuildContext context, {
+        required String title,
         required String subtitle,
         required IconData icon,
         required Color color,
-        required int index}) {
+        required int index,
+      }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Provider.of<AdminProvider>(context, listen: false).setIndex(index),
-        child: Container(
-          padding: const EdgeInsets.all(30),
+        onTap: () =>
+            Provider.of<AdminProvider>(context, listen: false)
+                .setIndex(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(25),
           decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              )
             ],
-            border: Border.all(color: AppColors.silverGrey.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 25,
+                radius: 24,
                 backgroundColor: color.withOpacity(0.1),
-                child: Icon(icon, color: color, size: 28),
+                child: Icon(icon, color: color, size: 26),
               ),
               const Spacer(),
-              Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 5),
-              Text(subtitle, style: const TextStyle(color: AppColors.textGrey)),
+              Text(subtitle,
+                  style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 15),
               Row(
                 children: [
-                  Text("Open Module", style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+                  Text("Open Module",
+                      style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(width: 5),
                   Icon(Icons.arrow_forward, size: 16, color: color),
                 ],
