@@ -9,8 +9,10 @@ import '../../theme/app_typography.dart';
 
 Widget gradientButton({
   required String text,
-  required VoidCallback onPressed,
+  final VoidCallback? onPressed,
+  final bool isLoading = false,
   Widget? icon,
+
 }) {
   return SizedBox(
     width: double.infinity,
@@ -24,7 +26,16 @@ Widget gradientButton({
         ),
         elevation: 0,
       ),
-      child: Row(
+      child:isLoading
+          ? SizedBox(
+        height: 20.h,
+        width: 20.w,
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      )
+          :Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(

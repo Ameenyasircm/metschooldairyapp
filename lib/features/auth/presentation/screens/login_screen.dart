@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/core/constants/app_padding.dart';
 import 'package:met_school/core/constants/app_radius.dart';
@@ -16,13 +17,13 @@ import '../widgets/biometric_button.dart';
 class LoginScreen extends StatelessWidget {
    LoginScreen({super.key});
 
-  final TextEditingController _idController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
   final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AuthProvider>();
+    final authProvider = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       body: SafeArea(
@@ -96,7 +97,7 @@ class LoginScreen extends StatelessWidget {
                       AppSpacing.h24,
                       // EMPLOYEE ID
                       Text(
-                        'EMPLOYEE ID',
+                        'Phone Number',
                         style: AppTypography.caption.copyWith(
                           color: AppColors.grey5E,
                           fontWeight: FontWeight.w600,
@@ -105,17 +106,21 @@ class LoginScreen extends StatelessWidget {
                       ),
                       AppSpacing.h8,
                       AppTextField(
-                        controller: _idController,
-                        hintText: 'Enter your ID',
+                        controller: phoneController,
+                        hintText: 'Enter your phone',
+                        keyboardType: TextInputType.phone,
+                         inputFormatters: [
+                           FilteringTextInputFormatter.digitsOnly
+                         ],
                         prefixIcon: Icons.badge_outlined,
                       ),
-                      AppSpacing.h16,
+                      AppSpacing.h20,
                       // PASSWORD
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'PASSWORD',
+                            'Password',
                             style: AppTypography.caption.copyWith(
                               color: AppColors.grey5E,
                               fontWeight: FontWeight.w600,
@@ -138,12 +143,12 @@ class LoginScreen extends StatelessWidget {
 
                       AppTextField(
                         controller: passwordController,
-                        hintText: '••••••••',
+                        hintText: 'Enter your password',
                         prefixIcon: Icons.lock_outline,
-                        obscureText: provider.obscurePassword,
+                        obscureText: authProvider.obscurePassword,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            provider.obscurePassword
+                            authProvider.obscurePassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
@@ -157,7 +162,16 @@ class LoginScreen extends StatelessWidget {
 
                       gradientButton(
                         text: "Login",
-                        onPressed: () {},
+                        isLoading:authProvider.isLoading,
+                        onPressed:authProvider.isLoading
+                            ? null
+                            : () {
+                          context.read<AuthProvider>().staffLogin(
+                            phoneNumber: phoneController.text.trim(),
+                            password: passwordController.text.trim(),
+                            context: context,
+                          );
+                        },
                         icon: Icon(
                           Icons.arrow_forward,
                           color: Colors.white,

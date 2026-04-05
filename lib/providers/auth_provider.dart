@@ -6,6 +6,9 @@ import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/admin/views/admin_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/utils/snackbarNotification/snackbar_notification.dart';
+import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
+
 class AuthProvider with ChangeNotifier {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
@@ -79,6 +82,66 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// staff login
+  bool _isStaffLoginLoading = false;
+
+  bool get staffLoginLoading => _isStaffLoginLoading;
+
+  Future<void> staffLogin({
+    required String phoneNumber,
+    required String password,
+    required BuildContext context,
+  }) async {
+    _isStaffLoginLoading = true;
+    notifyListeners();
+
+    try {
+      final staffSnapshot = await fireStore
+          .collection("users")
+          .where("phone", isEqualTo: phoneNumber)
+          .limit(1)
+          .get();
+
+      if (staffSnapshot.docs.isNotEmpty) {
+        var staffData = staffSnapshot.docs.first.data();
+
+        String dbPassword = staffData['password'] ?? "";
+        String staffName = staffData['name'] ?? "";
+        String staffPhone = staffData['phone'] ?? "";
+
+        if (dbPassword == password) {
+
+          /// ✅ SAVE LOGIN DATA
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("staffId", staffSnapshot.docs.first.id);
+          await prefs.setString("staffName", staffName);
+          await prefs.setString("staffPhone", staffPhone);
+          await prefs.setString("password", dbPassword);
+
+          if (context.mounted) {
+            callNextReplacement(
+              TeacherNavbarScreen(staffName: staffName,
+                // userid: staffSnapshot.docs.first.id,
+                // userName: adminName,
+                // phone: adminPhone,
+              ),
+              context,
+            );
+          }
+
+        } else {
+          SnackbarService().showError("Incorrect password. Please try again.");
+        }
+      } else {
+        SnackbarService().showError("Admin not found with this phone number.");
+      }
+    } catch (e) {
+      SnackbarService().showError("An error occurred: ${e.toString()}");
+    } finally {
+      _isStaffLoginLoading = false;
+      notifyListeners();
+    }
+  }
   void _showError(BuildContext context, String message) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

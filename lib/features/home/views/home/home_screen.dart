@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
           GestureDetector(
             onTap: (){
               // NavigationService.push(context,LoginScreen());
-              NavigationService.push(context,TeacherNavbarScreen());
+              NavigationService.push(context,TeacherNavbarScreen(staffName: '',));
             },
             child: const CircleAvatar(
                 backgroundColor: primary,

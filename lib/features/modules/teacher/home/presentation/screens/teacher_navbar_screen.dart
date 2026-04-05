@@ -6,7 +6,8 @@ import '../widgets/app_bottom_nav_bar.dart';
 import 'teacher_home_screen.dart';
 
 class TeacherNavbarScreen extends StatelessWidget {
-  const TeacherNavbarScreen({super.key});
+  final String staffName;
+  const TeacherNavbarScreen({super.key,required this.staffName});
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +16,8 @@ class TeacherNavbarScreen extends StatelessWidget {
         return Scaffold(
           body: IndexedStack(
             index: vm.selectedIndex,
-            children: const [
-              TeacherHomeScreen(),
+            children:[
+              TeacherHomeScreen(staffName:staffName,),
               SizedBox(),
               SizedBox(),
               SizedBox(),
