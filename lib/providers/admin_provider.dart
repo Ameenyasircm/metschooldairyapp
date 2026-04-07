@@ -181,11 +181,19 @@ class AdminProvider with ChangeNotifier {
     required DateTime endDate,
   }) async {
     try {
-      await fireStore.collection("academic_years").add({
+      final String docId =
+      DateTime.now().millisecondsSinceEpoch.toString();
+
+      await fireStore
+          .collection("academic_years")
+          .doc(docId)
+          .set({
+        "id": docId, // optional but useful
         "year_name": yearName,
         "is_current": false,
         "start_date": startDate,
         "end_date": endDate,
+        "created_at": Timestamp.now(), // good practice
       });
 
       await fetchAcademicYears();
@@ -193,7 +201,6 @@ class AdminProvider with ChangeNotifier {
       debugPrint("Error adding year: $e");
     }
   }
-
   /// ================= SET CURRENT =================
   Future<void> setCurrentYear(String docId) async {
     try {
