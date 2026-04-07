@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../providers/admin_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import 'academic_year_management.dart';
+import 'list_all_students_screen.dart';
 
 class AdminHome extends StatelessWidget {
   String userid, userName, phone;
@@ -50,7 +51,7 @@ class AdminHome extends StatelessWidget {
         return const AcademicYearScreen();
 
       case 5:
-        return const Center(child: Text("Student Management Screen"));
+        return StudentListScreen();
 
       default:
         return _buildDashboardGrid(context);
@@ -84,7 +85,7 @@ class AdminHome extends StatelessWidget {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 25,
                     mainAxisSpacing: 25,
-                    childAspectRatio: 1.3,
+                    childAspectRatio:2,
                     children: [
                       _buildModuleCard(
                         context,

@@ -122,12 +122,7 @@ class AuthProvider with ChangeNotifier {
 
           if (context.mounted) {
             callNextReplacement(
-              TeacherNavbarScreen(staffName: staffName,
-                // userid: staffSnapshot.docs.first.id,
-                // userName: adminName,
-                // phone: adminPhone,
-              ),
-              context,
+              TeacherNavbarScreen(staffName: staffName,), context,
             );
           }
 

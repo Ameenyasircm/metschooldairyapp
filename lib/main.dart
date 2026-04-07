@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/providers/academic_provider.dart';
 import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
@@ -15,6 +16,7 @@ import 'features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
 import 'features/modules/teacher/students/data/datasource/student_firestore.dart';
 import 'features/modules/teacher/students/data/repository/student_repository.dart';
 import 'features/modules/teacher/students/presentation/provider/student_provider.dart';
+import 'features/modules/teacher/attendance/presentation/provider/attendance_provider.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 void main() async {
@@ -31,9 +33,15 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ParentProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+        ChangeNotifierProvider(create: (_) => AcademicProvider()),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(
             StudentRepository(StudentFirestore()),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AttendanceProvider(
+            context.read<StudentProvider>().repository,
           ),
         ),
       ],

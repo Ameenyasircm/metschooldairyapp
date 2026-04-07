@@ -251,18 +251,25 @@ class AdminProvider with ChangeNotifier {
     required DateTime endDate,
   }) async {
     try {
-      await fireStore.collection("academic_years").add({
+      final String docId =
+      DateTime.now().millisecondsSinceEpoch.toString();
+
+      await fireStore
+          .collection("academic_years")
+          .doc(docId)
+          .set({
+        "id": docId, // optional but useful
         "year_name": yearName,
         "is_current": false,
         "start_date": startDate,
         "end_date": endDate,
+        "created_at": Timestamp.now(), // good practice
       });
       await fetchAcademicYears();
     } catch (e) {
       debugPrint("Error adding year: $e");
     }
   }
-
   Future<void> setCurrentYear(String docId) async {
     try {
       final snapshot = await fireStore.collection("academic_years").get();
@@ -274,5 +281,30 @@ class AdminProvider with ChangeNotifier {
     } catch (e) {
       debugPrint("Error setting current year: $e");
     }
+  }
+
+  List<DocumentSnapshot> studentsList = [];
+  bool isStudentLoading = false;
+
+  Future<void> fetchStudents() async {
+    isStudentLoading = true;
+    notifyListeners();
+
+    try {
+      final snapshot =
+      await FirebaseFirestore.instance.collection('students').get();
+
+      studentsList = snapshot.docs;
+    } catch (e) {
+      debugPrint("Error fetching students: $e");
+    }
+
+    isStudentLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> addStudent(Map<String, dynamic> data) async {
+    await FirebaseFirestore.instance.collection('students').add(data);
+    fetchStudents();
   }
 }
