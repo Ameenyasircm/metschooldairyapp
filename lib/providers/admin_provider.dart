@@ -223,4 +223,28 @@ class AdminProvider with ChangeNotifier {
     }
   }
 
+  List<DocumentSnapshot> studentsList = [];
+  bool isStudentLoading = false;
+
+  Future<void> fetchStudents() async {
+    isStudentLoading = true;
+    notifyListeners();
+
+    try {
+      final snapshot =
+      await FirebaseFirestore.instance.collection('students').get();
+
+      studentsList = snapshot.docs;
+    } catch (e) {
+      debugPrint("Error fetching students: $e");
+    }
+
+    isStudentLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> addStudent(Map<String, dynamic> data) async {
+    await FirebaseFirestore.instance.collection('students').add(data);
+    fetchStudents();
+  }
 }

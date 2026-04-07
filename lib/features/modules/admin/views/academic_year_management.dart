@@ -49,11 +49,11 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white),
+                  onPressed: () {
+                    context.read<AdminProvider>().setIndex(0); // 🔥 FIX
+                  },
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
-
                 const SizedBox(width: 10),
 
                 const Text(

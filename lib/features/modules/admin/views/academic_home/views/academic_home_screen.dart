@@ -5,6 +5,8 @@ import 'package:met_school/providers/academic_provider.dart';
 import 'package:met_school/providers/academic_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../../../providers/admin_provider.dart';
+
 
 class AcademicYearHomeScreen extends StatefulWidget {
   final String academicYearId;
@@ -55,9 +57,10 @@ class _AcademicYearHomeScreenState
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white),
+                  onPressed: () {
+                    context.read<AdminProvider>().setIndex(0); // 🔥 FIX
+                  },
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
 
                 const SizedBox(width: 10),
