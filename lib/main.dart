@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/providers/academic_provider.dart';
 import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
@@ -31,6 +32,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ParentProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+        ChangeNotifierProvider(create: (_) => AcademicProvider()),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(
             StudentRepository(StudentFirestore()),

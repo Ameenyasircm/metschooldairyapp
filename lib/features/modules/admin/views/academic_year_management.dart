@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../providers/admin_provider.dart';
+import 'academic_home/views/academic_home_screen.dart';
 
 class AcademicYearScreen extends StatefulWidget {
   const AcademicYearScreen({super.key});
@@ -130,15 +132,8 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (_) => AcademicYearHomeScreen(
-        //       academicYearId: id,
-        //       yearName: data['year_name'],
-        //     ),
-        //   ),
-        // );
+        callNext(AcademicYearHomeScreen(academicYearId: id,
+          yearName: data['year_name'],), context);
       },
       child: Container(
         padding: const EdgeInsets.all(20),
