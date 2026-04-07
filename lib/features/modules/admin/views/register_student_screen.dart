@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/providers/academic_provider.dart';
+import 'package:provider/provider.dart';
 
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
@@ -212,15 +214,27 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }
 
   /// ================= SAVE =================
-  void _saveStudent() {
+  void _saveStudent() async {
     if (nameController.text.isEmpty ||
         admissionController.text.isEmpty ||
         selectedClass == null) return;
 
-    /// 👉 call provider here
-    print("Student Saved");
-  }
+    await context.read<AcademicProvider>().addStudent(
+      name: nameController.text.trim(),
+      admissionId: admissionController.text.trim(),
+      studentClass: selectedClass!,
+      gender: selectedGender ?? "",
+      dob: dob,
+      phone: phoneController.text.trim(),
+      address: addressController.text.trim(),
+    );
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Student Added Successfully")),
+    );
+
+    Navigator.pop(context); // go back to list
+  }
   /// ================= WIDGETS =================
 
   Widget _textField({
