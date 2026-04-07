@@ -42,13 +42,11 @@ class AdminHome extends StatelessWidget {
     switch (index) {
       case 1:
         return StaffManagementPage(userName: userName, userId: userid);
-      case 2:
-        return const Center(child: Text("Academic Setup Screen"));
       case 3:
         return const Center(child: Text("Gallery Screen"));
-      case 4:
+      case 2:
         return const AcademicYearScreen();
-      case 5:
+      case 4:
         return StudentListScreen();
       default:
         return _buildDashboardGrid(context);
@@ -79,10 +77,11 @@ class AdminHome extends StatelessWidget {
                     childAspectRatio: 2.0, // Matches your desired card proportion
                   ),
                   children: [
-                    _buildModuleCard(context, 0, "Staff Management", "Manage Teachers & Roles", Icons.badge_outlined, const Color(0xFF0F766E)),
-                    _buildModuleCard(context, 1, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.orange),
+                    _buildModuleCard(context, 1, "Staff Management", "Manage Teachers & Roles", Icons.badge_outlined, const Color(0xFF0F766E)),
                     _buildModuleCard(context, 2, "Academic Year", "Manage Academic Years", Icons.calendar_today_outlined, Colors.purple),
-                    _buildModuleCard(context, 3, "Student Management", "Manage Students Data", Icons.school_outlined, Colors.teal),
+                    _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.orange),
+
+                    _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, Colors.teal),
                   ],
                 ),
               ],
