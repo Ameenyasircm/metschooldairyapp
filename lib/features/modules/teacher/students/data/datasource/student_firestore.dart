@@ -38,7 +38,6 @@ class StudentFirestore {
     try {
       final academicId = await currentAcademicYearId();
       if (academicId == null) return null;
-
       final query = await _db
           .collection('divisions')
           .where('class_teacher_id', isEqualTo: teacherId)

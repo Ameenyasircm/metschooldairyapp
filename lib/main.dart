@@ -16,6 +16,7 @@ import 'features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
 import 'features/modules/teacher/students/data/datasource/student_firestore.dart';
 import 'features/modules/teacher/students/data/repository/student_repository.dart';
 import 'features/modules/teacher/students/presentation/provider/student_provider.dart';
+import 'features/modules/teacher/attendance/presentation/provider/attendance_provider.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 void main() async {
@@ -36,6 +37,11 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => StudentProvider(
             StudentRepository(StudentFirestore()),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AttendanceProvider(
+            context.read<StudentProvider>().repository,
           ),
         ),
       ],

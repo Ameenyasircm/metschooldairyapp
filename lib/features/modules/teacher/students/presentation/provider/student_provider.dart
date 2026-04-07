@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/service/firebase_service.dart';
+import '../../data/models/tech_division_model.dart';
 import '../../data/models/tech_student_model.dart';
 import '../../data/repository/student_repository.dart';
 
@@ -30,6 +31,9 @@ class StudentProvider extends ChangeNotifier {
 
   bool isAddingStudents = false;
   Set<String> selectedStudentIds = {};
+
+  DivisionModel? _assignedDivision;
+  DivisionModel? get assignedDivision => _assignedDivision;
 
   Timer? _debounce;
 
@@ -124,12 +128,12 @@ class StudentProvider extends ChangeNotifier {
   Future<void> _fetchMyStudentsPage() async {
     final prefs = await SharedPreferences.getInstance();
     final staffId = prefs.getString("staffId");
-    final division = await repository.getTeacherClassDivision(teacherId: staffId ?? '');
+    _assignedDivision = await repository.getTeacherClassDivision(teacherId: staffId ?? '');
 
     final result = await repository.getStudents(
       lastDoc: myLastDoc,
       isMyStudents: true,
-      divisionId: division?.id,
+      divisionId: _assignedDivision?.id,
     );
 
     if (result.docs.isEmpty) {
