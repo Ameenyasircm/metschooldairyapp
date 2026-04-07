@@ -67,46 +67,101 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                         if (prov.selectedRole == "teacher") ...[
                           _gridItem("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
                           // --- SUBJECTS BLOCK ---
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.38,
-                            height: 180,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF9FAFB),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: prov.selectedSubjects.isEmpty && prov.selectedRole == 'teacher' ? Colors.red.shade200 : Colors.grey.shade200),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              // Limits the width so it doesn't span the whole page on ultra-wide screens
+                              maxWidth: MediaQuery.of(context).size.width * 0.45,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Select  Subjects", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                const SizedBox(height: 8),
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    child: Wrap(
-                                      spacing: 6,
-                                      runSpacing: 6,
-                                      children: prov.subjectsList.map((subject) {
-                                        final isSelected = prov.selectedSubjects.contains(subject);
-                                        return FilterChip(
-                                          visualDensity: VisualDensity.compact,
-                                          label: Text(subject, style: const TextStyle(fontSize: 11)),
-                                          selected: isSelected,
-                                          onSelected: (val) {
-                                            val ? prov.selectedSubjects.add(subject) : prov.selectedSubjects.remove(subject);
-                                            prov.notifyListeners();
-                                          },
-                                          selectedColor: AppColors.primary.withOpacity(0.1),
-                                          checkmarkColor: AppColors.primary,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: prov.selectedSubjects.isEmpty && prov.selectedRole == 'teacher'
+                                      ? Colors.red.shade300
+                                      : const Color(0xFFE2E8F0),
+                                  width: 1.5,
                                 ),
-                              ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min, // 🔥 Crucial: Makes the height fit the content
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min, // 🔥 Keeps header tight
+                                    children: [
+                                      const Text(
+                                        "Teaching Subjects",
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF0F766E).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          "${prov.selectedSubjects.length}",
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  /// 🔥 No Expanded/Scrollview here so the Container can grow/shrink
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: prov.subjectsList.map((subject) {
+                                      final isSelected = prov.selectedSubjects.contains(subject);
+                                      return InkWell(
+                                        onTap: () {
+                                          isSelected ? prov.selectedSubjects.remove(subject) : prov.selectedSubjects.add(subject);
+                                          prov.notifyListeners();
+                                        },
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 150),
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? const Color(0xFF0F766E) : const Color(0xFFF1F5F9),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                subject,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                                  color: isSelected ? Colors.white : const Color(0xFF475569),
+                                                ),
+                                              ),
+                                              if (isSelected) ...[
+                                                const SizedBox(width: 4),
+                                                const Icon(Icons.close, size: 12, color: Colors.white),
+                                              ]
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          )
                         ],
 
                         _gridItem("Residential Address", _field(prov.addressCtrl, "Full street address...", Icons.map_outlined), isWide: true),

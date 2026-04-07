@@ -80,7 +80,7 @@ class AcademicYearHomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClassesScreen(
-                            academicYearId: academicYearId,
+                            academicYearId: academicYearId, academicYear: yearName,
                           ),
                         ),
                       );

@@ -10,7 +10,7 @@ class AdminProvider with ChangeNotifier {
 
   AdminProvider() {
     fetchSubjects();
-    fetchClasses(); // Logic to load Kerala school classes
+    fetchClasses();
   }
 
   int _currentIndex = 0;
@@ -22,12 +22,11 @@ class AdminProvider with ChangeNotifier {
   }
 
   // ================= NEW STATE VARIABLES =================
-  String? selectedRole;         // admin | staff | teacher
+  String? selectedRole;
   String? selectedGender;
-  String? selectedCategory;// Male | Female | Other
-  String? selectedDesignation;  // teacher | class teacher
-
-  String? selectedQual;         // Qualification Dropdown (B.Ed, M.Ed, etc.)
+  String? selectedCategory;
+  String? selectedDesignation;
+  String? selectedQual;
 
   List<String> subjectsList = [];
   List<String> selectedSubjects = [];
@@ -36,17 +35,20 @@ class AdminProvider with ChangeNotifier {
   String status = "active";
   bool isLoading = false;
 
-  // ================= EXISTING & NEW CONTROLLERS =================
-  final nameCtrl = TextEditingController();      // First Name
+  // ================= DIVISIONS STATE =================
+  List<DocumentSnapshot> _divisionsList = [];
+  List<DocumentSnapshot> get divisionsList => _divisionsList;
+
+  // ================= CONTROLLERS =================
+  final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
   final usernameCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
-
   final empIdCtrl = TextEditingController();
-  final qualCtrl = TextEditingController();      // Kept for custom input if needed
+  final qualCtrl = TextEditingController();
   final expCtrl = TextEditingController();
-  final subjectCtrl = TextEditingController();   // Existing
+  final subjectCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
 
   // ================= DATA FETCHING =================
@@ -62,12 +64,69 @@ class AdminProvider with ChangeNotifier {
   }
 
   Future<void> fetchClasses() async {
-    // Standard Kerala Classes 1 to 12
     classList = List.generate(12, (index) => "${index + 1}");
     notifyListeners();
   }
 
-  // ================= UPDATED SAVE LOGIC =================
+  // ================= DIVISIONS LOGIC (NEW) =================
+
+  /// 🔹 Fetch Divisions for a specific Class & Academic Year
+  Future<void> fetchDivisions(String classId, String academicYearId) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      final snapshot = await fireStore
+          .collection('divisions')
+          .where('academic_year_id', isEqualTo: academicYearId)
+          .where('class_id', isEqualTo: classId)
+          .get();
+
+      _divisionsList = snapshot.docs;
+    } catch (e) {
+      debugPrint("Error fetching divisions: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 🔹 Add a New Division to Firestore
+  Future<void> addDivision({
+    required String academicYearId,
+    required String classId,
+    required String className,
+    required String divisionName,
+    required String classTeacherId,
+    required Map<String, String> subjectTeachers,
+  }) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      DocumentReference docRef = fireStore.collection('divisions').doc();
+
+      await docRef.set({
+        'division_id': docRef.id,
+        'academic_year_id': academicYearId,
+        'class_id': classId,
+        'class': className,
+        'division_name': divisionName,
+        'class_teacher_id': classTeacherId,
+        'subject_teachers': subjectTeachers,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+      // Refresh list
+      await fetchDivisions(classId, academicYearId);
+    } catch (e) {
+      debugPrint("Error adding division: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ================= STAFF SAVE LOGIC =================
 
   Future<void> saveStaffFull({
     String? docId,
@@ -85,8 +144,6 @@ class AdminProvider with ChangeNotifier {
 
       final userRef = fireStore.collection('users').doc(targetId);
       final profileRef = fireStore.collection('staff_profiles').doc(targetId);
-
-      // 🛡️ Log Reference
       final logRef = fireStore.collection('activity_logs').doc();
 
       final userData = {
@@ -128,11 +185,9 @@ class AdminProvider with ChangeNotifier {
         },
       };
 
-      // 🔹 Apply Data Changes
       batch.set(userRef, userData, SetOptions(merge: true));
       batch.set(profileRef, profileData, SetOptions(merge: true));
 
-      // 📝 🔹 ADD LOG ENTRY
       batch.set(logRef, {
         "action": isEditing ? "EDIT_STAFF" : "ADD_STAFF",
         "module": "STAFF_MANAGEMENT",
@@ -158,8 +213,6 @@ class AdminProvider with ChangeNotifier {
     }
   }
 
-  // ================= EXISTING LOGIC (PRESERVED) =================
-
   void clearStaffForm() {
     nameCtrl.clear();
     phoneCtrl.clear();
@@ -176,7 +229,6 @@ class AdminProvider with ChangeNotifier {
     selectedCategory = null;
     selectedGender = null;
     selectedDesignation = null;
-
     selectedQual = null;
     selectedSubjects.clear();
     joiningDate = null;
@@ -190,29 +242,22 @@ class AdminProvider with ChangeNotifier {
 
   Future<void> removeStaff({
     required String docId,
-
     required String adminId,
     required String adminName
   }) async {
     try {
       final batch = fireStore.batch();
-
-      // 1. References to delete
       final userRef = fireStore.collection('users').doc(docId);
       final profileRef = fireStore.collection('staff_profiles').doc(docId);
-
-      // 2. Reference for the log
       final logRef = fireStore.collection('activity_logs').doc();
 
       batch.delete(userRef);
       batch.delete(profileRef);
 
-      // 📝 3. Log the Deletion
       batch.set(logRef, {
         "action": "DELETE_STAFF",
         "module": "STAFF_MANAGEMENT",
         "targetId": docId,
-
         "doneBy": adminName,
         "doneById": adminId,
         "timestamp": FieldValue.serverTimestamp(),
@@ -226,7 +271,7 @@ class AdminProvider with ChangeNotifier {
     }
   }
 
-  // --- ACADEMIC YEAR LOGIC (UNTOUCHED) ---
+  // --- ACADEMIC YEAR LOGIC ---
   List<QueryDocumentSnapshot> academicYears = [];
 
   Future<void> fetchAcademicYears() async {
@@ -251,25 +296,22 @@ class AdminProvider with ChangeNotifier {
     required DateTime endDate,
   }) async {
     try {
-      final String docId =
-      DateTime.now().millisecondsSinceEpoch.toString();
+      final String docId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      await fireStore
-          .collection("academic_years")
-          .doc(docId)
-          .set({
-        "id": docId, // optional but useful
+      await fireStore.collection("academic_years").doc(docId).set({
+        "id": docId,
         "year_name": yearName,
         "is_current": false,
         "start_date": startDate,
         "end_date": endDate,
-        "created_at": Timestamp.now(), // good practice
+        "created_at": Timestamp.now(),
       });
       await fetchAcademicYears();
     } catch (e) {
       debugPrint("Error adding year: $e");
     }
   }
+
   Future<void> setCurrentYear(String docId) async {
     try {
       final snapshot = await fireStore.collection("academic_years").get();
@@ -283,28 +325,25 @@ class AdminProvider with ChangeNotifier {
     }
   }
 
+  // --- STUDENT LOGIC ---
   List<DocumentSnapshot> studentsList = [];
   bool isStudentLoading = false;
 
   Future<void> fetchStudents() async {
     isStudentLoading = true;
     notifyListeners();
-
     try {
-      final snapshot =
-      await FirebaseFirestore.instance.collection('students').get();
-
+      final snapshot = await fireStore.collection('students').get();
       studentsList = snapshot.docs;
     } catch (e) {
       debugPrint("Error fetching students: $e");
     }
-
     isStudentLoading = false;
     notifyListeners();
   }
 
   Future<void> addStudent(Map<String, dynamic> data) async {
-    await FirebaseFirestore.instance.collection('students').add(data);
+    await fireStore.collection('students').add(data);
     fetchStudents();
   }
 }
