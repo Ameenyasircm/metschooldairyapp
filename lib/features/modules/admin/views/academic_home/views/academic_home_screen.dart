@@ -39,7 +39,7 @@ class AcademicYearHomeScreen extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {
-                    context.read<AdminProvider>().setIndex(0);
+                    Navigator.pop(context);
                   },
                   icon: const Icon(Icons.arrow_back,
                       color: Colors.white),
