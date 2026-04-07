@@ -160,7 +160,7 @@ class _LoginFormState extends State<_LoginForm> {
             const Text("PASSWORD"),
             TextButton(
               onPressed: () {},
-              child:Text("Forgot Password?",style: AppTypography.caption,),
+              child:Text("Forgot Password?"),
             )
           ],
         ),
