@@ -84,7 +84,7 @@ class AdminHome extends StatelessWidget {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 25,
                     mainAxisSpacing: 25,
-                    childAspectRatio: 1.3,
+                    childAspectRatio:2,
                     children: [
                       _buildModuleCard(
                         context,
