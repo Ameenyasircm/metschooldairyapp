@@ -38,8 +38,8 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final adminSnapshot = await fireStore
-          .collection("admins")
-          .where("phone_number", isEqualTo: phoneNumber)
+          .collection("users")
+          .where("phone", isEqualTo: phoneNumber)
           .limit(1)
           .get();
 
@@ -48,7 +48,7 @@ class AuthProvider with ChangeNotifier {
 
         String dbPassword = adminData['password'] ?? "";
         String adminName = adminData['name'] ?? "";
-        String adminPhone = adminData['phone_number'] ?? "";
+        String adminPhone = adminData['phone'] ?? "";
 
         if (dbPassword == password) {
 
