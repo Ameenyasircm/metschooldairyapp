@@ -20,8 +20,8 @@ class TeacherHomeViewModel extends ChangeNotifier {
 
   List<QuickAction> get quickActions => [
         QuickAction(
-          title: 'Add Students',
-          icon: Icons.person_add_alt_1_outlined,
+          title: 'My Students',
+          icon: Icons.people_outline_rounded,
           color: AppColors.mint,
           onTap: () {
             debugPrint("Tapped Add Students");

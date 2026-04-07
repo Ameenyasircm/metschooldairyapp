@@ -153,6 +153,201 @@ class AuthProvider with ChangeNotifier {
   }
 
 
+  Future<void> uploadStudents() async {
+    final firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    final List<Map<String, String>> students =[
+      {
+        "student_id": "STU001",
+        "name": "Aarav Nair",
+        "parent_phone": "9876543210",
+        "dob": "12/03/2010",
+        "blood_group": "O+",
+        "address": "Kowdiar, Thiruvananthapuram",
+        "admission_number": "ADM1001"
+      },
+      {
+        "student_id": "STU002",
+        "name": "Diya Menon",
+        "parent_phone": "9876543211",
+        "dob": "25/07/2011",
+        "blood_group": "A+",
+        "address": "Kazhakootam, Thiruvananthapuram",
+        "admission_number": "ADM1002"
+      },
+      {
+        "student_id": "STU003",
+        "name": "Muhammed Rihan",
+        "parent_phone": "9876543212",
+        "dob": "05/01/2010",
+        "blood_group": "B+",
+        "address": "Pattom, Thiruvananthapuram",
+        "admission_number": "ADM1003"
+      },
+      {
+        "student_id": "STU004",
+        "name": "Ananya Pillai",
+        "parent_phone": "9876543213",
+        "dob": "18/09/2012",
+        "blood_group": "AB+",
+        "address": "Vazhuthacaud, Thiruvananthapuram",
+        "admission_number": "ADM1004"
+      },
+      {
+        "student_id": "STU005",
+        "name": "Arjun Kumar",
+        "parent_phone": "9876543214",
+        "dob": "30/11/2011",
+        "blood_group": "O-",
+        "address": "Nemom, Thiruvananthapuram",
+        "admission_number": "ADM1005"
+      },
+      {
+        "student_id": "STU006",
+        "name": "Fathima Zahra",
+        "parent_phone": "9876543215",
+        "dob": "14/06/2010",
+        "blood_group": "A-",
+        "address": "Karamana, Thiruvananthapuram",
+        "admission_number": "ADM1006"
+      },
+      {
+        "student_id": "STU007",
+        "name": "Nikhil Raj",
+        "parent_phone": "9876543216",
+        "dob": "09/02/2012",
+        "blood_group": "B-",
+        "address": "Peroorkada, Thiruvananthapuram",
+        "admission_number": "ADM1007"
+      },
+      {
+        "student_id": "STU008",
+        "name": "Aisha Noor",
+        "parent_phone": "9876543217",
+        "dob": "22/08/2011",
+        "blood_group": "O+",
+        "address": "Attingal, Thiruvananthapuram",
+        "admission_number": "ADM1008"
+      },
+      {
+        "student_id": "STU009",
+        "name": "Rahul Das",
+        "parent_phone": "9876543218",
+        "dob": "03/05/2010",
+        "blood_group": "A+",
+        "address": "Varkala, Thiruvananthapuram",
+        "admission_number": "ADM1009"
+      },
+      {
+        "student_id": "STU010",
+        "name": "Sneha Suresh",
+        "parent_phone": "9876543219",
+        "dob": "17/12/2012",
+        "blood_group": "B+",
+        "address": "Kilimanoor, Thiruvananthapuram",
+        "admission_number": "ADM1010"
+      },
+      {
+        "student_id": "STU011",
+        "name": "Aditya Krishnan",
+        "parent_phone": "9876543220",
+        "dob": "11/04/2011",
+        "blood_group": "AB+",
+        "address": "Neyyattinkara, Thiruvananthapuram",
+        "admission_number": "ADM1011"
+      },
+      {
+        "student_id": "STU012",
+        "name": "Hiba Rahman",
+        "parent_phone": "9876543221",
+        "dob": "27/10/2010",
+        "blood_group": "O-",
+        "address": "Balaramapuram, Thiruvananthapuram",
+        "admission_number": "ADM1012"
+      },
+      {
+        "student_id": "STU013",
+        "name": "Vishnu Prasad",
+        "parent_phone": "9876543222",
+        "dob": "06/01/2012",
+        "blood_group": "A-",
+        "address": "Chalai, Thiruvananthapuram",
+        "admission_number": "ADM1013"
+      },
+      {
+        "student_id": "STU014",
+        "name": "Meera Nair",
+        "parent_phone": "9876543223",
+        "dob": "19/03/2011",
+        "blood_group": "B-",
+        "address": "Fort, Thiruvananthapuram",
+        "admission_number": "ADM1014"
+      },
+      {
+        "student_id": "STU015",
+        "name": "Shamil Basheer",
+        "parent_phone": "9876543224",
+        "dob": "08/07/2010",
+        "blood_group": "O+",
+        "address": "Pothencode, Thiruvananthapuram",
+        "admission_number": "ADM1015"
+      },
+      {
+        "student_id": "STU016",
+        "name": "Lakshmi Devi",
+        "parent_phone": "9876543225",
+        "dob": "29/09/2012",
+        "blood_group": "A+",
+        "address": "Ulloor, Thiruvananthapuram",
+        "admission_number": "ADM1016"
+      },
+      {
+        "student_id": "STU017",
+        "name": "Farhan Ali",
+        "parent_phone": "9876543226",
+        "dob": "16/02/2011",
+        "blood_group": "B+",
+        "address": "Sreekariyam, Thiruvananthapuram",
+        "admission_number": "ADM1017"
+      },
+      {
+        "student_id": "STU018",
+        "name": "Gayathri Menon",
+        "parent_phone": "9876543227",
+        "dob": "21/11/2010",
+        "blood_group": "AB+",
+        "address": "Kaniyapuram, Thiruvananthapuram",
+        "admission_number": "ADM1018"
+      },
+      {
+        "student_id": "STU019",
+        "name": "Sidharth Mohan",
+        "parent_phone": "9876543228",
+        "dob": "04/06/2012",
+        "blood_group": "O-",
+        "address": "Pappanamcode, Thiruvananthapuram",
+        "admission_number": "ADM1019"
+      },
+      {
+        "student_id": "STU020",
+        "name": "Nida Fathima",
+        "parent_phone": "9876543229",
+        "dob": "13/08/2011",
+        "blood_group": "A+",
+        "address": "Thampanoor, Thiruvananthapuram",
+        "admission_number": "ADM1020"
+      }
+    ];
+    for (var student in students) {
+      final docRef = firestore
+          .collection('students')
+          .doc(student['student_id']);
+
+      batch.set(docRef, student);
+    }
+
+    await batch.commit();
+  }
   Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
 
