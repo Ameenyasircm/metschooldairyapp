@@ -46,8 +46,6 @@ class AcademicProvider extends ChangeNotifier{
   }
 
 
-  List<DocumentSnapshot> studentsList = [];
-  bool isStudentLoading = false;
 
   /// ================= ADD STUDENT =================
   Future<void> addStudent({
@@ -80,7 +78,27 @@ class AcademicProvider extends ChangeNotifier{
     }
   }
 
-  /// ================= FETCH STUDENTS =================
+
+  /// OPTIONAL (for your navigation)
+  int selectedIndex = 0;
+
+  void setIndex(int index) {
+    selectedIndex = index;
+    notifyListeners();
+  }
+
+
+  List<DocumentSnapshot> studentsList = [];
+
+  bool isStudentLoading = false;
+  bool isMoreLoading = false;
+
+  DocumentSnapshot? lastDocument;
+  bool hasMoreData = true;
+
+  final int limit = 15;
+
+  /// ================= INITIAL FETCH =================
   Future<void> fetchStudents() async {
     try {
       isStudentLoading = true;
@@ -89,25 +107,55 @@ class AcademicProvider extends ChangeNotifier{
       final snapshot = await db
           .collection("students")
           .orderBy("createdAt", descending: true)
+          .limit(limit)
           .get();
 
       studentsList = snapshot.docs;
 
+      if (snapshot.docs.isNotEmpty) {
+        lastDocument = snapshot.docs.last;
+      }
+
+      hasMoreData = snapshot.docs.length == limit;
+
       isStudentLoading = false;
       notifyListeners();
     } catch (e) {
-      debugPrint("Error fetching students: $e");
+      debugPrint("Error: $e");
       isStudentLoading = false;
       notifyListeners();
     }
   }
 
-  /// OPTIONAL (for your navigation)
-  int selectedIndex = 0;
+  /// ================= LOAD MORE =================
+  Future<void> fetchMoreStudents() async {
+    if (!hasMoreData || isMoreLoading || lastDocument == null) return;
 
-  void setIndex(int index) {
-    selectedIndex = index;
-    notifyListeners();
+    try {
+      isMoreLoading = true;
+      notifyListeners();
+
+      final snapshot = await db
+          .collection("students")
+          .orderBy("createdAt", descending: true)
+          .startAfterDocument(lastDocument!)
+          .limit(limit)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        studentsList.addAll(snapshot.docs);
+        lastDocument = snapshot.docs.last;
+      }
+
+      hasMoreData = snapshot.docs.length == limit;
+
+      isMoreLoading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Pagination Error: $e");
+      isMoreLoading = false;
+      notifyListeners();
+    }
   }
 
 

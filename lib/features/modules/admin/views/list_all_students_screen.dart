@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/features/modules/admin/views/register_student_screen.dart';
+import 'package:met_school/providers/academic_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../providers/admin_provider.dart';
@@ -17,20 +18,33 @@ class _StudentListScreenState extends State<StudentListScreen> {
   final TextEditingController searchController =
   TextEditingController();
 
+  final ScrollController _scrollController = ScrollController();
+
   List<DocumentSnapshot> filteredList = [];
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      final provider = context.read<AdminProvider>();
-      provider.fetchStudents().then((_) {
-        filteredList = provider.studentsList;
-        setState(() {});
-      });
+
+    final provider = context.read<AcademicProvider>();
+
+    /// INITIAL FETCH
+    Future.microtask(() async {
+      await provider.fetchStudents();
+      filteredList = provider.studentsList;
+      setState(() {});
+    });
+
+    /// SCROLL LISTENER (PAGINATION)
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        provider.fetchMoreStudents();
+      }
     });
   }
 
+  /// ================= SEARCH =================
   void _search(String value, List<DocumentSnapshot> list) {
     final query = value.toLowerCase();
 
@@ -47,7 +61,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+    final provider = context.watch<AcademicProvider>();
 
     final students = searchController.text.isEmpty
         ? provider.studentsList
@@ -72,9 +86,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    context.read<AdminProvider>().setIndex(0); // 🔥 FIX
+                    context.read<AdminProvider>().setIndex(0);
                   },
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back,
+                      color: Colors.white),
                 ),
                 const Text(
                   "Students",
@@ -149,21 +164,34 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
                   const SizedBox(height: 10),
 
-                  /// LIST
+                  /// LIST WITH PAGINATION
                   Expanded(
                     child: provider.isStudentLoading
                         ? const Center(
-                        child:
-                        CircularProgressIndicator())
+                        child: CircularProgressIndicator())
                         : students.isEmpty
                         ? const Center(
                         child: Text("No Students Found"))
                         : ListView.builder(
-                      itemCount: students.length,
+                      controller: _scrollController,
+                      itemCount: students.length + 1,
                       itemBuilder: (context, index) {
+
+                        /// 🔥 BOTTOM LOADER
+                        if (index == students.length) {
+                          return provider.isMoreLoading
+                              ? const Padding(
+                            padding: EdgeInsets.all(15),
+                            child: Center(
+                                child:
+                                CircularProgressIndicator()),
+                          )
+                              : const SizedBox();
+                        }
+
                         final doc = students[index];
-                        final data = doc.data()
-                        as Map<String, dynamic>;
+                        final data =
+                        doc.data() as Map<String, dynamic>;
 
                         return _studentRow(data);
                       },
@@ -201,9 +229,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
   /// ================= STUDENT ROW =================
   Widget _studentRow(Map<String, dynamic> data) {
     return InkWell(
-      onTap: () {
-        /// 👉 future: student details screen
-      },
+      onTap: () {},
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(
