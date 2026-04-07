@@ -6,6 +6,7 @@ import 'package:met_school/features/modules/teacher/home/presentation/widgets/qu
 import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
 import '../../../students/presentation/screens/my_students_screen.dart';
 import '../../viewmodels/teacher_home_viewmodel.dart';
@@ -24,7 +25,7 @@ Widget buildQuickActions(BuildContext context) {
           childAspectRatio: 1.4,
         ),
         itemCount: actions.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (context65, index) {
           return InkWell(
               onTap: (){
                 switch(index){
@@ -37,6 +38,8 @@ Widget buildQuickActions(BuildContext context) {
                   case 1:
                     break;
                   case 2:
+
+                    NavigationService.push(context, const AttendanceScreen());
                     break;
                   default:
                     break;
