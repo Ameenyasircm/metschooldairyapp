@@ -320,6 +320,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
     final prov = context.read<AdminProvider>();
     prov.clearStaffForm();
 
+    // 1. Text Controllers
     prov.nameCtrl.text = staff['name'] ?? "";
     prov.phoneCtrl.text = staff['phone'] ?? "";
     prov.aadharCtrl.text = staff['aadhar'] ?? "";
@@ -328,26 +329,44 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
     prov.addressCtrl.text = staff['address'] ?? "";
     prov.expCtrl.text = staff['total_experience']?.toString() ?? "";
 
+    // 2. Dropdown Selections
     prov.selectedRole = staff['role'];
     prov.selectedGender = staff['gender'];
     prov.selectedQual = staff['qualification'];
     prov.selectedDesignation = staff['designation'];
 
+    // 3. Subjects (CORRECTED: Changed 'doc' to 'staff')
     if (staff['subjects'] != null) {
-      prov.selectedSubjects = List<String>.from(staff['subjects']);
+      prov.selectedSubjects = List<Map<String, dynamic>>.from(staff['subjects']);
+    } else {
+      prov.selectedSubjects = [];
     }
 
+    // 4. Dates (Improved timestamp handling)
     if (staff['dob'] != null) {
-      prov.dob = (staff['dob'] is Timestamp) ? (staff['dob'] as Timestamp).toDate() : DateTime.tryParse(staff['dob'].toString());
+      prov.dob = (staff['dob'] is Timestamp)
+          ? (staff['dob'] as Timestamp).toDate()
+          : DateTime.tryParse(staff['dob'].toString());
     }
 
     if (staff['joining_date'] != null) {
-      prov.joiningDate = (staff['joining_date'] is Timestamp) ? (staff['joining_date'] as Timestamp).toDate() : DateTime.tryParse(staff['joining_date'].toString());
+      prov.joiningDate = (staff['joining_date'] is Timestamp)
+          ? (staff['joining_date'] as Timestamp).toDate()
+          : DateTime.tryParse(staff['joining_date'].toString());
     }
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => AddStaffScreen(userId: widget.userId, userName: widget.userName, docId: docId)));
+    // 5. Navigate
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddStaffScreen(
+          userId: widget.userId,
+          userName: widget.userName,
+          docId: docId,
+        ),
+      ),
+    );
   }
-
   void _handleDelete(BuildContext context, String id, String? name) {
     showDialog(
       context: context,

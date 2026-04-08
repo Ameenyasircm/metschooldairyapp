@@ -28,8 +28,9 @@ class AdminProvider with ChangeNotifier {
   String? selectedDesignation;
   String? selectedQual;
 
-  List<String> subjectsList = [];
-  List<String> selectedSubjects = [];
+  List<Map<String, dynamic>> subjectsList = []; // Stores {id, name}
+  List<Map<String, dynamic>> selectedSubjects = [];
+  List<Map<String, dynamic>> allTeachers = [];
   List<String> classList = [];
   DateTime? joiningDate;
   String status = "active";
@@ -57,7 +58,11 @@ class AdminProvider with ChangeNotifier {
   Future<void> fetchSubjects() async {
     try {
       final snapshot = await fireStore.collection('subjects').get();
-      subjectsList = snapshot.docs.map((e) => e['name'].toString()).toList();
+      // Store both ID and Name
+      subjectsList = snapshot.docs.map((doc) => {
+        "id": doc.id,
+        "name": doc['name'].toString(),
+      }).toList();
       notifyListeners();
     } catch (e) {
       debugPrint("Error fetching subjects: $e");
@@ -98,35 +103,79 @@ class AdminProvider with ChangeNotifier {
     required String className,
     required String divisionName,
     required String classTeacherId,
-    required Map<String, String> subjectTeachers,
+    required String classTeacherName,
+    required String adminId,
+    required String adminName,
+    Map<String, String> subjectTeachers = const {}, // Added back
   }) async {
     try {
       isLoading = true;
       notifyListeners();
 
-      DocumentReference docRef = fireStore.collection('divisions').doc();
+      final batch = fireStore.batch();
 
-      await docRef.set({
-        'division_id': docRef.id,
+      // 1. References
+      DocumentReference divRef = fireStore.collection('divisions').doc();
+      DocumentReference teacherRef = fireStore.collection('staff_profiles').doc(classTeacherId);
+      DocumentReference logRef = fireStore.collection('activity_logs').doc();
+
+      // --- DATA OBJECTS ---
+
+      final divisionData = {
+        'division_id': divRef.id,
         'academic_year_id': academicYearId,
         'class_id': classId,
-        'class': className,
+        'class_name': className,
         'division_name': divisionName,
         'class_teacher_id': classTeacherId,
-        'subject_teachers': subjectTeachers,
+        'class_teacher_name': classTeacherName,
+        'subject_teachers': subjectTeachers, // Included
         'created_at': FieldValue.serverTimestamp(),
-      });
+        'assigned_by_id': adminId,
+        'assigned_by_name': adminName,
+      };
 
-      // Refresh list
+      final teacherUpdateData = {
+        // Use a flattened structure for easy querying
+        'current_assignment': {
+          'class_id': classId,
+          'class_name': className,
+          'division_id': divRef.id,
+          'division_name': divisionName,
+        },
+        'is_class_teacher': true,
+        'last_assignment_date': FieldValue.serverTimestamp(),
+      };
+
+      final logData = {
+        'action': 'ASSIGN_CLASS_TEACHER',
+        'description': '$adminName assigned $classTeacherName to $className - $divisionName',
+        'target_id': classTeacherId,
+        'target_name': classTeacherName,
+        'done_by_id': adminId,
+        'done_by_name': adminName,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+
+      // --- EXECUTE BATCH ---
+      batch.set(divRef, divisionData);
+      batch.update(teacherRef, teacherUpdateData);
+      batch.set(logRef, logData);
+
+      await batch.commit();
+
+      // Refresh UI list
       await fetchDivisions(classId, academicYearId);
+
     } catch (e) {
-      debugPrint("Error adding division: $e");
+      debugPrint("❌ Error in assignment batch: $e");
+      // Optionally: show a Toast or SnackBar here to inform the user
+      rethrow;
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
-
   // ================= STAFF SAVE LOGIC =================
 
   Future<void> saveStaffFull({
@@ -151,7 +200,6 @@ class AdminProvider with ChangeNotifier {
         "uid": targetId,
         "name": nameCtrl.text.trim(),
         "phone": phoneCtrl.text.trim(),
-        "username": usernameCtrl.text.trim().isNotEmpty ? usernameCtrl.text.trim() : phoneCtrl.text.trim(),
         "role": selectedRole,
         "password": passwordCtrl.text.trim(),
         "status": status,
@@ -182,7 +230,11 @@ class AdminProvider with ChangeNotifier {
         if (!isEditing) "createdAt": FieldValue.serverTimestamp(),
         if (selectedRole == 'teacher') ...{
           "designation": selectedDesignation,
-          "subjects": List<String>.from(selectedSubjects),
+          // Ensure this is being treated as a List of Maps
+          "subjects": selectedSubjects.map((e) => {
+            "id": e['id'],
+            "name": e['name'],
+          }).toList(),
         },
       };
 
@@ -229,7 +281,7 @@ class AdminProvider with ChangeNotifier {
     selectedGender = null;
     selectedDesignation = null;
     selectedQual = null;
-    selectedSubjects.clear();
+    selectedSubjects = [];
     joiningDate = null;
     aadharCtrl.clear();
     ageCtrl.clear();
@@ -360,6 +412,78 @@ class AdminProvider with ChangeNotifier {
       _divisionsList = snapshot.docs;
     } catch (e) {
       debugPrint(e.toString());
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAllTeachers() async {
+    try {
+      // Note: Ensure collection name 'staff_profiles' matches your DB
+      final snapshot = await FirebaseFirestore.instance
+          .collection('staff_profiles')
+          .where('role', isEqualTo: 'teacher')
+          .get();
+
+      allTeachers = snapshot.docs.map((doc) => {
+        "uid": doc.id,
+        "name": doc['name'] ?? 'Unknown',
+      }).toList();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching teachers: $e");
+    }
+  }
+
+  Future<void> deleteDivision({
+    required String divisionId,
+    required String classId,
+    required String academicYearId,
+    required String teacherId, // Added to clear teacher profile
+    required String adminId,
+    required String adminName,
+  }) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final batch = fireStore.batch();
+
+      // 1. Division Reference
+      DocumentReference divRef = fireStore.collection('divisions').doc(divisionId);
+
+      // 2. Teacher Reference
+      DocumentReference teacherRef = fireStore.collection('staff_profiles').doc(teacherId);
+
+      // 3. Log Reference
+      DocumentReference logRef = fireStore.collection('activity_logs').doc();
+
+      // --- EXECUTE BATCH ---
+      batch.delete(divRef);
+
+      // Reset teacher's assignment fields
+      batch.update(teacherRef, {
+        'current_assignment': FieldValue.delete(),
+        'is_class_teacher': false,
+      });
+
+      // Create Log
+      batch.set(logRef, {
+        'action': 'DELETE_DIVISION',
+        'description': '$adminName deleted a division. Teacher $teacherId unassigned.',
+        'done_by_id': adminId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      await batch.commit();
+
+      // Refresh the local list
+      await fetchDivisions(classId, academicYearId);
+
+    } catch (e) {
+      debugPrint("❌ Error deleting division: $e");
     } finally {
       isLoading = false;
       notifyListeners();

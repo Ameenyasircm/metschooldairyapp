@@ -9,7 +9,10 @@ import '../../../../providers/admin_provider.dart';
 import 'academic_home/views/academic_home_screen.dart';
 
 class AcademicYearScreen extends StatefulWidget {
-  const AcademicYearScreen({super.key});
+  final String userId;
+  final String userName;
+
+  const AcademicYearScreen({super.key, required this.userName,required this.userId});
 
   @override
   State<AcademicYearScreen> createState() => _AcademicYearScreenState();
@@ -118,7 +121,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: InkWell(
-        onTap: () => callNext(AcademicYearHomeScreen(academicYearId: id, yearName: data['year_name']), context),
+        onTap: () => callNext(AcademicYearHomeScreen(academicYearId: id, yearName: data['year_name'], userName: widget.userName, userId:  widget.userId,), context),
         borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

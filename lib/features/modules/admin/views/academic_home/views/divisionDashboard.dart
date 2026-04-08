@@ -6,6 +6,8 @@ class DivisionDashboard extends StatefulWidget {
   final String divisionName;
   final String className;
   final String academicYearId;
+  final String classTeacherName;
+  final String classTeacherId;
 
   const DivisionDashboard({
     super.key,
@@ -13,6 +15,8 @@ class DivisionDashboard extends StatefulWidget {
     required this.divisionName,
     required this.className,
     required this.academicYearId,
+    required this.classTeacherName,
+    required this.classTeacherId,
   });
 
   @override

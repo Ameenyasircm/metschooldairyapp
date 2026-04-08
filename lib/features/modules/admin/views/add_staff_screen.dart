@@ -229,16 +229,45 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     return Container(
       height: 220,
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE2E8F0))),
+      decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0))
+      ),
       child: SingleChildScrollView(
         child: Wrap(
-          spacing: 6, runSpacing: 0,
-          children: prov.subjectsList.map((s) {
-            final isSelected = prov.selectedSubjects.contains(s);
+          spacing: 6,
+          runSpacing: 0,
+          children: prov.subjectsList.map((subject) {
+            final String subId = subject['id'].toString();
+            final String subName = subject['name'].toString();
+
+            // CORRECTED: Check if the ID exists within the list of maps
+            final isSelected = prov.selectedSubjects.any((item) => item['id'] == subId);
+
             return FilterChip(
-              label: Text(s, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black87)),
+              label: Text(
+                  subName,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  )
+              ),
               selected: isSelected,
-              onSelected: (v) { v ? prov.selectedSubjects.add(s) : prov.selectedSubjects.remove(s); prov.notifyListeners(); },
+              onSelected: (selected) {
+                if (selected) {
+                  // Store both ID and Name for easy display later
+                  prov.selectedSubjects.add({
+                    "id": subId,
+                    "name": subName,
+                  });
+                } else {
+                  // Remove the specific map entry by ID
+                  prov.selectedSubjects.removeWhere((item) => item['id'] == subId);
+                }
+                prov.notifyListeners();
+              },
               selectedColor: primaryTeal,
               checkmarkColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),

@@ -8,11 +8,14 @@ import 'classes_screen.dart';
 class AcademicYearHomeScreen extends StatelessWidget {
   final String academicYearId;
   final String yearName;
+  final String userId;
+  final String userName;
 
   const AcademicYearHomeScreen({
     super.key,
     required this.academicYearId,
     required this.yearName,
+    required this.userName,required this.userId
   });
 
   @override
@@ -73,7 +76,7 @@ class AcademicYearHomeScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => ClassesScreen(
                             academicYearId: academicYearId,
-                            academicYear: yearName,
+                            academicYear: yearName, userName: userName, userId: userId,
                           ),
                         ),
                       );

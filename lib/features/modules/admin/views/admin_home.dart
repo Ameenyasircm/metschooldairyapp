@@ -43,9 +43,9 @@ class AdminHome extends StatelessWidget {
       case 1:
         return StaffManagementPage(userName: userName, userId: userid);
       case 3:
-        return const Center(child: Text("Gallery Screen"));
+        return  Center(child: Text("Gallery Screen"));
       case 2:
-        return const AcademicYearScreen();
+        return  AcademicYearScreen(userName: userName, userId:userid,);
       case 4:
         return StudentListScreen();
       default:
