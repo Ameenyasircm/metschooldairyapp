@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+// DivisionDashboard.dart
+
 import 'package:flutter/material.dart';
 
 class DivisionDashboard extends StatefulWidget {
@@ -23,96 +24,145 @@ class DivisionDashboard extends StatefulWidget {
   State<DivisionDashboard> createState() => _DivisionDashboardState();
 }
 
-class _DivisionDashboardState extends State<DivisionDashboard> {
+class _DivisionDashboardState extends State<DivisionDashboard> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4, // Overview, Students, Attendance, Teachers
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text("Class ${widget.className} - ${widget.divisionName}"),
-          foregroundColor: const Color(0xFF1E293B),
-          bottom: const TabBar(
-            isScrollable: true,
-            labelColor: Color(0xFF0F766E),
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Color(0xFF0F766E),
-            tabs: [
-              Tab(text: "Overview", icon: Icon(Icons.dashboard_outlined)),
-              Tab(text: "Students", icon: Icon(Icons.group_outlined)),
-              Tab(text: "Attendance", icon: Icon(Icons.calendar_today_outlined)),
-              Tab(text: "Teachers", icon: Icon(Icons.person_pin_outlined)),
-            ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F5F9), // Slate 100
+      appBar: AppBar(
+        toolbarHeight: 80,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Color(0xFF1E293B)),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: TabBarView(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _overviewTab(),
-            _studentsTab(),
-            _attendanceTab(),
-            _teachersTab(),
+            Text(
+              "Class ${widget.className} - Division ${widget.divisionName}",
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            ),
+            Text(
+              "Class Teacher: ${widget.classTeacherName}",
+              style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+            ),
           ],
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: const Color(0xFF0F766E),
+          unselectedLabelColor: const Color(0xFF94A3B8),
+          indicatorColor: const Color(0xFF0F766E),
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          tabs: const [
+            Tab(text: "Overview"),
+            Tab(text: "Students"),
+            Tab(text: "Attendance"),
+            Tab(text: "Teacher Info"),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _overviewTab(),
+          _studentsTab(),
+          _attendanceTab(),
+          _teachersTab(),
+        ],
       ),
     );
   }
 
   /// ================= OVERVIEW TAB =================
   Widget _overviewTab() {
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Division Summary", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _statCard("Total Students", "42", Icons.people, Colors.blue),
-              _statCard("Today's Attendance", "95%", Icons.done_all, Colors.green),
-              _statCard("Pending Fees", "5", Icons.account_balance_wallet, Colors.orange),
-            ],
-          ),
-        ],
-      ),
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        // Top Stats Row
+        Row(
+          children: [
+            _statCard("Students", "42", Icons.people_rounded, Colors.indigo),
+            const SizedBox(width: 16),
+            _statCard("Attendance", "95%", Icons.verified_user_rounded, Colors.teal),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            _statCard("Performance", "B+", Icons.auto_graph_rounded, Colors.amber.shade700),
+            const SizedBox(width: 16),
+            _statCard("Activities", "04", Icons.star_rounded, Colors.purple),
+          ],
+        ),
+        const SizedBox(height: 32),
+
+        // Quick Actions Section
+        const Text("Quick Management", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        _quickActionTile("Generate Progress Report", "Analyze class performance", Icons.analytics_outlined, Colors.blue),
+        _quickActionTile("Bulk Message Parents", "Send notification to all", Icons.message_outlined, Colors.green),
+        _quickActionTile("Schedule Class Test", "Manage upcoming assessments", Icons.event_note_outlined, Colors.orange),
+      ],
     );
   }
 
   /// ================= STUDENTS TAB =================
   Widget _studentsTab() {
     return Padding(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
+          const SizedBox(height: 24),
+          // Search & Add Header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Student List", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ElevatedButton.icon(
-                onPressed: () => _showAddStudentDialog(),
-                icon: const Icon(Icons.add),
-                label: const Text("Add Student"),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F766E)),
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search student...",
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F766E),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ],
           ),
           const SizedBox(height: 20),
+          // List
           Expanded(
-            child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListView.separated(
-                itemCount: 10, // Replace with dynamic data
-                separatorBuilder: (context, index) => const Divider(),
-                itemBuilder: (context, index) => ListTile(
-                  leading: const CircleAvatar(backgroundColor: Color(0xFFF1F5F9), child: Icon(Icons.person, color: Colors.grey)),
-                  title: Text("Student Name ${index + 1}"),
-                  subtitle: Text("Roll No: ${index + 101}"),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                ),
-              ),
+            child: ListView.builder(
+              itemCount: 15,
+              itemBuilder: (context, index) => _studentListItem(index),
             ),
           ),
         ],
@@ -120,65 +170,117 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     );
   }
 
-  /// ================= ATTENDANCE TAB =================
-  Widget _attendanceTab() {
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Daily Attendance", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ElevatedButton.icon(
-                onPressed: () {}, // Navigate to Mark Attendance Page
-                icon: const Icon(Icons.edit_calendar),
-                label: const Text("Mark Today's Attendance"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF0F766E)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Add a Calendar view or List of previous attendance logs here
-        ],
-      ),
+  /// ================= TEACHERS TAB =================
+  Widget _teachersTab() {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        _teacherProfileCard(widget.classTeacherName, "Class Teacher", true),
+        const SizedBox(height: 24),
+        const Text("Subject Teachers", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        _teacherProfileCard("Mr. John Doe", "Mathematics", false),
+        _teacherProfileCard("Ms. Sarah Smith", "Science", false),
+      ],
     );
   }
 
-  /// ================= TEACHERS TAB =================
-  Widget _teachersTab() {
-    return const Center(child: Text("Teacher Assignment details here"));
-  }
+  /// ================= COMPONENT WIDGETS =================
 
-  /// ================= HELPER WIDGETS =================
   Widget _statCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.only(right: 20),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(backgroundColor: color.withOpacity(0.1), child: Icon(icon, color: color)),
-            const SizedBox(width: 15),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              ],
-            )
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 16),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+            Text(title, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
     );
   }
 
-  void _showAddStudentDialog() {
-    // Implement your dialog here
+  Widget _quickActionTile(String title, String sub, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text(sub, style: const TextStyle(fontSize: 12)),
+        trailing: const Icon(Icons.chevron_right, size: 18),
+      ),
+    );
   }
+
+  Widget _studentListItem(int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: CircleAvatar(
+          backgroundColor: Colors.blueGrey.shade50,
+          child: Text("${index + 1}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        ),
+        title: Text("Student Name ${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: const Text("ID: #20240012", style: TextStyle(fontSize: 12)),
+        trailing: const Icon(Icons.more_vert, size: 20),
+      ),
+    );
+  }
+
+  Widget _teacherProfileCard(String name, String role, bool isClassTeacher) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isClassTeacher ? const Color(0xFF0F766E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 25,
+            backgroundColor: isClassTeacher ? Colors.white24 : const Color(0xFFF1F5F9),
+            child: Icon(Icons.person, color: isClassTeacher ? Colors.white : Colors.grey),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: isClassTeacher ? Colors.white : Colors.black)),
+              Text(role, style: TextStyle(fontSize: 12, color: isClassTeacher ? Colors.white70 : Colors.grey)),
+            ],
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.mail_outline, color: isClassTeacher ? Colors.white : Colors.grey),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _attendanceTab() => const Center(child: Text("Attendance Chart/Log Here"));
 }

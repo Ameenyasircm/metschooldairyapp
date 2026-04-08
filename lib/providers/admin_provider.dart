@@ -230,6 +230,7 @@ class AdminProvider with ChangeNotifier {
         if (!isEditing) "createdAt": FieldValue.serverTimestamp(),
         if (selectedRole == 'teacher') ...{
           "designation": selectedDesignation,
+          "is_class_teacher":false,
           // Ensure this is being treated as a List of Maps
           "subjects": selectedSubjects.map((e) => {
             "id": e['id'],
