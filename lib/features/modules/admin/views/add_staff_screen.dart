@@ -34,82 +34,102 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: _buildThemedAppBar(),
       bottomNavigationBar: _buildThemedFooter(prov),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// --- COLUMN 1: IDENTITY ---
-              Expanded(
-                flex: 3,
-                child: _buildPanel(
-                  title: "Identity",
-                  icon: Icons.person_pin_rounded,
-                  children: [
-                    _item("Full Name", _field(prov.nameCtrl, "Enter name", Icons.badge_outlined)),
-                    const SizedBox(height: 12),
-                    _item("Phone Number", _field(prov.phoneCtrl, "Contact Number", Icons.phone_android, isNumber: true)),
-                    const SizedBox(height: 12),
-                    _item("Date of Birth", _dobPicker(context, prov)),
-                    const SizedBox(height: 12),
-                    _item("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v)),
-                    const SizedBox(height: 12),
-                    _item("Address", _field(prov.addressCtrl, "Residential Address", Icons.map_outlined, maxLines: 2)),
-                  ],
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// --- COLUMN 1: IDENTITY ---
+                Expanded(
+                  flex: 3,
+                  child: _buildPanel(
+                    title: "Identity",
+                    icon: Icons.person_pin_rounded,
+                    children: [
+                      _item("Full Name", _field(prov.nameCtrl, "Enter name", Icons.badge_outlined)),
+                      const SizedBox(height: 12),
+                      _item("Phone Number", _field(prov.phoneCtrl, "Contact Number", Icons.phone_android, isNumber: true)),
+                      const SizedBox(height: 12),
+
+                      // Grouped: Date of Birth and Gender
+                      Row(
+                        children: [
+                          Expanded(child: _item("Date of Birth", _dobPicker(context, prov))),
+                          const SizedBox(width: 12),
+                          Expanded(child: _item("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v))),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      _item("Address", _field(prov.addressCtrl, "Residential Address", Icons.map_outlined, maxLines: 2)),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 20),
+                const SizedBox(width: 20),
 
-              /// --- COLUMN 2: PROFESSIONAL & SYSTEM ---
-              Expanded(
-                flex: 4,
-                child: _buildPanel(
-                  title: "Professional & System Access",
-                  icon: Icons.admin_panel_settings_rounded,
-                  children: [
-                    _item("Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
-                    const SizedBox(height: 12),
-                    _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v)),
-                    const SizedBox(height: 12),
-                    _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
-                    const SizedBox(height: 12),
-                    _item("Experience (Years)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true)),
-                    const SizedBox(height: 12),
-                    _item("Joining Date", _dateButton(context, prov)),
-                    const SizedBox(height: 12),
-                    _item("System Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true)),
-                  ],
+                /// --- COLUMN 2: PROFESSIONAL & SYSTEM ---
+                Expanded(
+                  flex: 4,
+                  child: _buildPanel(
+                    title: "Professional & System Access",
+                    icon: Icons.admin_panel_settings_rounded,
+                    children: [
+                      _item("Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
+                      const SizedBox(height: 12),
+
+                      // Grouped: Qualification & Experience
+                      Row(
+                        children: [
+                          Expanded(child: _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v))),
+                          const SizedBox(width: 12),
+                          Expanded(child: _item("Experience (Yrs)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true))),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
+                      const SizedBox(height: 12),
+
+                      // Grouped: Joining Date & Password
+                      Row(
+                        children: [
+                          Expanded(child: _item("Joining Date", _dateButton(context, prov))),
+                          const SizedBox(width: 12),
+                          Expanded(child: _item("System Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true))),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 20),
+                const SizedBox(width: 20),
 
-              /// --- COLUMN 3: ACADEMIC MAPPING ---
-              Expanded(
-                flex: 3,
-                child: prov.selectedRole == 'teacher'
-                    ? _buildPanel(
-                  title: "Academic Assignments",
-                  icon: Icons.school_rounded,
-                  children: [
-                    _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
-                    const SizedBox(height: 12),
-                    _item("Subjects Assignment", _buildSubjectGrid(prov)),
-                  ],
-                )
-                    : _buildPlaceholder(),
-              ),
-            ],
+                /// --- COLUMN 3: ACADEMIC MAPPING ---
+                Expanded(
+                  flex: 3,
+                  child: prov.selectedRole == 'teacher'
+                      ? _buildPanel(
+                    title: "Academic Assignments",
+                    icon: Icons.school_rounded,
+                    children: [
+                      _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
+                      const SizedBox(height: 12),
+                      _item("Subjects Assignment", _buildSubjectGrid(prov)),
+                    ],
+                  )
+                      : _buildPlaceholder(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
-  /// --- UI BUILDERS & LOGIC ---
 
   PreferredSizeWidget _buildThemedAppBar() {
     return AppBar(
@@ -207,10 +227,24 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
   Widget _dobPicker(BuildContext context, AdminProvider prov) => InkWell(
     onTap: () async {
-      final d = await showDatePicker(context: context, initialDate: DateTime(1995, 1, 1), firstDate: DateTime(1950), lastDate: DateTime.now(), builder: (context, child) => Theme(data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)), child: child!));
+      final d = await showDatePicker(
+          context: context,
+          initialDate: DateTime(1995, 1, 1),
+          firstDate: DateTime(1950),
+          lastDate: DateTime.now(),
+          builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)),
+              child: child!
+          )
+      );
       if (d != null) {
         prov.dob = d;
-        prov.ageCtrl.text = (DateTime.now().year - d.year).toString();
+        DateTime now = DateTime.now();
+        int age = now.year - d.year;
+        if (now.month < d.month || (now.month == d.month && now.day < d.day)) {
+          age--;
+        }
+        prov.ageCtrl.text = age.toString();
         prov.notifyListeners();
       }
     },
@@ -221,6 +255,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         const Icon(Icons.cake_outlined, size: 16, color: primaryTeal),
         const SizedBox(width: 10),
         Text(prov.dob == null ? "Birthday" : prov.dob.toString().split(' ')[0], style: const TextStyle(fontSize: 13)),
+        const Spacer(),
+        if(prov.dob != null)
+          Text("Age: ${prov.ageCtrl.text}", style: const TextStyle(fontSize: 12, color: primaryTeal, fontWeight: FontWeight.bold)),
       ]),
     ),
   );
@@ -241,29 +278,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           children: prov.subjectsList.map((subject) {
             final String subId = subject['id'].toString();
             final String subName = subject['name'].toString();
-
-            // CORRECTED: Check if the ID exists within the list of maps
             final isSelected = prov.selectedSubjects.any((item) => item['id'] == subId);
 
             return FilterChip(
-              label: Text(
-                  subName,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  )
-              ),
+              label: Text(subName, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {
-                  // Store both ID and Name for easy display later
-                  prov.selectedSubjects.add({
-                    "id": subId,
-                    "name": subName,
-                  });
+                  prov.selectedSubjects.add({"id": subId, "name": subName});
                 } else {
-                  // Remove the specific map entry by ID
                   prov.selectedSubjects.removeWhere((item) => item['id'] == subId);
                 }
                 prov.notifyListeners();
@@ -300,10 +323,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Widget _buildThemedFooter(AdminProvider prov) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
+      decoration: BoxDecoration(color: Colors.white, border: const Border(top: BorderSide(color: Color(0xFFE2E8F0)))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
