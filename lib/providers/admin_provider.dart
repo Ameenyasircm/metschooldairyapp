@@ -346,4 +346,21 @@ class AdminProvider with ChangeNotifier {
     await fireStore.collection('students').add(data);
     fetchStudents();
   }
+  // Inside AdminProvider
+  Future<void> fetchDivisionsGlobally(String academicYearId) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      final snapshot = await fireStore
+          .collection('divisions')
+          .where('academic_year_id', isEqualTo: academicYearId)
+          .get();
+      _divisionsList = snapshot.docs;
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }

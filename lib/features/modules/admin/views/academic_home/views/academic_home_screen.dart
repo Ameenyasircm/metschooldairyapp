@@ -1,10 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:met_school/providers/academic_provider.dart';
-import 'package:met_school/providers/academic_provider.dart';
-import 'package:met_school/providers/academic_provider.dart';
-import 'package:provider/provider.dart';
+// AcademicYearHomeScreen.dart
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../../../providers/admin_provider.dart';
 import 'classes_screen.dart';
 
@@ -22,10 +19,8 @@ class AcademicYearHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-
       body: Column(
         children: [
-
           /// HEADER
           Container(
             height: 90,
@@ -38,15 +33,10 @@ class AcademicYearHomeScreen extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
-
                 const SizedBox(width: 10),
-
                 Text(
                   yearName,
                   style: const TextStyle(
@@ -69,52 +59,39 @@ class AcademicYearHomeScreen extends StatelessWidget {
                 mainAxisSpacing: 25,
                 childAspectRatio: 2.5,
                 children: [
-
                   _moduleCard(
                     context,
                     title: "Classes",
                     icon: Icons.class_,
                     color: Colors.blue,
                     onTap: () {
+                      // 💡 PRE-FETCH DIVISIONS FOR BETTER UX
+                      context.read<AdminProvider>().fetchDivisionsGlobally(academicYearId);
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClassesScreen(
-                            academicYearId: academicYearId, academicYear: yearName,
+                            academicYearId: academicYearId,
+                            academicYear: yearName,
                           ),
                         ),
                       );
                     },
                   ),
-
                   _moduleCard(
                     context,
                     title: "Students",
                     icon: Icons.school,
                     color: Colors.green,
-                    onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (_) => const StudentListScreen(),
-                      //   ),
-                      // );
-                    },
+                    onTap: () {},
                   ),
-
                   _moduleCard(
                     context,
                     title: "Teachers",
                     icon: Icons.people,
                     color: Colors.orange,
-                    onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (_) => const TeacherListScreen(),
-                      //   ),
-                      // );
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -152,12 +129,9 @@ class AcademicYearHomeScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 40, color: color),
             const Spacer(),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 5),
-            Text("Manage $title",
-                style: const TextStyle(color: Colors.grey)),
+            Text("Manage $title", style: const TextStyle(color: Colors.grey)),
           ],
         ),
       ),
