@@ -158,7 +158,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               child: academicProv.isClassLoading || adminProv.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : GridView.builder(
-                itemCount: academicProv.classesList.length,
+                // Use the new formatted list
+                itemCount: academicProv.formattedClasses.length,
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 300,
                   mainAxisExtent: 180,
@@ -166,15 +167,18 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   mainAxisSpacing: 20,
                 ),
                 itemBuilder: (context, index) {
-                  final doc = academicProv.classesList[index];
-                  final data = doc.data() as Map<String, dynamic>;
-                  final String classId = doc.id;
-                  final String className = data['name'] ?? "";
+                  // Access the Map directly
+                  final classMap = academicProv.formattedClasses[index];
+                  final String classId = classMap['id'] ?? "";
+                  final String className = classMap['name'] ?? "";
 
-                  // Filter divisions for this specific class from adminProv.divisionsList
+                  // Filter divisions using the classId
+                  // Note: Ensure adminProv.divisionsList still uses DocumentSnapshots
+                  // or update it similarly to formattedClasses for consistency.
                   final classDivs = adminProv.divisionsList.where((d) {
                     final dData = d.data() as Map<String, dynamic>;
-                    return dData['class_id'] == classId;
+                    // Use .toString() to ensure comparison works even if types vary
+                    return dData['class_id'].toString() == classId;
                   }).toList();
 
                   return _buildActionableClassCard(classId, className, classDivs);

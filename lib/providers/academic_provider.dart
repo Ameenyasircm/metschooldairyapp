@@ -1,142 +1,117 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class AcademicProvider extends ChangeNotifier{
+class AcademicProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
-  List<DocumentSnapshot> classesList = [];
+  List<Map<String, String>> formattedClasses = [];
   bool isClassLoading = false;
 
-  /// 🔹 FETCH CLASSES
-  Future<void> fetchClasses() async {
+  Future<void> fetchClasses({bool forceRefresh = false}) async {
+    // Return early only if we aren't forcing a refresh and data exists
+    if (!forceRefresh && formattedClasses.isNotEmpty) return;
+
     isClassLoading = true;
     notifyListeners();
 
     try {
-      final snapshot =
-      await FirebaseFirestore.instance.collection('classes').get();
+      final snapshot = await db.collection('classes').orderBy('name').get();
 
-      classesList = snapshot.docs;
+      // Clear and map to ensure no "ghost" duplicates exist
+      formattedClasses = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          "id": (data['id'] ?? doc.id).toString(),
+          "name": (data['name'] ?? "Unnamed Class").toString(),
+        };
+      }).toList();
+
+      debugPrint("Successfully loaded ${formattedClasses.length} unique classes.");
     } catch (e) {
-      debugPrint("Error fetching classes: $e");
-    }
-
-    isClassLoading = false;
-    notifyListeners();
-  }
-
-  /// 🔹 ADD CLASS
-  Future<void> addClass(String className) async {
-    try {
-      final String docId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      await FirebaseFirestore.instance
-          .collection('classes')
-          .doc(docId)
-          .set({
-        "id": docId, // optional but recommended
-        "name": className,
-        "createdAt": Timestamp.now(),
-      });
-
-      fetchClasses(); // refresh
-    } catch (e) {
-      debugPrint("Error adding class: $e");
+      debugPrint("Firestore fetch error: $e");
+    } finally {
+      isClassLoading = false;
+      notifyListeners();
     }
   }
 
-
-
-  /// ================= ADD STUDENT =================
-  Future<void> addStudent({
-    required String name,
-    required String admissionId,
-    required String studentClass,
-    required String gender,
-    required DateTime? dob,
-    required String phone,
-    required String address,
-  }) async {
+  /// 🔹 ADD STUDENT
+  Future<void> addStudent({required Map<String, dynamic> studentData}) async {
     try {
       String docId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      await db.collection("students").doc(docId).set({
+      Map<String, dynamic> finalData = {
+        ...studentData,
         "id": docId,
-        "name": name,
-        "admissionId": admissionId,
-        "class": studentClass,
-        "gender": gender,
-        "dob": dob,
-        "phone": phone,
-        "address": address,
         "createdAt": FieldValue.serverTimestamp(),
-      });
-
-      await fetchStudents(); // refresh list
+      };
+      await db.collection("students").doc(docId).set(finalData);
+      await fetchStudents(); // Refresh the first page
     } catch (e) {
       debugPrint("Error adding student: $e");
     }
   }
 
-
-  /// OPTIONAL (for your navigation)
-  int selectedIndex = 0;
-
-  void setIndex(int index) {
-    selectedIndex = index;
-    notifyListeners();
+  /// 🔹 UPDATE STUDENT
+  Future<void> updateStudent(String docId, Map<String, dynamic> updatedData) async {
+    try {
+      await db.collection("students").doc(docId).update(updatedData);
+      // Manually update the local list to reflect changes immediately without a full refetch
+      int index = studentsList.indexWhere((doc) => doc.id == docId);
+      if (index != -1) {
+        await fetchStudents();
+      }
+    } catch (e) {
+      debugPrint("Update Error: $e");
+    }
   }
 
+  /// 🔹 DELETE STUDENT
+  Future<void> deleteStudent(String docId) async {
+    try {
+      await db.collection("students").doc(docId).delete();
+      studentsList.removeWhere((doc) => doc.id == docId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Delete Error: $e");
+    }
+  }
 
+  // --- Pagination Logic ---
   List<DocumentSnapshot> studentsList = [];
-
   bool isStudentLoading = false;
   bool isMoreLoading = false;
-
   DocumentSnapshot? lastDocument;
   bool hasMoreData = true;
-
   final int limit = 15;
 
-  /// ================= INITIAL FETCH =================
   Future<void> fetchStudents() async {
     try {
       isStudentLoading = true;
       notifyListeners();
 
-      final snapshot = await db
-          .collection("students")
+      final snapshot = await db.collection("students")
           .orderBy("createdAt", descending: true)
           .limit(limit)
           .get();
 
       studentsList = snapshot.docs;
-
-      if (snapshot.docs.isNotEmpty) {
-        lastDocument = snapshot.docs.last;
-      }
-
+      lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
       hasMoreData = snapshot.docs.length == limit;
-
-      isStudentLoading = false;
-      notifyListeners();
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint("Fetch Students Error: $e");
+    } finally {
       isStudentLoading = false;
       notifyListeners();
     }
   }
 
-  /// ================= LOAD MORE =================
   Future<void> fetchMoreStudents() async {
     if (!hasMoreData || isMoreLoading || lastDocument == null) return;
-
     try {
       isMoreLoading = true;
       notifyListeners();
 
-      final snapshot = await db
-          .collection("students")
+      final snapshot = await db.collection("students")
           .orderBy("createdAt", descending: true)
           .startAfterDocument(lastDocument!)
           .limit(limit)
@@ -146,17 +121,12 @@ class AcademicProvider extends ChangeNotifier{
         studentsList.addAll(snapshot.docs);
         lastDocument = snapshot.docs.last;
       }
-
       hasMoreData = snapshot.docs.length == limit;
-
-      isMoreLoading = false;
-      notifyListeners();
     } catch (e) {
-      debugPrint("Pagination Error: $e");
+      debugPrint("Fetch More Error: $e");
+    } finally {
       isMoreLoading = false;
       notifyListeners();
     }
   }
-
-
 }
