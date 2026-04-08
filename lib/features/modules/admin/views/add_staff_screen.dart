@@ -6,14 +6,15 @@ import '../../../../providers/admin_provider.dart';
 class AddStaffScreen extends StatefulWidget {
   final String userId, userName;
   final String? docId;
-  const AddStaffScreen({super.key, required this.userId, required this.userName,required this.docId});
+  const AddStaffScreen({super.key, required this.userId, required this.userName, required this.docId});
 
   @override
   State<AddStaffScreen> createState() => _AddStaffScreenState();
 }
 
 class _AddStaffScreenState extends State<AddStaffScreen> {
-  final _formKey = GlobalKey<FormState>(); // 🔹 Key for Validation
+  final _formKey = GlobalKey<FormState>();
+  static const Color primaryTeal = Color(0xff00796B);
 
   @override
   void initState() {
@@ -30,298 +31,280 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     final prov = context.watch<AdminProvider>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildCompactHeader(),
-      bottomNavigationBar: _buildStickyFooter(context, prov),
-      body: SelectionArea(
-        child: Form(
-          key: _formKey, // 🔹 Wrap everything in Form
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Staff Registration",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                const SizedBox(height: 25),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Wrap(
-                      spacing: 20,
-                      runSpacing: 15, // Reduced to fit validation error text space
-                      children: [
-                        _gridItem("First Name", _field(prov.nameCtrl, "Full Name", Icons.person_outline)),
-                        _gridItem("Phone Number", _field(prov.phoneCtrl, "Contact No", Icons.phone_android, isNumber: true)),
-                        _gridItem("Email Address", _field(prov.emailCtrl, "email@school.com", Icons.mail_outline, isEmail: true)),
-                        _gridItem("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v)),
-                        _gridItem("System Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
-
-                        _gridItem("Qualification", _dropdown(['B.Ed', 'M.Ed', 'TTC', 'PhD', 'B.Tech', 'M.Sc'], prov.selectedQual, (v) => prov.selectedQual = v)),
-                        _gridItem("Total Experience", _field(prov.expCtrl, "Years", Icons.history, isNumber: true)),
-                        _gridItem("Joining Date", _dateButton(context, prov)),
-                        _gridItem("Access Password", _field(prov.passwordCtrl, "••••••••", Icons.lock_outline, isPassword: true)),
-                        _gridItem("Employee ID", _field(prov.empIdCtrl, "SF-000", Icons.badge_outlined)),
-
-                        if (prov.selectedRole == "teacher") ...[
-                          _gridItem("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
-                          // --- SUBJECTS BLOCK ---
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              // Limits the width so it doesn't span the whole page on ultra-wide screens
-                              maxWidth: MediaQuery.of(context).size.width * 0.45,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: prov.selectedSubjects.isEmpty && prov.selectedRole == 'teacher'
-                                      ? Colors.red.shade300
-                                      : const Color(0xFFE2E8F0),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min, // 🔥 Crucial: Makes the height fit the content
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min, // 🔥 Keeps header tight
-                                    children: [
-                                      const Text(
-                                        "Teaching Subjects",
-                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0F766E).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          "${prov.selectedSubjects.length}",
-                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  /// 🔥 No Expanded/Scrollview here so the Container can grow/shrink
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: prov.subjectsList.map((subject) {
-                                      final isSelected = prov.selectedSubjects.contains(subject);
-                                      return InkWell(
-                                        onTap: () {
-                                          isSelected ? prov.selectedSubjects.remove(subject) : prov.selectedSubjects.add(subject);
-                                          prov.notifyListeners();
-                                        },
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(milliseconds: 150),
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: isSelected ? const Color(0xFF0F766E) : const Color(0xFFF1F5F9),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                subject,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                                  color: isSelected ? Colors.white : const Color(0xFF475569),
-                                                ),
-                                              ),
-                                              if (isSelected) ...[
-                                                const SizedBox(width: 4),
-                                                const Icon(Icons.close, size: 12, color: Colors.white),
-                                              ]
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        ],
-
-                        _gridItem("Residential Address", _field(prov.addressCtrl, "Full street address...", Icons.map_outlined), isWide: true),
-                      ],
-                    ),
-                  ),
+      backgroundColor: const Color(0xFFF1F5F9),
+      appBar: _buildThemedAppBar(),
+      bottomNavigationBar: _buildThemedFooter(prov),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// --- COLUMN 1: IDENTITY ---
+              Expanded(
+                flex: 3,
+                child: _buildPanel(
+                  title: "Identity",
+                  icon: Icons.person_pin_rounded,
+                  children: [
+                    _item("Full Name", _field(prov.nameCtrl, "Enter name", Icons.badge_outlined)),
+                    const SizedBox(height: 12),
+                    _item("Phone Number", _field(prov.phoneCtrl, "Contact Number", Icons.phone_android, isNumber: true)),
+                    const SizedBox(height: 12),
+                    _item("Date of Birth", _dobPicker(context, prov)),
+                    const SizedBox(height: 12),
+                    _item("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v)),
+                    const SizedBox(height: 12),
+                    _item("Address", _field(prov.addressCtrl, "Residential Address", Icons.map_outlined, maxLines: 2)),
+                  ],
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(width: 20),
+
+              /// --- COLUMN 2: PROFESSIONAL & SYSTEM ---
+              Expanded(
+                flex: 4,
+                child: _buildPanel(
+                  title: "Professional & System Access",
+                  icon: Icons.admin_panel_settings_rounded,
+                  children: [
+                    _item("Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
+                    const SizedBox(height: 12),
+                    _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v)),
+                    const SizedBox(height: 12),
+                    _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
+                    const SizedBox(height: 12),
+                    _item("Experience (Years)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true)),
+                    const SizedBox(height: 12),
+                    _item("Joining Date", _dateButton(context, prov)),
+                    const SizedBox(height: 12),
+                    _item("System Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 20),
+
+              /// --- COLUMN 3: ACADEMIC MAPPING ---
+              Expanded(
+                flex: 3,
+                child: prov.selectedRole == 'teacher'
+                    ? _buildPanel(
+                  title: "Academic Assignments",
+                  icon: Icons.school_rounded,
+                  children: [
+                    _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
+                    const SizedBox(height: 12),
+                    _item("Subjects Assignment", _buildSubjectGrid(prov)),
+                  ],
+                )
+                    : _buildPlaceholder(),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  /// ---------- UI HELPERS WITH VALIDATION ----------
+  /// --- UI BUILDERS & LOGIC ---
 
-  Widget _gridItem(String label, Widget child, {bool isWide = false}) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    return SizedBox(
-      width: isWide ? screenWidth * 0.40 : screenWidth * 0.17,
-      child: Column(
+  PreferredSizeWidget _buildThemedAppBar() {
+    return AppBar(
+      backgroundColor: primaryTeal,
+      elevation: 4,
+      leading: const BackButton(color: Colors.white),
+      title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 8),
-          // We don't fix the height here anymore to allow the error text to show if validation fails
-          child,
+          Text(widget.docId == null ? "Staff Enrollment" : "Update Profile",
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(" ${widget.userName}", style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10)),
         ],
       ),
     );
   }
 
-  Widget _field(TextEditingController c, String hint, IconData icon, {bool isNumber = false, bool isPassword = false, bool isEmail = false}) {
+  Widget _buildPanel({required String title, required IconData icon, required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 20, color: primaryTeal),
+            const SizedBox(width: 10),
+            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+          ]),
+          const Divider(height: 30, color: Color(0xFFF1F5F9)),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _item(String label, Widget child) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5)),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
+  }
+
+  Widget _field(TextEditingController c, String h, IconData i, {bool isNumber = false, bool isPassword = false, bool isReadOnly = false, int maxLines = 1}) {
     return TextFormField(
       controller: c,
       obscureText: isPassword,
-      keyboardType: isNumber ? TextInputType.number : (isEmail ? TextInputType.emailAddress : TextInputType.text),
-      style: const TextStyle(fontSize: 14),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return "Required";
-        if (isEmail && !RegExp(r'\S+@\S+\.\S+').hasMatch(value)) return "Invalid Email";
-        if (isNumber && int.tryParse(value) == null) return "Numbers only";
-        return null;
-      },
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 18, color: Colors.blueGrey),
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-        filled: true,
-        fillColor: const Color(0xFFF9FAFB),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.red.shade300)),
-      ),
+      readOnly: isReadOnly,
+      maxLines: maxLines,
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
+      validator: (v) => (v == null || v.isEmpty) ? "Field Required" : null,
+      decoration: _deco(h, i),
     );
   }
 
   Widget _dropdown(List<String> items, String? value, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
-      isDense: true,
-      validator: (v) => (v == null || v.isEmpty) ? "Field Required" : null,
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
-      onChanged: (v) { onChanged(v); context.read<AdminProvider>().notifyListeners(); },
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF9FAFB),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-      ),
-    );
-  }
-
-  Widget _dateButton(BuildContext context, AdminProvider prov) {
-    bool hasError = prov.joiningDate == null;
-    return InkWell(
-      onTap: () async {
-        final date = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now());
-        if (date != null) { prov.joiningDate = date; prov.notifyListeners(); }
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
+      onChanged: (v) {
+        onChanged(v);
+        context.read<AdminProvider>().notifyListeners();
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.blueGrey),
-            const SizedBox(width: 10),
-            Text(
-                prov.joiningDate == null ? "Select Date" : prov.joiningDate.toString().split(' ')[0],
-                style: const TextStyle(fontSize: 14)
-            ),
-          ],
+      decoration: _deco("Select Option", Icons.keyboard_arrow_down_rounded),
+    );
+  }
+
+  Widget _dateButton(BuildContext context, AdminProvider prov) => InkWell(
+    onTap: () async {
+      final d = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), builder: (context, child) => Theme(data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)), child: child!));
+      if (d != null) {
+        prov.joiningDate = d;
+        prov.notifyListeners();
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+      child: Row(children: [
+        const Icon(Icons.calendar_month, size: 16, color: primaryTeal),
+        const SizedBox(width: 10),
+        Text(prov.joiningDate == null ? "Select Date" : prov.joiningDate.toString().split(' ')[0], style: const TextStyle(fontSize: 13)),
+      ]),
+    ),
+  );
+
+  Widget _dobPicker(BuildContext context, AdminProvider prov) => InkWell(
+    onTap: () async {
+      final d = await showDatePicker(context: context, initialDate: DateTime(1995, 1, 1), firstDate: DateTime(1950), lastDate: DateTime.now(), builder: (context, child) => Theme(data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)), child: child!));
+      if (d != null) {
+        prov.dob = d;
+        prov.ageCtrl.text = (DateTime.now().year - d.year).toString();
+        prov.notifyListeners();
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+      child: Row(children: [
+        const Icon(Icons.cake_outlined, size: 16, color: primaryTeal),
+        const SizedBox(width: 10),
+        Text(prov.dob == null ? "Birthday" : prov.dob.toString().split(' ')[0], style: const TextStyle(fontSize: 13)),
+      ]),
+    ),
+  );
+
+  Widget _buildSubjectGrid(AdminProvider prov) {
+    return Container(
+      height: 220,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE2E8F0))),
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 6, runSpacing: 0,
+          children: prov.subjectsList.map((s) {
+            final isSelected = prov.selectedSubjects.contains(s);
+            return FilterChip(
+              label: Text(s, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black87)),
+              selected: isSelected,
+              onSelected: (v) { v ? prov.selectedSubjects.add(s) : prov.selectedSubjects.remove(s); prov.notifyListeners(); },
+              selectedColor: primaryTeal,
+              checkmarkColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            );
+          }).toList(),
         ),
       ),
     );
   }
 
-  Widget _buildStickyFooter(BuildContext context, AdminProvider prov) {
+  InputDecoration _deco(String hint, IconData icon) => InputDecoration(
+    prefixIcon: Icon(icon, size: 16, color: primaryTeal.withOpacity(0.5)),
+    hintText: hint,
+    isDense: true,
+    filled: true,
+    fillColor: const Color(0xFFF8FAFC),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: primaryTeal, width: 1.5)),
+  );
+
+  Widget _buildPlaceholder() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(color: const Color(0xFFE2E8F0).withOpacity(0.3), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid)),
+      child: const Center(child: Text("Teacher-specific fields will activate here.", textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey, fontSize: 11, fontWeight: FontWeight.w500))),
+    );
+  }
+
+  Widget _buildThemedFooter(AdminProvider prov) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel Process", style: TextStyle(color: Colors.grey, fontSize: 14)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text("Discard", style: TextStyle(color: Color(0xFF64748B))),
           ),
-          const SizedBox(width: 30),
-          // Inside _buildStickyFooter in AddStaffScreen
+          const SizedBox(width: 20),
           ElevatedButton(
             onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                if (prov.joiningDate == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please select a Joining Date"), backgroundColor: Colors.redAccent),
-                  );
-                  return;
-                }
-
-                // 🔹 Pass the docId from the widget to the save function
-                await prov.saveStaffFull(
-                    docId: widget.docId, // 👈 Uses the ID if editing, null if adding
-                    userId: widget.userId,
-                    userName: widget.userName
-                );
-
-                if (context.mounted) Navigator.pop(context);
+              if (_formKey.currentState!.validate() && prov.joiningDate != null) {
+                await prov.saveStaffFull(docId: widget.docId, userId: widget.userId, userName: widget.userName);
+                if (mounted) Navigator.pop(context);
               }
             },
-            child: Text(
-                widget.docId == null ? "Add Data" : "Update Records", // 👈 Dynamic Text
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryTeal,
+              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
             ),
+            child: Text(widget.docId == null ? "Complete Registration" : "Save Records", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
-
-  PreferredSizeWidget _buildCompactHeader() => AppBar(
-    backgroundColor: Colors.white,
-    elevation: 0,
-    toolbarHeight: 50,
-    leading: const BackButton(color: Colors.black),
-  );
 }

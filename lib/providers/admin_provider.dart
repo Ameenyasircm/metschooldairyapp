@@ -44,12 +44,13 @@ class AdminProvider with ChangeNotifier {
   final phoneCtrl = TextEditingController();
   final usernameCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
-  final emailCtrl = TextEditingController();
-  final empIdCtrl = TextEditingController();
   final qualCtrl = TextEditingController();
   final expCtrl = TextEditingController();
   final subjectCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
+  final TextEditingController aadharCtrl = TextEditingController();
+  final TextEditingController ageCtrl = TextEditingController(); // Calculated automatically
+  DateTime? dob;
 
   // ================= DATA FETCHING =================
 
@@ -150,7 +151,6 @@ class AdminProvider with ChangeNotifier {
         "uid": targetId,
         "name": nameCtrl.text.trim(),
         "phone": phoneCtrl.text.trim(),
-        "email": emailCtrl.text.trim(),
         "username": usernameCtrl.text.trim().isNotEmpty ? usernameCtrl.text.trim() : phoneCtrl.text.trim(),
         "role": selectedRole,
         "password": passwordCtrl.text.trim(),
@@ -165,9 +165,7 @@ class AdminProvider with ChangeNotifier {
 
       final profileData = {
         "uid": targetId,
-        "employee_id": empIdCtrl.text.trim(),
         "name": nameCtrl.text.trim(),
-        "email": emailCtrl.text.trim(),
         "phone": phoneCtrl.text.trim(),
         "role": selectedRole,
         "password": passwordCtrl.text.trim(),
@@ -175,6 +173,9 @@ class AdminProvider with ChangeNotifier {
         "qualification": selectedQual,
         "total_experience": int.tryParse(expCtrl.text) ?? 0,
         "joining_date": joiningDate,
+        "dob": dob,           // 👈 Added
+        "age": int.tryParse(ageCtrl.text) ?? 0, // 👈 Added
+        "aadhar": aadharCtrl.text.trim(),       // 👈 Added
         "address": addressCtrl.text.trim(),
         "status": status,
         "updatedAt": FieldValue.serverTimestamp(),
@@ -218,8 +219,6 @@ class AdminProvider with ChangeNotifier {
     phoneCtrl.clear();
     usernameCtrl.clear();
     passwordCtrl.clear();
-    emailCtrl.clear();
-    empIdCtrl.clear();
     qualCtrl.clear();
     expCtrl.clear();
     subjectCtrl.clear();
@@ -232,6 +231,9 @@ class AdminProvider with ChangeNotifier {
     selectedQual = null;
     selectedSubjects.clear();
     joiningDate = null;
+    aadharCtrl.clear();
+    ageCtrl.clear();
+    dob = null;
 
     notifyListeners();
   }

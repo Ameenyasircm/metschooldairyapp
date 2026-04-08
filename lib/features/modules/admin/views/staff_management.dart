@@ -34,7 +34,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🔹 IMPROVED HEADER WITH BACK BUTTON
+            /// 🔹 HEADER
             _buildHeader(context, adminProv),
 
             const SizedBox(height: 30),
@@ -105,10 +105,8 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
   Widget _buildHeader(BuildContext context, AdminProvider prov) {
     return Row(
       children: [
-        /// 🔙 NEW: CIRCULAR BACK BUTTON
         InkWell(
           onTap: () {
-            // Instead of Navigator.pop, we reset the dashboard index
             Provider.of<AdminProvider>(context, listen: false).setIndex(0);
           },
           borderRadius: BorderRadius.circular(12),
@@ -125,14 +123,13 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
           ),
         ),
         const SizedBox(width: 20),
-        Column(
+        const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text("Staff Directory", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1B2559))),
           ],
         ),
         const Spacer(),
-        // 🔍 SEARCH BAR
         Container(
           width: 320,
           height: 48,
@@ -150,7 +147,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                 child: TextField(
                   onChanged: (v) => setState(() => searchQuery = v),
                   decoration: const InputDecoration(
-                    hintText: "Search name...",
+                    hintText: "Search name or phone...",
                     border: InputBorder.none,
                     hintStyle: TextStyle(fontSize: 14, color: Color(0xFFA3AED0)),
                   ),
@@ -160,11 +157,10 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
           ),
         ),
         const SizedBox(width: 15),
-        // ➕ ADD BUTTON
         ElevatedButton.icon(
           onPressed: () {
             prov.clearStaffForm();
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AddStaffScreen(userId: widget.userId, userName: widget.userName, docId: null,)));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => AddStaffScreen(userId: widget.userId, userName: widget.userName, docId: null)));
           },
           icon: const Icon(Icons.add, size: 18),
           label: const Text("Add Member"),
@@ -183,11 +179,10 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
   Widget _buildTableHead() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
-      color: Colors.transparent,
-      child: Row(
-        children: const [
+      child: const Row(
+        children: [
           Expanded(flex: 3, child: Text("STAFF NAME", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.black, letterSpacing: 1))),
-          Expanded(flex: 2, child: Text("CONTACT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.black, letterSpacing: 1))),
+          Expanded(flex: 2, child: Text("CONTACT / AADHAR", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.black, letterSpacing: 1))),
           Expanded(flex: 2, child: Text("POSITION", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.black, letterSpacing: 1))),
           SizedBox(width: 150, child: Text("ACTIONS", textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.black, letterSpacing: 1))),
         ],
@@ -203,7 +198,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         contentPadding: EdgeInsets.zero,
         content: SizedBox(
-          width: 580,
+          width: 600,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -240,29 +235,46 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                   padding: const EdgeInsets.all(25),
                   child: Column(
                     children: [
-                      _sectionHeader("Professional Data"),
+                      _sectionHeader("Personal Information"),
                       const SizedBox(height: 15),
                       Row(
                         children: [
-                          Expanded(child: _dataItem(Icons.card_giftcard, "ID", staff['employee_id'])),
-                          Expanded(child: _dataItem(Icons.history_edu_rounded, "Experience", "${staff['total_experience'] ?? '0'} Yrs")),
+                          Expanded(child: _dataItem(Icons.fingerprint, "Aadhar Number", staff['aadhar'])),
+                          Expanded(child: _dataItem(Icons.wc_rounded, "Gender", staff['gender'])),
                         ],
                       ),
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          Expanded(child: _dataItem(Icons.school_rounded, "Degree", staff['qualification'])),
-                          Expanded(child: _dataItem(Icons.event_available_rounded, "Joined", _formatDate(staff['joining_date']))),
+                          Expanded(child: _dataItem(Icons.cake_rounded, "Date of Birth", _formatDate(staff['dob']))),
+                          Expanded(child: _dataItem(Icons.auto_awesome, "Current Age", "${staff['age'] ?? '--'} Years")),
                         ],
                       ),
                       const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: Color(0xFFF1F4F9))),
-                      _sectionHeader("Contact Info"),
+
+                      _sectionHeader("Professional Record"),
                       const SizedBox(height: 15),
-                      _dataItem(Icons.phone_android_rounded, "Phone", staff['phone']),
+                      Row(
+                        children: [
+                          Expanded(child: _dataItem(Icons.school_rounded, "Qualification", staff['qualification'])),
+                          Expanded(child: _dataItem(Icons.history_edu_rounded, "Total Experience", "${staff['total_experience'] ?? '0'} Yrs")),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(child: _dataItem(Icons.event_available_rounded, "Joining Date", _formatDate(staff['joining_date']))),
+                          if (staff['role'] == 'teacher')
+                            Expanded(child: _dataItem(Icons.book_rounded, "Subjects", (staff['subjects'] as List?)?.join(', '))),
+                        ],
+                      ),
+                      const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: Color(0xFFF1F4F9))),
+
+                      _sectionHeader("Contact Details"),
                       const SizedBox(height: 15),
-                      _dataItem(Icons.alternate_email_rounded, "Email", staff['email']),
+                      _dataItem(Icons.phone_android_rounded, "Phone Number", staff['phone']),
                       const SizedBox(height: 15),
-                      _dataItem(Icons.home_work_outlined, "Address", staff['address']),
+                      _dataItem(Icons.home_work_outlined, "Residential Address", staff['address']),
                     ],
                   ),
                 ),
@@ -288,8 +300,8 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l, style: const TextStyle(fontSize: 10, color: AppColors.black, fontWeight: FontWeight.bold)),
-            Text(v?.toString() ?? "N/A", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.black)),
+            Text(l, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+            Text(v?.toString() ?? "Not Provided", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.black)),
           ],
         ),
       ),
@@ -308,46 +320,32 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
     final prov = context.read<AdminProvider>();
     prov.clearStaffForm();
 
-    // 🔹 Fill Controllers
     prov.nameCtrl.text = staff['name'] ?? "";
     prov.phoneCtrl.text = staff['phone'] ?? "";
-    prov.emailCtrl.text = staff['email'] ?? "";
+    prov.aadharCtrl.text = staff['aadhar'] ?? "";
+    prov.ageCtrl.text = staff['age']?.toString() ?? "";
     prov.passwordCtrl.text = staff['password'] ?? "";
-    prov.empIdCtrl.text = staff['employee_id'] ?? "";
     prov.addressCtrl.text = staff['address'] ?? "";
     prov.expCtrl.text = staff['total_experience']?.toString() ?? "";
 
-    // 🔹 Fill State Variables (Crucial for Dropdowns)
     prov.selectedRole = staff['role'];
     prov.selectedGender = staff['gender'];
     prov.selectedQual = staff['qualification'];
     prov.selectedDesignation = staff['designation'];
 
-    // 🔹 Handle Subjects (if teacher)
     if (staff['subjects'] != null) {
       prov.selectedSubjects = List<String>.from(staff['subjects']);
     }
 
-    // 🔹 Handle Date
-    if (staff['joining_date'] != null) {
-      if (staff['joining_date'] is Timestamp) {
-        prov.joiningDate = (staff['joining_date'] as Timestamp).toDate();
-      } else {
-        prov.joiningDate = DateTime.tryParse(staff['joining_date'].toString());
-      }
+    if (staff['dob'] != null) {
+      prov.dob = (staff['dob'] is Timestamp) ? (staff['dob'] as Timestamp).toDate() : DateTime.tryParse(staff['dob'].toString());
     }
 
-    // 🔹 Pass docId to the screen
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) => AddStaffScreen(
-              userId: widget.userId,
-              userName: widget.userName,
-              docId: docId, // 👈 Pass the ID here
-            )
-        )
-    );
+    if (staff['joining_date'] != null) {
+      prov.joiningDate = (staff['joining_date'] is Timestamp) ? (staff['joining_date'] as Timestamp).toDate() : DateTime.tryParse(staff['joining_date'].toString());
+    }
+
+    Navigator.push(context, MaterialPageRoute(builder: (_) => AddStaffScreen(userId: widget.userId, userName: widget.userName, docId: docId)));
   }
 
   void _handleDelete(BuildContext context, String id, String? name) {
@@ -356,97 +354,33 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        contentPadding: const EdgeInsets.fromLTRB(30, 30, 30, 20),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            /// ⚠️ VISUAL WARNING ICON
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent, size: 40),
-            ),
-            const SizedBox(height: 25),
-
-            /// TEXT CONTENT
-            const Text(
-              "Confirm Deletion",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1B2559)),
-            ),
-            const SizedBox(height: 12),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: const TextStyle(fontSize: 15, color: Color(0xFFA3AED0), height: 1.5),
-                children: [
-                  const TextSpan(text: "Are you sure you want to remove "),
-                  TextSpan(
-                    text: name ?? "this staff",
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1B2559)),
-                  ),
-                  const TextSpan(text: "? This action is permanent and cannot be undone."),
-                ],
-              ),
-            ),
+            const SizedBox(height: 10),
+            const Icon(Icons.delete_forever_rounded, color: Colors.redAccent, size: 50),
+            const SizedBox(height: 20),
+            const Text("Remove Staff?", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text("Delete records for $name? This cannot be undone.", textAlign: TextAlign.center),
           ],
         ),
-        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
-        actionsAlignment: MainAxisAlignment.center,
         actions: [
-          /// 🔙 CANCEL BUTTON
-          SizedBox(
-            width: 140,
-            child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text(
-                "Keep Record",
-                style: TextStyle(color: Color(0xFF707EAE), fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          /// 🗑️ DESTRUCTIVE DELETE BUTTON
-          SizedBox(
-            width: 160,
-            child: ElevatedButton(
-              onPressed: () async {
-                // Optional: Show a loading state here
-                await context.read<AdminProvider>().removeStaff(docId: id, adminId: widget.userId, adminName: widget.userName);
-                if (context.mounted) Navigator.pop(context);
-
-                // Standard Practice: Show a Snack-bar after successful deletion
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("$name removed successfully"), backgroundColor: Colors.black87),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text("Yes, Delete", style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              await context.read<AdminProvider>().removeStaff(docId: id, adminId: widget.userId, adminName: widget.userName);
+              if (context.mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text("Confirm Delete", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState() => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    const Icon(Icons.person_search_rounded, size: 60, color: Color(0xFFE2E8F0)),
-    const SizedBox(height: 10),
-    Text("No staff matches '$searchQuery'", style: const TextStyle(color: Color(0xFF707EAE))),
-  ]));
+  Widget _buildEmptyState() => Center(child: Text("No records found for '$searchQuery'"));
 
   Widget _buildStatusMessage(String m) => Center(child: Text(m, style: const TextStyle(color: Colors.redAccent)));
 }
@@ -484,11 +418,17 @@ class _StaffRowState extends State<_StaffRow> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(widget.staff['name'] ?? "—", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1B2559))),
-                  Text("Emp ID : "+widget.staff['employee_id'] ?? "No ID", style:  TextStyle(fontSize: 12, color:AppColors.black)),
+                  Text(widget.staff['qualification'] ?? "No Qualification", style: const TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
               ),
             ])),
-            Expanded(flex: 2, child: Text(widget.staff['phone'] ?? "—", style: const TextStyle(fontSize: 13, color: Color(0xFF1B2559)))),
+            Expanded(flex: 2, child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.staff['phone'] ?? "—", style: const TextStyle(fontSize: 13, color: Color(0xFF1B2559))),
+                Text("Aadhar: ${widget.staff['aadhar'] ?? 'N/A'}", style: const TextStyle(fontSize: 11, color: Color(0xFFA3AED0))),
+              ],
+            )),
             Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(widget.staff['role']?.toUpperCase() ?? "STAFF", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF1B2559))),
               Text(widget.staff['designation'] ?? "General", style: const TextStyle(fontSize: 10, color: Color(0xFFA3AED0))),
@@ -498,9 +438,9 @@ class _StaffRowState extends State<_StaffRow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _btn(Icons.visibility_rounded, const Color(0xFF422AFB), widget.onView),
-                  _btn(Icons.edit_square, const Color(0xFF1B2559), widget.onEdit),
-                  _btn(Icons.delete_rounded, Colors.redAccent, widget.onDelete),
+                  IconButton(onPressed: widget.onView, icon: const Icon(Icons.visibility_rounded, size: 18, color: Color(0xFF422AFB))),
+                  IconButton(onPressed: widget.onEdit, icon: const Icon(Icons.edit_square, size: 18, color: Color(0xFF1B2559))),
+                  IconButton(onPressed: widget.onDelete, icon: const Icon(Icons.delete_rounded, size: 18, color: Colors.redAccent)),
                 ],
               ),
             ),
@@ -509,6 +449,4 @@ class _StaffRowState extends State<_StaffRow> {
       ),
     );
   }
-
-  Widget _btn(IconData i, Color c, VoidCallback t) => IconButton(onPressed: t, icon: Icon(i, size: 18, color: c.withOpacity(0.7)), hoverColor: c.withOpacity(0.05));
 }
