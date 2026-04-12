@@ -14,6 +14,7 @@ class AttendanceProvider extends ChangeNotifier {
   List<StudentAttendance> _allStudents = [];
   List<StudentAttendance> _filteredStudents = [];
   List<StudentAttendance> get students => _filteredStudents;
+  List<StudentAttendance> get allStudents => _allStudents;
 
   AttendanceSession _selectedSession = AttendanceSession.morning;
   AttendanceSession get selectedSession => _selectedSession;

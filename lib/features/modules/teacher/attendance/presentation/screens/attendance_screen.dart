@@ -408,35 +408,50 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildSaveButton() {
     return Consumer<AttendanceProvider>(
       builder: (context, provider, _) {
-        return Container(
+        return provider.students.isEmpty?
+            SizedBox.shrink():
+          Container(
           padding: AppPadding.pM,
           child: SizedBox(
             width: double.infinity,
             height: 50.h,
             child: ElevatedButton(
-              onPressed: provider.isLoading ? null : () async {
-                try {
-                  await provider.saveAttendance();
-                  if (mounted) {
-                    SnackbarService().showSuccess("Attendance saved successfully!");
-                    Navigator.pop(context);
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    SnackbarService().showError(e.toString().replaceAll("Exception: ", ""));
-                  }
-                }
-              },
+              onPressed: (provider.isLoading)
+                  ? null
+                  : () async {
+                      // Validation: Check if all students are marked
+                      final hasUnmarked = provider.students.any((s) => s.status == AttendanceStatus.none);
+                      if (hasUnmarked) {
+                        SnackbarService().showError("Please mark attendance for all students before saving.");
+                        return;
+                      }
+
+                      try {
+                        await provider.saveAttendance();
+                        if (mounted) {
+                          SnackbarService().showSuccess("Attendance saved successfully!");
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          SnackbarService()
+                              .showError(e.toString().replaceAll("Exception: ", ""));
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
+                disabledBackgroundColor: AppColors.greyB2,
                 foregroundColor: AppColors.white,
+                disabledForegroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusL),
                 elevation: 0,
               ),
               child: provider.isLoading
                   ? const CustomLoader()
                   : Text(
-                      'Save ${provider.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'}',
+                     'Save ${provider.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'}',
+
                       style: AppTypography.body2.copyWith(color: AppColors.white),
                     ),
             ),
