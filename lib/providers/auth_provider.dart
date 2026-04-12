@@ -119,18 +119,16 @@ class AuthProvider with ChangeNotifier {
           await prefs.setString("staffName", staffName);
           await prefs.setString("staffPhone", staffPhone);
           await prefs.setString("password", dbPassword);
-
           if (context.mounted) {
             callNextReplacement(
               TeacherNavbarScreen(staffName: staffName,), context,
             );
           }
-
         } else {
           SnackbarService().showError("Incorrect password. Please try again.");
         }
       } else {
-        SnackbarService().showError("Admin not found with this phone number.");
+        SnackbarService().showError("Teacher not found with this phone number.");
       }
     } catch (e) {
       SnackbarService().showError("An error occurred: ${e.toString()}");

@@ -18,6 +18,9 @@ class AttendanceProvider extends ChangeNotifier {
   AttendanceSession _selectedSession = AttendanceSession.morning;
   AttendanceSession get selectedSession => _selectedSession;
 
+  DateTime _selectedDate = DateTime.now();
+  DateTime get selectedDate => _selectedDate;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -25,6 +28,11 @@ class AttendanceProvider extends ChangeNotifier {
 
   void setSession(AttendanceSession session) {
     _selectedSession = session;
+    notifyListeners();
+  }
+
+  void setDate(DateTime date) {
+    _selectedDate = date;
     notifyListeners();
   }
 
@@ -55,10 +63,15 @@ class AttendanceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateStatus(String studentId, AttendanceStatus status) {
+  void updateStatus(String studentId, AttendanceStatus status, {String? reason}) {
     final index = _allStudents.indexWhere((s) => s.studentId == studentId);
     if (index != -1) {
       _allStudents[index].status = status;
+      if (status == AttendanceStatus.late) {
+        _allStudents[index].lateReason = reason;
+      } else {
+        _allStudents[index].lateReason = null;
+      }
       _applySearch();
     }
   }
@@ -66,6 +79,7 @@ class AttendanceProvider extends ChangeNotifier {
   void markAll(AttendanceStatus status) {
     for (var student in _allStudents) {
       student.status = status;
+      student.lateReason = null;
     }
     _applySearch();
   }
@@ -73,8 +87,20 @@ class AttendanceProvider extends ChangeNotifier {
   Future<void> saveAttendance() async {
     if (_allStudents.isEmpty) return;
     
+    // Business Rule: Editing allowed only same day
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    
+    if (selected.isBefore(today)) {
+      throw Exception("Backdated attendance editing is not allowed. Please contact admin.");
+    }
+    if (selected.isAfter(today)) {
+      throw Exception("Future attendance marking is not allowed.");
+    }
+
     if (_allStudents.any((s) => s.status == AttendanceStatus.none)) {
-      throw Exception("Please mark attendance (P/A) for all students before saving.");
+      throw Exception("Please mark attendance (P/A/L) for all students before saving.");
     }
 
     _isLoading = true;
@@ -87,17 +113,17 @@ class AttendanceProvider extends ChangeNotifier {
       
       final division = await repository.getTeacherClassDivision(teacherId: staffId ?? '');
       if (division == null) {
-        throw Exception("You are not assigned as a Class Teacher for any division in the current academic year. Attendance cannot be saved.");
+        throw Exception("You are not assigned as a Class Teacher for any division in the current academic year.");
       }
 
-      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final batch = db.batch();
 
       for (var student in _allStudents) {
         final attendanceId = "ATT_${student.studentId}_${dateStr}_${_selectedSession.name}";
         final docRef = db.collection("attendance").doc(attendanceId);
 
-        batch.set(docRef, {
+        final data = {
           "attendance_id": attendanceId,
           "student_id": student.studentId,
           "student_name": student.studentName,
@@ -106,17 +132,71 @@ class AttendanceProvider extends ChangeNotifier {
           "timestamp": FieldValue.serverTimestamp(),
           "session": _selectedSession.name,
           "status": student.status.name,
+          "late_reason": student.lateReason,
           "division_id": division.id,
           "academic_year_id": division.academicYearId,
           "marked_by": staffId,
-        }, SetOptions(merge: true));
+        };
+
+        batch.set(docRef, data, SetOptions(merge: true));
       }
 
       await batch.commit();
-      debugPrint("Attendance saved successfully for $_selectedSession");
+      debugPrint("Attendance saved successfully for $_selectedSession on $dateStr");
     } catch (e) {
       debugPrint("Error saving attendance: $e");
       rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAttendance(String? divisionId) async {
+    if (divisionId == null) return;
+    
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      final querySnapshot = await FirebaseService.firestore
+          .collection("attendance")
+          .where("division_id", isEqualTo: divisionId)
+          .where("date", isEqualTo: dateStr)
+          .where("session", isEqualTo: _selectedSession.name)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Map existing attendance to our local list
+        final attendanceMap = {
+          for (var doc in querySnapshot.docs)
+            doc.data()['student_id'] as String: doc.data()
+        };
+
+        for (var student in _allStudents) {
+          final record = attendanceMap[student.studentId];
+          if (record != null) {
+            student.status = AttendanceStatus.values.firstWhere(
+              (e) => e.name == record['status'],
+              orElse: () => AttendanceStatus.none,
+            );
+            student.lateReason = record['late_reason'];
+          } else {
+            student.status = AttendanceStatus.none;
+            student.lateReason = null;
+          }
+        }
+      } else {
+        // Reset if no records found
+        for (var student in _allStudents) {
+          student.status = AttendanceStatus.none;
+          student.lateReason = null;
+        }
+      }
+      _applySearch();
+    } catch (e) {
+      debugPrint("Error fetching attendance: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
