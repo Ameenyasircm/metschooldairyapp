@@ -1,10 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/providers/academic_provider.dart';
 import 'package:provider/provider.dart';
 
 class AddStudentScreen extends StatefulWidget {
-  final Map<String, dynamic>? initialData; // Pass this for Edit Mode
+  final Map<String, dynamic>? initialData;
   const AddStudentScreen({super.key, this.initialData});
 
   @override
@@ -19,8 +20,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController admissionCtrl = TextEditingController();
   final TextEditingController parentCtrl = TextEditingController();
-  final TextEditingController relationCtrl = TextEditingController();
-  final TextEditingController fatherJobCtrl = TextEditingController();
   final TextEditingController phoneCtrl = TextEditingController();
   final TextEditingController whatsappCtrl = TextEditingController();
   final TextEditingController motherNameCtrl = TextEditingController();
@@ -35,13 +34,24 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   final TextEditingController idMarkCtrl = TextEditingController();
 
   // Selection Data
-  String? selectedClassId;      // Fixed: Use String ID for crash-proof dropdown
-  String? selectedClassName;    // Store name separately
+  String? selectedClassId;
+  String? selectedClassName;
   String? selectedGender;
   String? selectedReligion;
   String? selectedMedium;
+  String? selectedRelation;
+  String? selectedOccupation; // New Occupation Dropdown Selection
+  bool isWhatsappSame = false;
   DateTime? dob;
   DateTime? lastVaccination;
+
+  // Comprehensive Occupation List
+  final List<String> occupations = [
+    "Agriculture/Farmer", "Business/Self Employed", "Construction Worker",
+    "Driver", "Engineer", "Government Employee", "Healthcare/Doctor/Nurse",
+    "Home Maker", "IT Professional", "Laborer", "Private Job",
+    "Teacher/Professor", "Technician", "Other"
+  ];
 
   @override
   void initState() {
@@ -49,25 +59,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
     Future.microtask(() async {
       final provider = context.read<AcademicProvider>();
-
-      // 1. Fetch and wait for the formatted classes
       await provider.fetchClasses();
 
-      // 2. Only after classes are loaded, we map the selected class for Edit Mode
       if (widget.initialData != null && mounted) {
         final data = widget.initialData!;
-
-        // Look for the ID in the NEW formattedClasses list
         final String? targetId = data['classId']?.toString();
-
-        bool classExists = provider.formattedClasses.any(
-              (cls) => cls['id'] == targetId,
-        );
+        bool classExists = provider.formattedClasses.any((cls) => cls['id'] == targetId);
 
         if (classExists) {
           setState(() {
             selectedClassId = targetId;
-            // We take the name from the provider to ensure it matches the dropdown
             selectedClassName = provider.formattedClasses
                 .firstWhere((cls) => cls['id'] == targetId)['name'];
           });
@@ -75,17 +76,14 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       }
     });
 
-    // --- PRE-FILL REMAINING TEXT DATA ---
     if (widget.initialData != null) {
       final data = widget.initialData!;
       nameCtrl.text = data['name'] ?? "";
       admissionCtrl.text = data['admissionId'] ?? "";
       parentCtrl.text = data['parentGuardian'] ?? "";
-      relationCtrl.text = data['relation'] ?? "";
-      fatherJobCtrl.text = data['fatherProfession'] ?? "";
       phoneCtrl.text = data['phone'] ?? "";
       whatsappCtrl.text = data['whatsapp'] ?? "";
-      motherNameCtrl.text = data['motherName'] ?? "";
+      motherNameCtrl.text = data['motherName'] ?? ""; // Correctly fetching mother name
       aadharCtrl.text = data['aadhar'] ?? "";
       prevSchoolCtrl.text = data['prevSchool'] ?? "";
       ageCtrl.text = data['age'] ?? "";
@@ -99,16 +97,18 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       selectedGender = data['gender'];
       selectedReligion = data['religion'];
       selectedMedium = data['medium'];
+      selectedRelation = data['relation'];
+      selectedOccupation = data['fatherProfession']; // Correctly fetching occupation
+
+      if (data['phone'] == data['whatsapp'] && data['phone'] != null && data['phone'] != "") {
+        isWhatsappSame = true;
+      }
 
       if (data['dob'] != null) {
-        dob = (data['dob'] is DateTime)
-            ? data['dob']
-            : (data['dob'] as dynamic).toDate();
+        dob = (data['dob'] is DateTime) ? data['dob'] : (data['dob'] as dynamic).toDate();
       }
       if (data['lastVaccination'] != null) {
-        lastVaccination = (data['lastVaccination'] is DateTime)
-            ? data['lastVaccination']
-            : (data['lastVaccination'] as dynamic).toDate();
+        lastVaccination = (data['lastVaccination'] is DateTime) ? data['lastVaccination'] : (data['lastVaccination'] as dynamic).toDate();
       }
     }
   }
@@ -135,7 +135,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Column 1
+              // Column 1: Personal & Identity
               Expanded(
                 flex: 3,
                 child: _buildPanel("Personal & Identity", Icons.person_outline, [
@@ -153,39 +153,54 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     Expanded(child: _item("Religion", _dropdown(["Islam", "Hindu", "Christian", "Other"], selectedReligion, (v) => setState(() => selectedReligion = v)))),
                   ]),
                   const SizedBox(height: 10),
-                  _item("Aadhaar Number", _field(aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
+                  _item("Aadhaar Number", _field(aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true, isOptional: true)),
                   const SizedBox(height: 10),
                   _item("Address", _field(addressCtrl, "Permanent Address", Icons.home, maxLines: 2)),
                 ]),
               ),
               const SizedBox(width: 12),
 
-              // Column 2
+              // Column 2: Family & Contact
               Expanded(
                 flex: 3,
                 child: _buildPanel("Family & Contact", Icons.family_restroom, [
                   Row(children: [
                     Expanded(child: _item("Parent/Guardian", _field(parentCtrl, "Name", Icons.person))),
                     const SizedBox(width: 8),
-                    Expanded(child: _item("Relation", _field(relationCtrl, "e.g. Father", Icons.link))),
+                    Expanded(child: _item("Relation", _dropdown(["Father", "Mother", "Brother", "Sister", "Uncle", "Aunt", "Other"], selectedRelation, (v) => setState(() => selectedRelation = v)))),
                   ]),
                   const SizedBox(height: 10),
-                  _item("Father's Profession", _field(fatherJobCtrl, "Occupation", Icons.work_outline)),
+                  // UPDATED: Occupation Dropdown
+                  _item("Occupation", _dropdown(occupations, selectedOccupation, (v) => setState(() => selectedOccupation = v))),
                   const SizedBox(height: 10),
                   _item("Mother's Name", _field(motherNameCtrl, "Name", Icons.woman)),
                   const SizedBox(height: 10),
-                  Row(children: [
-                    Expanded(child: _item("Contact No", _field(phoneCtrl, "Phone", Icons.phone))),
-                    const SizedBox(width: 8),
-                    Expanded(child: _item("WhatsApp", _field(whatsappCtrl, "WhatsApp", Icons.chat))),
-                  ]),
+                  _item("Contact No", _field(phoneCtrl, "Phone", Icons.phone, isNumber: true, onChanged: (val) {
+                    if (isWhatsappSame) setState(() => whatsappCtrl.text = val);
+                  })),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: isWhatsappSame,
+                        activeColor: primaryTeal,
+                        onChanged: (val) {
+                          setState(() {
+                            isWhatsappSame = val!;
+                            if (isWhatsappSame) whatsappCtrl.text = phoneCtrl.text;
+                          });
+                        },
+                      ),
+                      const Text("WhatsApp same as contact", style: TextStyle(fontSize: 10, color: Colors.blueGrey)),
+                    ],
+                  ),
+                  _item("WhatsApp No", _field(whatsappCtrl, "WhatsApp", Icons.chat, isNumber: true, isReadOnly: isWhatsappSame)),
                   const SizedBox(height: 10),
                   _item("Place", _field(placeCtrl, "City/Village", Icons.location_on_outlined)),
                 ]),
               ),
               const SizedBox(width: 12),
 
-              // Column 3
+              // Column 3: Academic & Others
               Expanded(
                 flex: 3,
                 child: _buildPanel("Academic & Others", Icons.school_outlined, [
@@ -195,17 +210,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     Expanded(child: _item("Medium", _dropdown(["English", "Malayalam"], selectedMedium, (v) => setState(() => selectedMedium = v)))),
                   ]),
                   const SizedBox(height: 10),
-                  _item("Admission ID", _field(admissionCtrl, "ID", Icons.vpn_key)),
+                  // UPDATED: Show Document ID (System ID)
+                  _item("System ID", _field(TextEditingController(text: widget.initialData?['id'] ?? "Auto"), "Doc ID", Icons.fingerprint, isReadOnly: true, isOptional: true)),
                   const SizedBox(height: 10),
-                  _item("Previous School", _field(prevSchoolCtrl, "School Name", Icons.history_edu)),
+                  _item("Admission ID", _field(admissionCtrl, "Auto-generated on Save", Icons.vpn_key, isReadOnly: true, isOptional: true)),
                   const SizedBox(height: 10),
-                  Row(children: [
-                    Expanded(child: _item("TC Number", _field(tcNumberCtrl, "TC", Icons.description))),
-                    const SizedBox(width: 8),
-                    Expanded(child: _item("Vaccination", _datePicker(false))),
-                  ]),
+                  _item("Previous School", _field(prevSchoolCtrl, "School Name", Icons.history_edu, isOptional: true)),
+
                   const SizedBox(height: 10),
-                  _item("Identification Mark", _field(idMarkCtrl, "Visible marks", Icons.edit_note)),
+                  _item("Identification Mark", _field(idMarkCtrl, "Visible marks", Icons.edit_note, isOptional: true)),
                 ]),
               ),
             ],
@@ -218,29 +231,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   // --- UI Helpers ---
 
   Widget _classDropdown(AcademicProvider prov) {
-    // 1. Create unique menu items from the formatted list
     final Set<String> uniqueIds = {};
     final List<DropdownMenuItem<String>> menuItems = [];
 
     for (var cls in prov.formattedClasses) {
       final String id = cls['id'] ?? "";
       final String name = cls['name'] ?? "Unnamed Class";
-
       if (id.isNotEmpty && !uniqueIds.contains(id)) {
         uniqueIds.add(id);
-        menuItems.add(
-          DropdownMenuItem<String>(
-            value: id,
-            child: Text(name, overflow: TextOverflow.ellipsis),
-          ),
-        );
+        menuItems.add(DropdownMenuItem<String>(value: id, child: Text(name, overflow: TextOverflow.ellipsis)));
       }
     }
 
-    // 2. Safety Check: Validate the current selection against our unique list
-    final String? validatedValue = uniqueIds.contains(selectedClassId)
-        ? selectedClassId
-        : null;
+    final String? validatedValue = uniqueIds.contains(selectedClassId) ? selectedClassId : null;
 
     return DropdownButtonFormField<String>(
       value: validatedValue,
@@ -248,31 +251,17 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       style: const TextStyle(fontSize: 13, color: Colors.black),
       hint: const Text("Select Class"),
       decoration: InputDecoration(
-        isDense: true,
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
+        isDense: true, filled: true, fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       ),
       items: menuItems,
       onChanged: (String? newVal) {
         if (newVal == null) return;
-
-        try {
-          // Find the selected class in the already formatted list
-          final selectedClass = prov.formattedClasses.firstWhere(
-                  (c) => c['id'] == newVal
-          );
-
-          setState(() {
-            selectedClassId = newVal;
-            selectedClassName = selectedClass['name'];
-          });
-        } catch (e) {
-          debugPrint("Selection mapping error: $e");
-        }
+        final selectedClass = prov.formattedClasses.firstWhere((c) => c['id'] == newVal);
+        setState(() {
+          selectedClassId = newVal;
+          selectedClassName = selectedClass['name'];
+        });
       },
       validator: (v) => v == null ? "Required" : null,
     );
@@ -298,11 +287,13 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     ]);
   }
 
-  Widget _field(TextEditingController ctrl, String hint, IconData icon, {bool isNumber = false, int maxLines = 1, bool isReadOnly = false}) {
+  Widget _field(TextEditingController ctrl, String hint, IconData icon,
+      {bool isNumber = false, int maxLines = 1, bool isReadOnly = false, bool isOptional = false, Function(String)? onChanged}) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
       readOnly: isReadOnly,
+      onChanged: onChanged,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       style: const TextStyle(fontSize: 13),
       decoration: InputDecoration(
@@ -310,16 +301,20 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         hintText: hint,
         isDense: true,
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: isReadOnly ? Colors.grey[100] : const Color(0xFFF8FAFC),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       ),
-      validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+      validator: (v) {
+        if (isOptional) return null;
+        return (v == null || v.isEmpty) ? "Required" : null;
+      },
     );
   }
 
   Widget _dropdown(List<String> items, String? val, Function(String?) onChange) {
     return DropdownButtonFormField<String>(
       value: val,
+      isExpanded: true,
       style: const TextStyle(fontSize: 13, color: Colors.black),
       decoration: InputDecoration(isDense: true, filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
@@ -373,46 +368,76 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }
 
   void _saveStudent() async {
-    if (_formKey.currentState!.validate() && dob != null) {
+    if (!_formKey.currentState!.validate()) return;
+    if (dob == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Date of Birth is mandatory"), backgroundColor: Colors.red));
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: primaryTeal)),
+    );
+
+    try {
+      final provider = context.read<AcademicProvider>();
+      String finalAdmissionId = admissionCtrl.text.trim();
+
+      if (widget.initialData == null) {
+        finalAdmissionId = await provider.generateAdmissionId(selectedClassId!);
+      }
+
+      // Generate a new Milliseconds ID for New Documents
+      String docId = widget.initialData?['id'] ?? DateTime.now().millisecondsSinceEpoch.toString();
+
       Map<String, dynamic> data = {
+        "id": docId, // Saving the Doc ID inside the fields too
         "name": nameCtrl.text.trim(),
-        "admissionId": admissionCtrl.text.trim(),
+        "admissionId": finalAdmissionId,
         "classId": selectedClassId,
         "className": selectedClassName,
         "parentGuardian": parentCtrl.text.trim(),
-        "relation": relationCtrl.text.trim(),
-        "fatherProfession": fatherJobCtrl.text.trim(),
+        "relation": selectedRelation,
+        "fatherProfession": selectedOccupation, // Mapping correctly to your schema
+        "motherName": motherNameCtrl.text.trim(), // Mapping correctly to your schema
         "phone": phoneCtrl.text.trim(),
         "whatsapp": whatsappCtrl.text.trim(),
-        "motherName": motherNameCtrl.text.trim(),
         "aadhar": aadharCtrl.text.trim(),
-        "prevSchool": prevSchoolCtrl.text.trim(),
         "dob": dob,
         "age": ageCtrl.text,
         "religion": selectedReligion,
         "place": placeCtrl.text.trim(),
         "address": addressCtrl.text.trim(),
-        "community": communityCtrl.text.trim(),
-        "motherTongue": motherTongueCtrl.text.trim(),
-        "medium": selectedMedium,
-        "tcNumber": tcNumberCtrl.text.trim(),
-        "lastVaccination": lastVaccination,
-        "identificationMark": idMarkCtrl.text.trim(),
         "gender": selectedGender,
+        "medium": selectedMedium,
+        "prevSchool": prevSchoolCtrl.text.trim(),
+        "tcNumber": tcNumberCtrl.text.trim(),
+        "identificationMark": idMarkCtrl.text.trim(),
+        "updatedAt": FieldValue.serverTimestamp(),
       };
 
       if (widget.initialData != null) {
-        await context.read<AcademicProvider>().updateStudent(widget.initialData!['id'], data);
+        await provider.updateStudent(docId, data);
       } else {
-        await context.read<AcademicProvider>().addStudent(studentData: data);
+        // Use the custom docId (milliseconds) for new records
+        await FirebaseFirestore.instance.collection("students").doc(docId).set(data);
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.initialData == null ? "Student Registered Successfully" : "Student Profile Updated")));
-        Navigator.pop(context);
+        Navigator.pop(context); // Close loading dialog
+        Navigator.pop(context); // Go back to List
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.initialData == null ? "Student Registered" : "Profile Updated"),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
-    } else if (dob == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select Date of Birth")));
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      debugPrint("Save Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to save: $e"), backgroundColor: Colors.red));
     }
   }
 }

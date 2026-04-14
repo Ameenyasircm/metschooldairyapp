@@ -7,8 +7,8 @@ class AcademicProvider extends ChangeNotifier {
   List<Map<String, String>> formattedClasses = [];
   bool isClassLoading = false;
 
+  // --- Class Fetching ---
   Future<void> fetchClasses({bool forceRefresh = false}) async {
-    // Return early only if we aren't forcing a refresh and data exists
     if (!forceRefresh && formattedClasses.isNotEmpty) return;
 
     isClassLoading = true;
@@ -16,8 +16,6 @@ class AcademicProvider extends ChangeNotifier {
 
     try {
       final snapshot = await db.collection('classes').orderBy('name').get();
-
-      // Clear and map to ensure no "ghost" duplicates exist
       formattedClasses = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return {
@@ -25,8 +23,6 @@ class AcademicProvider extends ChangeNotifier {
           "name": (data['name'] ?? "Unnamed Class").toString(),
         };
       }).toList();
-
-      debugPrint("Successfully loaded ${formattedClasses.length} unique classes.");
     } catch (e) {
       debugPrint("Firestore fetch error: $e");
     } finally {
@@ -35,19 +31,26 @@ class AcademicProvider extends ChangeNotifier {
     }
   }
 
-  /// 🔹 ADD STUDENT
+  /// 🔹 ADD STUDENT (Updated for Milliseconds ID)
   Future<void> addStudent({required Map<String, dynamic> studentData}) async {
     try {
+      // Logic: Use Milliseconds as the actual Firestore Document ID
       String docId = DateTime.now().millisecondsSinceEpoch.toString();
+
       Map<String, dynamic> finalData = {
         ...studentData,
-        "id": docId,
+        "id": docId, // Keep the Document ID inside the fields for easy reference
         "createdAt": FieldValue.serverTimestamp(),
       };
+
+      // Set document with the timestamp ID
       await db.collection("students").doc(docId).set(finalData);
-      await fetchStudents(); // Refresh the first page
+
+      // Refresh list
+      await fetchStudents();
     } catch (e) {
       debugPrint("Error adding student: $e");
+      rethrow;
     }
   }
 
@@ -55,28 +58,16 @@ class AcademicProvider extends ChangeNotifier {
   Future<void> updateStudent(String docId, Map<String, dynamic> updatedData) async {
     try {
       await db.collection("students").doc(docId).update(updatedData);
-      // Manually update the local list to reflect changes immediately without a full refetch
-      int index = studentsList.indexWhere((doc) => doc.id == docId);
-      if (index != -1) {
-        await fetchStudents();
-      }
+
+      // Refresh the local list to reflect changes immediately
+      await fetchStudents();
     } catch (e) {
       debugPrint("Update Error: $e");
+      rethrow;
     }
   }
 
-  /// 🔹 DELETE STUDENT
-  Future<void> deleteStudent(String docId) async {
-    try {
-      await db.collection("students").doc(docId).delete();
-      studentsList.removeWhere((doc) => doc.id == docId);
-      notifyListeners();
-    } catch (e) {
-      debugPrint("Delete Error: $e");
-    }
-  }
-
-  // --- Pagination Logic ---
+  // --- Pagination & List Logic ---
   List<DocumentSnapshot> studentsList = [];
   bool isStudentLoading = false;
   bool isMoreLoading = false;
@@ -90,7 +81,7 @@ class AcademicProvider extends ChangeNotifier {
       notifyListeners();
 
       final snapshot = await db.collection("students")
-          .orderBy("createdAt", descending: true)
+          .orderBy("updatedAt", descending: true) // Using updatedAt so newly edited/added appear first
           .limit(limit)
           .get();
 
@@ -112,7 +103,7 @@ class AcademicProvider extends ChangeNotifier {
       notifyListeners();
 
       final snapshot = await db.collection("students")
-          .orderBy("createdAt", descending: true)
+          .orderBy("updatedAt", descending: true)
           .startAfterDocument(lastDocument!)
           .limit(limit)
           .get();
@@ -127,6 +118,54 @@ class AcademicProvider extends ChangeNotifier {
     } finally {
       isMoreLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// 🔹 GENERATE CONTINUOUS ADMISSION ID
+  Future<String> generateAdmissionId(String classId) async {
+    bool isKG = classId.toLowerCase().contains("kg");
+    String counterDoc = isKG ? "kg_counter" : "std_counter";
+
+    DocumentReference ref = db.collection("counters").doc(counterDoc);
+
+    return await db.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(ref);
+
+      if (!snapshot.exists) {
+        int initialValue = isKG ? 1 : 1001;
+        transaction.set(ref, {"last_val": initialValue});
+        return isKG ? "KG ${initialValue.toString().padLeft(3, '0')}" : initialValue.toString();
+      }
+
+      int newVal = (snapshot.get("last_val") as int) + 1;
+      transaction.update(ref, {"last_val": newVal});
+
+      return isKG
+          ? "KG ${newVal.toString().padLeft(3, '0')}"
+          : newVal.toString().padLeft(4, '0');
+    });
+  }
+
+  /// 🔹 SOFT DELETE
+  Future<void> deleteStudentWithLog(String docId) async {
+    try {
+      DocumentSnapshot studentDoc = await db.collection("students").doc(docId).get();
+      if (!studentDoc.exists) return;
+
+      Map<String, dynamic> data = studentDoc.data() as Map<String, dynamic>;
+
+      await db.collection("deleted_students").doc(docId).set({
+        ...data,
+        "deletedAt": FieldValue.serverTimestamp(),
+        "status": "Archived",
+      });
+
+      await db.collection("students").doc(docId).delete();
+
+      studentsList.removeWhere((doc) => doc.id == docId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Delete Log Error: $e");
     }
   }
 }
