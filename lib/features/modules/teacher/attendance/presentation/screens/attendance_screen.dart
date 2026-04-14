@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:met_school/core/constants/app_padding.dart';
 import 'package:met_school/core/constants/app_radius.dart';
 import 'package:met_school/core/constants/app_spacing.dart';
@@ -33,11 +34,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (studentProvider.myAllStudents.isEmpty) {
         studentProvider.fetchMyStudentsInitial().then((_) {
           attendanceProvider.initializeStudents(studentProvider.myAllStudents);
+          attendanceProvider.fetchAttendance(studentProvider.assignedDivision?.id);
         });
       } else {
         attendanceProvider.initializeStudents(studentProvider.myAllStudents);
+        attendanceProvider.fetchAttendance(studentProvider.assignedDivision?.id);
       }
     });
+  }
+
+  void _onFilterChanged() {
+    final studentProvider = context.read<StudentProvider>();
+    final attendanceProvider = context.read<AttendanceProvider>();
+    attendanceProvider.fetchAttendance(studentProvider.assignedDivision?.id);
   }
 
   @override
@@ -61,7 +70,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       ),
       body: Column(
         children: [
-          _buildSessionToggle(),
+          _buildHeader(),
           _buildSearchField(),
           _buildBulkActions(),
           Expanded(child: _buildStudentList()),
@@ -71,9 +80,48 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
+  Widget _buildHeader() {
+    return Consumer2<StudentProvider, AttendanceProvider>(
+      builder: (context, studentProvider, attendanceProvider, _) {
+        final division = studentProvider.assignedDivision;
+        return Padding(
+          padding: AppPadding.phM,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        division?.name ?? "No Class Assigned",
+                        style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        DateFormat('EEEE, dd MMM yyyy').format(attendanceProvider.selectedDate),
+                        style: AppTypography.caption.copyWith(color: AppColors.greyB2),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today, color: AppColors.primary),
+                    onPressed: () => _selectDate(context, attendanceProvider),
+                  ),
+                ],
+              ),
+              AppSpacing.vs,
+              _buildSessionToggle(attendanceProvider),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSearchField() {
     return Container(
-      margin: AppPadding.phM.copyWith(bottom: 8.h),
+      margin: AppPadding.phM.copyWith(bottom: 8.h, top: 8.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -103,34 +151,46 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildSessionToggle() {
-    return Consumer<AttendanceProvider>(
-      builder: (context, provider, _) {
-        return Padding(
-          padding: AppPadding.pM,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.greyB2,
-              borderRadius: AppRadius.radiusM,
-            ),
-            child: Row(
-              children: [
-                _buildToggleButton(
-                  title: 'Morning',
-                  isSelected: provider.selectedSession == AttendanceSession.morning,
-                  onTap: () => provider.setSession(AttendanceSession.morning),
-                ),
-                _buildToggleButton(
-                  title: 'Afternoon',
-                  isSelected: provider.selectedSession == AttendanceSession.afternoon,
-                  onTap: () => provider.setSession(AttendanceSession.afternoon),
-                ),
-              ],
-            ),
+  Future<void> _selectDate(BuildContext context, AttendanceProvider provider) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: provider.selectedDate,
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      provider.setDate(picked);
+      _onFilterChanged();
+    }
+  }
+
+  Widget _buildSessionToggle(AttendanceProvider provider) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.greyB2.withOpacity(0.2),
+        borderRadius: AppRadius.radiusM,
+      ),
+      child: Row(
+        children: [
+          _buildToggleButton(
+            title: 'Morning (FN)',
+            isSelected: provider.selectedSession == AttendanceSession.morning,
+            onTap: () {
+              provider.setSession(AttendanceSession.morning);
+              _onFilterChanged();
+            },
           ),
-        );
-      },
+          _buildToggleButton(
+            title: 'Afternoon (AN)',
+            isSelected: provider.selectedSession == AttendanceSession.afternoon,
+            onTap: () {
+              provider.setSession(AttendanceSession.afternoon);
+              _onFilterChanged();
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -215,20 +275,43 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: AppRadius.radiusM,
-                border: Border.all(color: AppColors.grey5E),
+                border: Border.all(
+                  color: student.status == AttendanceStatus.present
+                      ? Colors.green.withOpacity(0.3)
+                      : student.status == AttendanceStatus.absent
+                          ? Colors.red.withOpacity(0.3)
+                          : student.status == AttendanceStatus.late
+                              ? Colors.orange.withOpacity(0.3)
+                              : AppColors.grey5E,
+                ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(student.studentName, style: AppTypography.body1.copyWith(fontWeight: FontWeight.w500)),
-                        Text('Adm: ${student.admissionNumber}', style: AppTypography.caption.copyWith(color: AppColors.greyB2)),
-                      ],
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(student.studentName,
+                                style: AppTypography.body1.copyWith(fontWeight: FontWeight.w500)),
+                            Text('Adm: ${student.admissionNumber}',
+                                style: AppTypography.caption.copyWith(color: AppColors.greyB2)),
+                          ],
+                        ),
+                      ),
+                      _buildStatusSelector(student, provider),
+                    ],
                   ),
-                  _buildStatusSelector(student, provider),
+                  if (student.status == AttendanceStatus.late && student.lateReason != null)
+                    Padding(
+                      padding: EdgeInsets.only(top: 8.h),
+                      child: Text(
+                        "Reason: ${student.lateReason}",
+                        style: AppTypography.caption.copyWith(color: Colors.orange, fontStyle: FontStyle.italic),
+                      ),
+                    ),
                 ],
               ),
             );
@@ -255,7 +338,39 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           activeColor: Colors.red,
           onTap: () => provider.updateStatus(student.studentId, AttendanceStatus.absent),
         ),
+        AppSpacing.hs,
+        _buildStatusButton(
+          label: 'L',
+          isSelected: student.status == AttendanceStatus.late,
+          activeColor: Colors.orange,
+          onTap: () => _showLateReasonDialog(context, student, provider),
+        ),
       ],
+    );
+  }
+
+  void _showLateReasonDialog(BuildContext context, StudentAttendance student, AttendanceProvider provider) {
+    final TextEditingController reasonController = TextEditingController(text: student.lateReason);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Late Reason for ${student.studentName}", style: AppTypography.body1),
+        content: TextField(
+          controller: reasonController,
+          decoration: const InputDecoration(hintText: "Enter reason (e.g., Bus delay)"),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              provider.updateStatus(student.studentId, AttendanceStatus.late, reason: reasonController.text);
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -293,35 +408,50 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildSaveButton() {
     return Consumer<AttendanceProvider>(
       builder: (context, provider, _) {
-        return Container(
+        return provider.students.isEmpty?
+            SizedBox.shrink():
+          Container(
           padding: AppPadding.pM,
           child: SizedBox(
             width: double.infinity,
             height: 50.h,
             child: ElevatedButton(
-              onPressed: provider.isLoading ? null : () async {
-                try {
-                  await provider.saveAttendance();
-                  if (mounted) {
-                    SnackbarService().showSuccess("Attendance saved successfully!");
-                    Navigator.pop(context);
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    SnackbarService().showError(e.toString().replaceAll("Exception: ", ""));
-                  }
-                }
-              },
+              onPressed: (provider.isLoading)
+                  ? null
+                  : () async {
+                      // Validation: Check if all students are marked
+                      final hasUnmarked = provider.students.any((s) => s.status == AttendanceStatus.none);
+                      if (hasUnmarked) {
+                        SnackbarService().showError("Please mark attendance for all students before saving.");
+                        return;
+                      }
+
+                      try {
+                        await provider.saveAttendance();
+                        if (mounted) {
+                          SnackbarService().showSuccess("Attendance saved successfully!");
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          SnackbarService()
+                              .showError(e.toString().replaceAll("Exception: ", ""));
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
+                disabledBackgroundColor: AppColors.greyB2,
                 foregroundColor: AppColors.white,
+                disabledForegroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusL),
                 elevation: 0,
               ),
               child: provider.isLoading
                   ? const CustomLoader()
                   : Text(
-                      'Save ${provider.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'}',
+                     'Save ${provider.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'}',
+
                       style: AppTypography.body2.copyWith(color: AppColors.white),
                     ),
             ),
