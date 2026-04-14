@@ -411,7 +411,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         "motherName": motherNameCtrl.text.trim(),
         "phone": parentPhone,
         "whatsapp": whatsappCtrl.text.trim(),
-        "aadhar": aadharCtrl.text.trim(),
+        "aadhar": aadharCtrl.text.trim(), // Note: Keep this mapping as requested
         "dob": dob,
         "age": ageCtrl.text,
         "religion": selectedReligion,
@@ -423,6 +423,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         "tcNumber": tcNumberCtrl.text.trim(),
         "identificationMark": idMarkCtrl.text.trim(),
         "updatedAt": FieldValue.serverTimestamp(),
+        "isEnrolled": false,
       };
 
       final batch = firestore.batch();
@@ -430,7 +431,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
       if (widget.initialData == null) {
         // --- CASE A: NEW REGISTRATION ---
-
         var existingUserQuery = await firestore.collection("users")
             .where("phone", isEqualTo: parentPhone)
             .where("role", isEqualTo: "parent")
@@ -440,32 +440,27 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         String parentUid;
 
         if (existingUserQuery.docs.isNotEmpty) {
-          // Parent exists: Link student and update BOTH collections
           parentUid = existingUserQuery.docs.first.id;
-          studentData['parentId'] = parentUid;
+          studentData['parentId'] = parentUid; // Updated here
 
           batch.set(studentRef, studentData);
 
-          // Update 'parents' collection
           batch.update(firestore.collection("parents").doc(parentUid), {
             "studentIds": FieldValue.arrayUnion([docId]),
             "updatedAt": FieldValue.serverTimestamp(),
           });
 
-          // NEW: Update 'users' collection to keep IDs in sync
           batch.update(firestore.collection("users").doc(parentUid), {
             "studentIds": FieldValue.arrayUnion([docId]),
           });
 
         } else {
-          // New Parent: Create User and Parent Document
           DocumentReference newUserRef = firestore.collection("users").doc();
           parentUid = newUserRef.id;
-          studentData['parentId'] = parentUid;
+          studentData['parentId'] = parentUid; // Updated here
 
           batch.set(studentRef, studentData);
 
-          // Create User Account (Including studentIds array)
           batch.set(newUserRef, {
             "uid": parentUid,
             "role": "parent",
@@ -473,7 +468,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             "phone": parentPhone,
             "user_name": parentPhone,
             "password": parentPhone,
-            "studentIds": [docId], // NEW: Initialize the list in users collection
+            "studentIds": [docId],
             "createdAt": FieldValue.serverTimestamp(),
             "createdBy": adminUid,
           });
@@ -488,9 +483,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         }
       } else {
         // --- CASE B: EDIT EXISTING STUDENT ---
+        String? parentId = widget.initialData?['parentId'];
+
+        // Ensure parentId is updated in the student document if it exists
+        if (parentId != null) {
+          studentData['parentId'] = parentId;
+        }
+
         batch.update(studentRef, studentData);
 
-        String? parentId = widget.initialData?['parentId'];
         if (parentId != null) {
           batch.update(firestore.collection("parents").doc(parentId), {
             "parentName": parentName,

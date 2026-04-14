@@ -149,10 +149,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
-            onPressed: (){
-              addRandomStudents(10);
-            },
-            // onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen())),
+            // onPressed: (){
+            //   addRandomStudents(10);
+            // },
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen())),
             icon: const Icon(Icons.person_add_rounded, size: 20),
             label: const Text("Add New Student", style: TextStyle(fontWeight: FontWeight.bold)),
           )
@@ -166,9 +166,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
     final List<String> names = ["Adhil", "Fathima", "Muhammed", "Aisha", "Zayan", "Rinshad", "Hadiya"];
     final List<Map<String, String>> classes = [
-      {"id": "class_1", "name": "10 A"},
-      {"id": "class_2", "name": "9 B"},
-      {"id": "class_3", "name": "8 C"},
+      {"id": "class10", "name": "10 A"},
+      {"id": "class9", "name": "9 B"},
+      {"id": "class8", "name": "8 C"},
     ];
 
     for (int i = 0; i < count; i++) {
@@ -182,6 +182,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
       final String docId = DateTime.now().millisecondsSinceEpoch.toString() + i.toString();
       final String finalAdmissionId = "ADM-2026-${100 + i}";
 
+      // 1. Prepare base student data (isEnrolled: false as default for new registrations)
       Map<String, dynamic> studentData = {
         "id": docId,
         "name": "$name ${i + 1}",
@@ -206,6 +207,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         "tcNumber": "TC${100 + i}",
         "identificationMark": "Mole on neck",
         "updatedAt": FieldValue.serverTimestamp(),
+        "isEnrolled": false, // Synchronized with your _saveStudent logic
       };
 
       var existingUserQuery = await firestore.collection("users")
@@ -220,31 +222,31 @@ class _StudentListScreenState extends State<StudentListScreen> {
       if (existingUserQuery.docs.isNotEmpty) {
         // --- SIBLING CASE ---
         parentUid = existingUserQuery.docs.first.id;
-        studentData['parentId'] = parentUid;
+        studentData['parentId'] = parentUid; // Explicitly link parentId to student document
 
         batch.set(studentRef, studentData);
 
-        // 1. Update 'parents' collection
+        // Update 'parents' collection
         batch.update(firestore.collection("parents").doc(parentUid), {
           "studentIds": FieldValue.arrayUnion([docId]),
           "updatedAt": FieldValue.serverTimestamp(),
         });
 
-        // 2. ALSO update 'users' collection with the new student ID
+        // Update 'users' collection
         batch.update(firestore.collection("users").doc(parentUid), {
           "studentIds": FieldValue.arrayUnion([docId]),
         });
 
-        print("Sibling added and synced to user: $parentPhone");
+        print("Sibling added and linked to Parent UID: $parentUid");
       } else {
         // --- NEW PARENT CASE ---
         DocumentReference newUserRef = firestore.collection("users").doc();
         parentUid = newUserRef.id;
-        studentData['parentId'] = parentUid;
+        studentData['parentId'] = parentUid; // Explicitly link parentId to student document
 
         batch.set(studentRef, studentData);
 
-        // 1. Create User Account (Including studentIds array)
+        // Create User Account in 'users'
         batch.set(newUserRef, {
           "uid": parentUid,
           "role": "parent",
@@ -252,12 +254,12 @@ class _StudentListScreenState extends State<StudentListScreen> {
           "phone": parentPhone,
           "user_name": parentPhone,
           "password": parentPhone,
-          "studentIds": [docId], // Initialize the array here
+          "studentIds": [docId],
           "createdAt": FieldValue.serverTimestamp(),
           "createdBy": adminUid,
         });
 
-        // 2. Create Parent Document
+        // Create Parent Document in 'parents'
         batch.set(firestore.collection("parents").doc(parentUid), {
           "parentUid": parentUid,
           "studentIds": [docId],
@@ -265,7 +267,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
           "phone": parentPhone,
           "updatedAt": FieldValue.serverTimestamp(),
         });
-        print("New Parent/User & Student created: $parentPhone");
+        print("New Parent/User created with UID: $parentUid");
       }
 
       await batch.commit();

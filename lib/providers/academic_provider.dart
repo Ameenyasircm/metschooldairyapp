@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AcademicProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
-  List<Map<String, String>> formattedClasses = [];
+  List<Map<String, dynamic>> formattedClasses = [];
   bool isClassLoading = false;
 
   // --- Class Fetching ---
@@ -15,14 +15,18 @@ class AcademicProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final snapshot = await db.collection('classes').orderBy('name').get();
+      // Sorts by your new index field (1, 2, 3...)
+      final snapshot = await db.collection('classes').orderBy('index').get();
+
       formattedClasses = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return {
-          "id": (data['id'] ?? doc.id).toString(),
-          "name": (data['name'] ?? "Unnamed Class").toString(),
+          "id": doc.id, // Using document ID (lkg, class1, etc)
+          "name": (data['name'] ?? "Unnamed").toString(),
+          "index": data['index'] ?? 0,
         };
       }).toList();
+
     } catch (e) {
       debugPrint("Firestore fetch error: $e");
     } finally {

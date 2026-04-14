@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/features/modules/admin/views/parents_list.dart';
 import 'package:met_school/features/modules/admin/views/staff_management.dart';
@@ -203,5 +204,41 @@ class AdminHome extends StatelessWidget {
         ),
       ),
     );
+  }
+  Future<void> initializeClasses() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+
+    // Define the ordered list
+    final List<String> classNames = [
+      "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+    ];
+
+    for (int i = 0; i < classNames.length; i++) {
+      String name = classNames[i];
+
+      // Create a clean document ID (e.g., 'lkg', 'class1', 'class10')
+      String docId = name.toLowerCase().contains('kg')
+          ? name.toLowerCase()
+          : "class$name";
+
+      DocumentReference docRef = firestore.collection("classes").doc(docId);
+
+      batch.set(docRef, {
+        "id": docId,
+        "name": name.contains(RegExp(r'[0-9]')) && !name.contains("KG")
+            ? "CLASS $name" // Format numbers as "CLASS 1"
+            : name,         // Keep LKG/UKG as is
+        "index": i + 1,     // The critical field for ordering
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
+    }
+
+    try {
+      await batch.commit();
+      print("✅ All classes initialized with correct sort order.");
+    } catch (e) {
+      print("❌ Error initializing classes: $e");
+    }
   }
 }
