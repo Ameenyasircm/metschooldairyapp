@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../providers/admin_provider.dart';
 
 class ParentMasterDirectory extends StatelessWidget {
   const ParentMasterDirectory({super.key});
@@ -11,7 +14,7 @@ class ParentMasterDirectory extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.read<AdminProvider>().setIndex(0),
         ),
         title: const Text("PARENT-STUDENT MAPPING",
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2)),

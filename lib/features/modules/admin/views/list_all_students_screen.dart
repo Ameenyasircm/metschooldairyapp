@@ -164,7 +164,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final String adminUid = FirebaseAuth.instance.currentUser?.uid ?? "system";
 
-    // Lists for variety
     final List<String> names = ["Adhil", "Fathima", "Muhammed", "Aisha", "Zayan", "Rinshad", "Hadiya"];
     final List<Map<String, String>> classes = [
       {"id": "class_1", "name": "10 A"},
@@ -177,8 +176,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
       final String name = names[i % names.length];
       final selectedClass = classes[i % classes.length];
 
-      // We alternate phone numbers every 2 students to test the SIBLING flow
-      // Student 0 and 1 will have the same parent, 2 and 3 will have the same parent, etc.
       int parentGroup = (i / 2).floor();
       final String parentPhone = "971500000$parentGroup";
 
@@ -211,9 +208,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
         "updatedAt": FieldValue.serverTimestamp(),
       };
 
-      // --- LOGIC TO TEST THE FLOW ---
-
-      // 1. Check if parent already exists (Sibling Check)
       var existingUserQuery = await firestore.collection("users")
           .where("phone", isEqualTo: parentPhone)
           .where("role", isEqualTo: "parent")
@@ -224,25 +218,33 @@ class _StudentListScreenState extends State<StudentListScreen> {
       DocumentReference studentRef = firestore.collection("students").doc(docId);
 
       if (existingUserQuery.docs.isNotEmpty) {
-        // SIBLING CASE: Use existing parent
+        // --- SIBLING CASE ---
         parentUid = existingUserQuery.docs.first.id;
         studentData['parentId'] = parentUid;
 
         batch.set(studentRef, studentData);
+
+        // 1. Update 'parents' collection
         batch.update(firestore.collection("parents").doc(parentUid), {
           "studentIds": FieldValue.arrayUnion([docId]),
           "updatedAt": FieldValue.serverTimestamp(),
         });
-        print("Sibling added for parent: $parentPhone");
+
+        // 2. ALSO update 'users' collection with the new student ID
+        batch.update(firestore.collection("users").doc(parentUid), {
+          "studentIds": FieldValue.arrayUnion([docId]),
+        });
+
+        print("Sibling added and synced to user: $parentPhone");
       } else {
-        // NEW PARENT CASE
+        // --- NEW PARENT CASE ---
         DocumentReference newUserRef = firestore.collection("users").doc();
         parentUid = newUserRef.id;
         studentData['parentId'] = parentUid;
 
         batch.set(studentRef, studentData);
 
-        // Create User Account
+        // 1. Create User Account (Including studentIds array)
         batch.set(newUserRef, {
           "uid": parentUid,
           "role": "parent",
@@ -250,11 +252,12 @@ class _StudentListScreenState extends State<StudentListScreen> {
           "phone": parentPhone,
           "user_name": parentPhone,
           "password": parentPhone,
+          "studentIds": [docId], // Initialize the array here
           "createdAt": FieldValue.serverTimestamp(),
           "createdBy": adminUid,
         });
 
-        // Create Parent Document
+        // 2. Create Parent Document
         batch.set(firestore.collection("parents").doc(parentUid), {
           "parentUid": parentUid,
           "studentIds": [docId],
@@ -262,12 +265,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
           "phone": parentPhone,
           "updatedAt": FieldValue.serverTimestamp(),
         });
-        print("New Parent & Student created: $parentPhone");
+        print("New Parent/User & Student created: $parentPhone");
       }
 
       await batch.commit();
     }
-    print("Done! Added $count test students and synced parent accounts.");
   }
 
   Widget _statItem(String label, String value, Color color) {
