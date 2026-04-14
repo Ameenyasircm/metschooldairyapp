@@ -117,6 +117,7 @@ class AdminProvider with ChangeNotifier {
       // 1. References
       DocumentReference divRef = fireStore.collection('divisions').doc();
       DocumentReference teacherRef = fireStore.collection('staff_profiles').doc(classTeacherId);
+      DocumentReference userRef = fireStore.collection('users').doc(classTeacherId);
       DocumentReference logRef = fireStore.collection('activity_logs').doc();
 
       // --- DATA OBJECTS ---
@@ -133,6 +134,21 @@ class AdminProvider with ChangeNotifier {
         'created_at': FieldValue.serverTimestamp(),
         'assigned_by_id': adminId,
         'assigned_by_name': adminName,
+        'is_class_teacher': true,
+
+      };
+      final usersData = {
+        'division_id': divRef.id,
+        'academic_year_id': academicYearId,
+        'class_id': classId,
+        'class_name': className,
+        'division_name': divisionName,
+        'subject_teachers': subjectTeachers, // Included
+        'created_at': FieldValue.serverTimestamp(),
+        'assigned_by_id': adminId,
+        'assigned_by_name': adminName,
+        'is_class_teacher': true,
+
       };
 
       final teacherUpdateData = {
@@ -161,6 +177,7 @@ class AdminProvider with ChangeNotifier {
       batch.set(divRef, divisionData);
       batch.update(teacherRef, teacherUpdateData);
       batch.set(logRef, logData);
+      batch.set(userRef, usersData);
 
       await batch.commit();
 

@@ -261,7 +261,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             className: className,
             academicYearId: widget.academicYearId,
             classTeacherName: divData['class_teacher_name'],
-            classTeacherId: divData['class_teacher_id'],
+            classTeacherId: divData['class_teacher_id'], classId:divData['class_id'] ,
           ),
           context,
         );

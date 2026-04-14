@@ -82,20 +82,7 @@ class AcademicYearHomeScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  _moduleCard(
-                    context,
-                    title: "Students",
-                    icon: Icons.school,
-                    color: Colors.green,
-                    onTap: () {},
-                  ),
-                  _moduleCard(
-                    context,
-                    title: "Teachers",
-                    icon: Icons.people,
-                    color: Colors.orange,
-                    onTap: () {},
-                  ),
+
                 ],
               ),
             ),
