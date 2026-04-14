@@ -27,8 +27,6 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3));
     try {
       final prefs = await SharedPreferences.getInstance();
-      prefs.clear();
-
       if (!mounted) return;
 
       final authProvider = context.read<AuthProvider>();
@@ -51,6 +49,8 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         final staffPhone = prefs.getString("staffPhone");
         final password = prefs.getString("password");
+        print("staffPhone  $staffPhone");
+        print("password  $password");
 
         if (staffPhone == null || staffPhone.isEmpty || password == null) {
           pushAndRemoveUntil(LoginScreen(), context);

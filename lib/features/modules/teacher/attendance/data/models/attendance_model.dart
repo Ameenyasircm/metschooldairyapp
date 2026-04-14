@@ -1,19 +1,100 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum AttendanceStatus { present, absent, late, none }
 
-class StudentAttendance {
-  final String studentId;
-  final String studentName;
-  final String admissionNumber;
-  AttendanceStatus status;
-  String? lateReason;
+enum AttendanceSession { morning, afternoon }
 
-  StudentAttendance({
+class StudentAttendanceData {
+  final String studentId;
+  final String name;
+  final String rollNo;
+  AttendanceStatus morning;
+  AttendanceStatus afternoon;
+  bool isLate;
+  String lateRemark;
+
+  StudentAttendanceData({
     required this.studentId,
-    required this.studentName,
-    required this.admissionNumber,
-    this.status = AttendanceStatus.none,
-    this.lateReason,
+    required this.name,
+    required this.rollNo,
+    this.morning = AttendanceStatus.none,
+    this.afternoon = AttendanceStatus.none,
+    this.isLate = false,
+    this.lateRemark = '',
   });
+
+  factory StudentAttendanceData.fromMap(String id, Map<String, dynamic> map) {
+    return StudentAttendanceData(
+      studentId: id,
+      name: map['name'] ?? '',
+      rollNo: map['rollNo'] ?? '',
+      morning: _parseStatus(map['morning']),
+      afternoon: _parseStatus(map['afternoon']),
+      isLate: map['isLate'] ?? false,
+      lateRemark: map['lateRemark'] ?? '',
+    );
+  }
+
+  static AttendanceStatus _parseStatus(String? status) {
+    switch (status) {
+      case 'present': return AttendanceStatus.present;
+      case 'absent': return AttendanceStatus.absent;
+      case 'late': return AttendanceStatus.late;
+      default: return AttendanceStatus.none;
+    }
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'rollNo': rollNo,
+      'morning': morning.name,
+      'afternoon': afternoon.name,
+      'isLate': isLate,
+      'lateRemark': lateRemark,
+    };
+  }
 }
 
-enum AttendanceSession { morning, afternoon }
+class DailyAttendanceModel {
+  final String date;
+  final String divisionId;
+  final String academicYearId;
+  final String markedById;
+  final DateTime lastUpdated;
+  final Map<String, StudentAttendanceData> students;
+
+  DailyAttendanceModel({
+    required this.date,
+    required this.divisionId,
+    required this.academicYearId,
+    required this.markedById,
+    required this.lastUpdated,
+    required this.students,
+  });
+
+  factory DailyAttendanceModel.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    Map<String, dynamic> studentsMap = data['students'] ?? {};
+    
+    return DailyAttendanceModel(
+      date: data['date'] ?? '',
+      divisionId: data['divisionId'] ?? '',
+      academicYearId: data['academicYearId'] ?? '',
+      markedById: data['markedById'] ?? '',
+      lastUpdated: (data['lastUpdated'] as Timestamp).toDate(),
+      students: studentsMap.map((key, value) => MapEntry(key, StudentAttendanceData.fromMap(key, value))),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'date': date,
+      'divisionId': divisionId,
+      'academicYearId': academicYearId,
+      'markedById': markedById,
+      'lastUpdated': FieldValue.serverTimestamp(),
+      'students': students.map((key, value) => MapEntry(key, value.toMap())),
+    };
+  }
+}

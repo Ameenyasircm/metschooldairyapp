@@ -10,15 +10,28 @@ import '../../../../../../core/constants/app_spacing.dart';
 import '../../../../../../core/router/app_navigation.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_typography.dart';
-import '../../../../../../core/utils/loader/customLoader.dart';
 import '../../../../../../core/widgets/buttons/gradient_button.dart';
+import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../provider/student_provider.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/student_shimmer.dart';
 import '../widgets/student_tile.dart';
 
-class MyStudentsScreen extends StatelessWidget {
+class MyStudentsScreen extends StatefulWidget {
   const MyStudentsScreen({super.key});
+
+  @override
+  State<MyStudentsScreen> createState() => _MyStudentsScreenState();
+}
+
+class _MyStudentsScreenState extends State<MyStudentsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StudentProvider>().fetchMyStudentsInitial();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +50,30 @@ class MyStudentsScreen extends StatelessWidget {
       body: Column(
         children: [
           AppSpacing.h12,
-          _buildSearchField(context),
+          SizedBox(
+             height: 48.h,
+            child: Row(
+              children: [
+                Flexible(
+                  flex: 2,
+                    child: _buildSearchField(context)),
+                Flexible(
+                  child: Padding(
+                    padding:EdgeInsets.only(right: 6.w),
+                    child: gradientButton(
+                      text: "Enroll",
+                      onPressed: () {
+                        final provider = context.read<StudentProvider>();
+                        provider.clearSelection();
+                        provider.fetchInitial();
+                        NavigationService.push(context, const TechStudentListScreen());
+                      },
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
           Expanded(
             child: Consumer<StudentProvider>(
               builder: (context, provider, child) {
@@ -53,7 +89,7 @@ class MyStudentsScreen extends StatelessWidget {
                   onRefresh: () async {
                     await provider.fetchMyStudentsInitial();
                   },
-                  child: provider.myStudents.isEmpty
+                  child: provider.myAllStudents.isEmpty
                       ? buildEmptyState()
                       : _buildStudentList(provider),
                 );
@@ -62,28 +98,13 @@ class MyStudentsScreen extends StatelessWidget {
           )
         ],
       ),
-      bottomNavigationBar:SafeArea(
-        bottom: true,
-        child: Padding(
-          padding: AppPadding.pM,
-          child: gradientButton(
-            text: "Add Student",
-            onPressed: () {
-              final provider = context.read<StudentProvider>();
-              provider.clearSelection();
-              provider.fetchInitial();
-              NavigationService.push(context, const TechStudentListScreen());
-            },
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildSearchField(BuildContext context,) {
     return Container(
       margin: AppPadding.phM,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: AppRadius.radiusM,
@@ -123,10 +144,15 @@ class MyStudentsScreen extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: provider.myStudents.length + (provider.hasMyStdMore ? 1 : 0),
         itemBuilder: (context, index) {
+          var item=provider.myStudents[index];
           if (index < provider.myStudents.length) {
-            return StudentTile(student: provider.myStudents[index]);
+            return InkWell(
+              onTap: (){
+                NavigationService.push(context, StudentAttendanceHistoryScreen(studentId: item.studentId, studentName:item.name,));
+              },
+                child: MyStudentTile(student: provider.myStudents[index]));
           } else {
-            return  Padding(
+            return   Padding(
               padding: AppPadding.pM,
               child: Center(child: CupertinoActivityIndicator()),
             );
@@ -135,6 +161,4 @@ class MyStudentsScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }

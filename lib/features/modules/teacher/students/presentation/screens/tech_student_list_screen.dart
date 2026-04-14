@@ -144,9 +144,10 @@ class TechStudentListScreen extends StatelessWidget {
             ? null
             : () async {
                 try {
-                  await provider.addClassTeacherStudents();
+                  await provider.bulkEnroll();
                   if (context.mounted) {
-                    SnackbarService().showSuccess("Students assigned successfully");
+                    await provider.fetchMyStudentsInitial();
+                    SnackbarService().showSuccess("Students enrolled successfully!");
                     Navigator.pop(context);
                   }
                 } catch (e) {

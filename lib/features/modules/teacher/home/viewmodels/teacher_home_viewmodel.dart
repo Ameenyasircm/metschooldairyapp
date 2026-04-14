@@ -42,6 +42,13 @@ class TeacherHomeViewModel extends ChangeNotifier {
           onTap: () {
             debugPrint("Tapped Add Attendance");
           },
+        ),  QuickAction(
+          title: 'Attendance\n Report',
+          icon: Icons.calendar_month_outlined,
+          color: AppColors.textTeal,
+          onTap: () {
+            debugPrint("Tapped Add Attendance");
+          },
         ),
         QuickAction(
           title: 'Add Exam',

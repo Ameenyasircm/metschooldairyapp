@@ -21,8 +21,8 @@ class StudentProvider extends ChangeNotifier {
   bool isLoadingMore = false;
 
   // --- My Students State ---
-  List<TechStudentModel> myAllStudents = []; 
-  List<TechStudentModel> myStudents = [];    
+  List<EnrollerModel> myAllStudents = [];
+  List<EnrollerModel> myStudents = [];
   DocumentSnapshot? myLastDoc;
   bool hasMyStdMore = true;
   String searchMyStdQuery = '';
@@ -128,12 +128,12 @@ class StudentProvider extends ChangeNotifier {
   Future<void> _fetchMyStudentsPage() async {
     final prefs = await SharedPreferences.getInstance();
     final staffId = prefs.getString("staffId");
-    _assignedDivision = await repository.getTeacherClassDivision(teacherId: staffId ?? '');
+    final classId = prefs.getString("classId");
 
     final result = await repository.getStudents(
       lastDoc: myLastDoc,
       isMyStudents: true,
-      divisionId: _assignedDivision?.id,
+      classId: classId,
     );
 
     if (result.docs.isEmpty) {
@@ -141,7 +141,7 @@ class StudentProvider extends ChangeNotifier {
     } else {
       myLastDoc = result.docs.last;
       final newItems = result.docs
-          .map((e) => TechStudentModel.fromMap(e.data() as Map<String, dynamic>))
+          .map((e) => EnrollerModel.fromMap(e.data() as Map<String, dynamic>))
           .toList();
       myAllStudents.addAll(newItems);
       _applyMyStdSearch();
@@ -163,7 +163,7 @@ class StudentProvider extends ChangeNotifier {
       final query = searchQuery.toLowerCase();
       students = allStudents.where((student) {
         return student.name.toLowerCase().contains(query) || 
-               student.admissionNumber.toLowerCase().contains(query);
+               student.admissionId.toLowerCase().contains(query);
       }).toList();
     }
     notifyListeners();
@@ -182,7 +182,7 @@ class StudentProvider extends ChangeNotifier {
       final query = searchMyStdQuery.toLowerCase();
       myStudents = myAllStudents.where((student) {
         return student.name.toLowerCase().contains(query) || 
-               student.admissionNumber.toLowerCase().contains(query);
+               student.rollNumber.toLowerCase().contains(query);
       }).toList();
     }
     notifyListeners();
@@ -202,76 +202,108 @@ class StudentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addClassTeacherStudents() async {
+
+  Future<void> bulkEnroll() async {
     if (selectedStudentIds.isEmpty) throw Exception("Please select at least one student.");
     if (isAddingStudents) return;
+
+    final selectedData = allStudents
+        .where((s) => selectedStudentIds.contains(s.studentId))
+        .toList();
+
+    if (selectedData.isEmpty) {
+      throw Exception("Selected student data not found in cache. Please refresh.");
+    }
 
     isAddingStudents = true;
     notifyListeners();
 
     try {
-      final db = FirebaseService.firestore;
-      
-      // Get selected data from allStudents
-      final selectedData = allStudents
-          .where((s) => selectedStudentIds.contains(s.studentId))
-          .toList();
-
-      if (selectedData.isEmpty) {
-        throw Exception("Selected student data not found in cache. Please refresh.");
-      }
-
-      // Context checks
+      final firestore = FirebaseFirestore.instance;
       final prefs = await SharedPreferences.getInstance();
+
       final staffId = prefs.getString("staffId");
-      if (staffId == null || staffId.isEmpty) {
-        throw Exception("Staff ID not found. Please log in again.");
-      }
+      final staffName = prefs.getString("staffName");
+      final divisionName = prefs.getString("divisionName");
+      final divisionId = prefs.getString("divisionId");
+      final className = prefs.getString("className");
+      final classId = prefs.getString("classId");
+      final academicYearId = prefs.getString("academicYearId");
 
-      final division = await repository.getTeacherClassDivision(teacherId: staffId);
-      if (division == null) {
-        throw Exception("No class division found for you in the current academic year.");
-      }
+      // 1. Fetch Existing Enrollments Efficiently (Avoid N+1)
+      Set<String> alreadyEnrolledIds = {};
+      for (var i = 0; i < selectedData.length; i += 30) {
+        final chunk = selectedData.skip(i).take(30).map((s) => s.studentId).toList();
 
-      // Execute in batches (Firestore limit is 500)
-      for (var i = 0; i < selectedData.length; i += 500) {
-        final batch = db.batch();
-        final end = (i + 500 < selectedData.length) ? i + 500 : selectedData.length;
-        final chunk = selectedData.sublist(i, end);
+        final existingDocs = await firestore
+            .collection('enrollments')
+            .where('academic_year_id', isEqualTo: academicYearId)
+            .where('student_id', whereIn: chunk)
+            .get();
 
-        for (var student in chunk) {
-          final enrollmentId = "ENR_${student.studentId}_${division.academicYearId}";
-          final docRef = db.collection("enrollments").doc(enrollmentId);
-          
-          batch.set(docRef, {
-            "enrollment_id": enrollmentId,
-            "student_id": student.studentId,
-            "name": student.name,
-            "admission_number": student.admissionNumber,
-            "address": student.address,
-            "blood_group": student.bloodGroup,
-            "academic_year_id": division.academicYearId,
-            "division_id": division.id,
-            "parent_phone": student.parentPhone,
-            "enrolled_date": FieldValue.serverTimestamp(),
-            "status": "active",
-          }, SetOptions(merge: true));
+        for (var doc in existingDocs.docs) {
+          alreadyEnrolledIds.add(doc['student_id'] as String);
         }
+      }
+
+      // 2. Prepare Batches with Limit Handling
+      WriteBatch batch = firestore.batch();
+      int operationCount = 0;
+
+      for (var student in selectedData) {
+        final String sId = student.studentId;
+
+        if (alreadyEnrolledIds.contains(sId)) continue;
+
+        DocumentReference enrollRef = firestore.collection('enrollments').doc();
+
+        batch.set(enrollRef, {
+          "student_id": sId,
+          "student_name": student.name,
+          "academic_year_id": academicYearId,
+          "class_id": classId,
+          "class_name": className,
+          "division_id": divisionId,
+          "division_name": divisionName,
+          "enrollment_id": student.admissionId,
+          "parent_phone": student.parentPhone ?? "",
+          "parent_id": student.parentId ?? "",
+          "roll_number": null,
+          "status": "active",
+          "createdAt": FieldValue.serverTimestamp(),
+          "createdById": staffId,
+          "createdByName": staffName,
+        });
+        operationCount++;
+
+        DocumentReference studentRef = firestore.collection('students').doc(sId);
+        batch.update(studentRef, {
+          "isEnrolled": true,
+          "current_academic_year": academicYearId,
+          "current_class_id": classId,
+          "enrollment_details": {
+            "enrollment_doc_id": enrollRef.id,
+            "enrolled_at": FieldValue.serverTimestamp(),
+          }
+        });
+        operationCount++;
+
+        if (operationCount >= 498) {
+          await batch.commit();
+          batch = firestore.batch();
+          operationCount = 0;
+        }
+      }
+
+      if (operationCount > 0) {
         await batch.commit();
       }
-
-      // Cleanup
-      selectedStudentIds.clear();
-      
-      // Refresh 'My Students' in background so UI can navigate immediately
-      fetchMyStudentsInitial().catchError((e) => debugPrint("Background refresh error: $e"));
-      
     } catch (e) {
-      debugPrint("addClassTeacherStudents Error: $e");
       rethrow;
     } finally {
       isAddingStudents = false;
       notifyListeners();
     }
   }
+
 }
