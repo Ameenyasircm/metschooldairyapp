@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:met_school/features/modules/admin/views/parents_list.dart';
 import 'package:met_school/features/modules/admin/views/staff_management.dart';
 import 'package:provider/provider.dart';
 
@@ -48,6 +49,8 @@ class AdminHome extends StatelessWidget {
         return  AcademicYearScreen(userName: userName, userId:userid,);
       case 4:
         return StudentListScreen();
+      case 5:
+        return ParentMasterDirectory();
       default:
         return _buildDashboardGrid(context);
     }
@@ -82,6 +85,7 @@ class AdminHome extends StatelessWidget {
                     _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.orange),
 
                     _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, Colors.teal),
+                    _buildModuleCard(context, 5, "Parent Management", "Manage Parent Data", Icons.school_outlined, Colors.teal),
                   ],
                 ),
               ],

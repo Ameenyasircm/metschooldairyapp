@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/features/modules/admin/views/register_student_screen.dart';
 import 'package:met_school/providers/academic_provider.dart';
@@ -148,7 +149,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen())),
+            onPressed: (){
+              addRandomStudents(10);
+            },
+            // onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen())),
             icon: const Icon(Icons.person_add_rounded, size: 20),
             label: const Text("Add New Student", style: TextStyle(fontWeight: FontWeight.bold)),
           )
@@ -156,7 +160,115 @@ class _StudentListScreenState extends State<StudentListScreen> {
       ),
     );
   }
+  Future<void> addRandomStudents(int count) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final String adminUid = FirebaseAuth.instance.currentUser?.uid ?? "system";
 
+    // Lists for variety
+    final List<String> names = ["Adhil", "Fathima", "Muhammed", "Aisha", "Zayan", "Rinshad", "Hadiya"];
+    final List<Map<String, String>> classes = [
+      {"id": "class_1", "name": "10 A"},
+      {"id": "class_2", "name": "9 B"},
+      {"id": "class_3", "name": "8 C"},
+    ];
+
+    for (int i = 0; i < count; i++) {
+      final batch = firestore.batch();
+      final String name = names[i % names.length];
+      final selectedClass = classes[i % classes.length];
+
+      // We alternate phone numbers every 2 students to test the SIBLING flow
+      // Student 0 and 1 will have the same parent, 2 and 3 will have the same parent, etc.
+      int parentGroup = (i / 2).floor();
+      final String parentPhone = "971500000$parentGroup";
+
+      final String docId = DateTime.now().millisecondsSinceEpoch.toString() + i.toString();
+      final String finalAdmissionId = "ADM-2026-${100 + i}";
+
+      Map<String, dynamic> studentData = {
+        "id": docId,
+        "name": "$name ${i + 1}",
+        "admissionId": finalAdmissionId,
+        "classId": selectedClass['id'],
+        "className": selectedClass['name'],
+        "parentGuardian": "Guardian of $name",
+        "relation": "Father",
+        "fatherProfession": "Engineer",
+        "motherName": "Mother Name",
+        "phone": parentPhone,
+        "whatsapp": parentPhone,
+        "aadhar": "[Aadhaar Redacted]",
+        "dob": Timestamp.fromDate(DateTime(2012, 5, 20)),
+        "age": "14",
+        "religion": "Islam",
+        "place": "Malappuram",
+        "address": "Green Valley House, Kerala",
+        "gender": i % 2 == 0 ? "Male" : "Female",
+        "medium": "English",
+        "prevSchool": "Local Public School",
+        "tcNumber": "TC${100 + i}",
+        "identificationMark": "Mole on neck",
+        "updatedAt": FieldValue.serverTimestamp(),
+      };
+
+      // --- LOGIC TO TEST THE FLOW ---
+
+      // 1. Check if parent already exists (Sibling Check)
+      var existingUserQuery = await firestore.collection("users")
+          .where("phone", isEqualTo: parentPhone)
+          .where("role", isEqualTo: "parent")
+          .limit(1)
+          .get();
+
+      String parentUid;
+      DocumentReference studentRef = firestore.collection("students").doc(docId);
+
+      if (existingUserQuery.docs.isNotEmpty) {
+        // SIBLING CASE: Use existing parent
+        parentUid = existingUserQuery.docs.first.id;
+        studentData['parentId'] = parentUid;
+
+        batch.set(studentRef, studentData);
+        batch.update(firestore.collection("parents").doc(parentUid), {
+          "studentIds": FieldValue.arrayUnion([docId]),
+          "updatedAt": FieldValue.serverTimestamp(),
+        });
+        print("Sibling added for parent: $parentPhone");
+      } else {
+        // NEW PARENT CASE
+        DocumentReference newUserRef = firestore.collection("users").doc();
+        parentUid = newUserRef.id;
+        studentData['parentId'] = parentUid;
+
+        batch.set(studentRef, studentData);
+
+        // Create User Account
+        batch.set(newUserRef, {
+          "uid": parentUid,
+          "role": "parent",
+          "name": "Guardian of $name",
+          "phone": parentPhone,
+          "user_name": parentPhone,
+          "password": parentPhone,
+          "createdAt": FieldValue.serverTimestamp(),
+          "createdBy": adminUid,
+        });
+
+        // Create Parent Document
+        batch.set(firestore.collection("parents").doc(parentUid), {
+          "parentUid": parentUid,
+          "studentIds": [docId],
+          "parentName": "Guardian of $name",
+          "phone": parentPhone,
+          "updatedAt": FieldValue.serverTimestamp(),
+        });
+        print("New Parent & Student created: $parentPhone");
+      }
+
+      await batch.commit();
+    }
+    print("Done! Added $count test students and synced parent accounts.");
+  }
 
   Widget _statItem(String label, String value, Color color) {
     return Expanded(
@@ -315,51 +427,54 @@ class _StudentListScreenState extends State<StudentListScreen> {
             ),
             // Action Menu
             // 🔹 1. Update the Action Menu to include the "View" option
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz, color: Color(0xFF94A3B8)),
-              onSelected: (val) {
-                if (val == 'view') {
-                  _showStudentDetails(data); // Open rich detail view
-                } else if (val == 'edit') {
-                  Map<String, dynamic> editData = Map<String, dynamic>.from(data);
-                  editData['id'] = docId;
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => AddStudentScreen(initialData: editData)));
-                } else if (val == 'delete') {
-                  _showDeleteDialog(context, docId, data['name']);
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'view',
-                  child: ListTile(
-                    leading: Icon(Icons.visibility_outlined, size: 20),
-                    title: Text("View Profile"),
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(
-                    leading: Icon(Icons.edit_outlined, size: 20),
-                    title: Text("Edit Record"),
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red),
-                    title: Text("Archive Student", style: TextStyle(color: Colors.red)),
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                  ),
-                ),
-              ],
-            ),
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_horiz, color: Color(0xFF94A3B8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Rounded corners for menu
+          onSelected: (val) {
+            if (val == 'view') {
+              _showStudentDetails(data);
+            } else if (val == 'edit') {
+              // Create a fresh map and explicitly ensure the docId and parentId are included
+              Map<String, dynamic> editData = Map<String, dynamic>.from(data);
+              editData['id'] = docId;
+              // Note: ensure 'parentId' exists in data from your Firestore fetch
+
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AddStudentScreen(initialData: editData))
+              );
+            } else if (val == 'delete') {
+              _showDeleteDialog(context, docId, data['name']);
+            }
+          },
+          itemBuilder: (context) => [
+            _buildMenuItem('view', Icons.visibility_outlined, "View Profile"),
+            _buildMenuItem('edit', Icons.edit_outlined, "Edit Record"),
+            const PopupMenuDivider(height: 1), // Separation for the delete action
+            _buildMenuItem('delete', Icons.delete_outline_rounded, "Archive Student", isDelete: true),
           ],
         ),
+          ],
+        ),
+      ),
+    );
+  }
+  PopupMenuItem<String> _buildMenuItem(String value, IconData icon, String text, {bool isDelete = false}) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: isDelete ? Colors.red : const Color(0xFF64748B)),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: TextStyle(
+                fontSize: 14,
+                color: isDelete ? Colors.red : const Color(0xFF1E293B),
+                fontWeight: FontWeight.w500
+            ),
+          ),
+        ],
       ),
     );
   }

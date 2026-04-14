@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/providers/academic_provider.dart';
@@ -370,7 +371,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   void _saveStudent() async {
     if (!_formKey.currentState!.validate()) return;
     if (dob == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Date of Birth is mandatory"), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Date of Birth is mandatory"), backgroundColor: Colors.red)
+      );
       return;
     }
 
@@ -381,27 +384,33 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     );
 
     try {
+      final firestore = FirebaseFirestore.instance;
       final provider = context.read<AcademicProvider>();
-      String finalAdmissionId = admissionCtrl.text.trim();
 
+      String adminUid = FirebaseAuth.instance.currentUser?.uid ?? "system";
+      String parentPhone = phoneCtrl.text.trim();
+      String parentName = parentCtrl.text.trim();
+
+      String finalAdmissionId = admissionCtrl.text.trim();
       if (widget.initialData == null) {
         finalAdmissionId = await provider.generateAdmissionId(selectedClassId!);
       }
 
-      // Generate a new Milliseconds ID for New Documents
+      // Use existing ID for edit, or generated milliseconds ID for new
       String docId = widget.initialData?['id'] ?? DateTime.now().millisecondsSinceEpoch.toString();
 
-      Map<String, dynamic> data = {
-        "id": docId, // Saving the Doc ID inside the fields too
+      // 1. Prepare Student Data Map
+      Map<String, dynamic> studentData = {
+        "id": docId,
         "name": nameCtrl.text.trim(),
         "admissionId": finalAdmissionId,
         "classId": selectedClassId,
         "className": selectedClassName,
-        "parentGuardian": parentCtrl.text.trim(),
+        "parentGuardian": parentName,
         "relation": selectedRelation,
-        "fatherProfession": selectedOccupation, // Mapping correctly to your schema
-        "motherName": motherNameCtrl.text.trim(), // Mapping correctly to your schema
-        "phone": phoneCtrl.text.trim(),
+        "fatherProfession": selectedOccupation,
+        "motherName": motherNameCtrl.text.trim(),
+        "phone": parentPhone,
         "whatsapp": whatsappCtrl.text.trim(),
         "aadhar": aadharCtrl.text.trim(),
         "dob": dob,
@@ -417,19 +426,90 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         "updatedAt": FieldValue.serverTimestamp(),
       };
 
-      if (widget.initialData != null) {
-        await provider.updateStudent(docId, data);
+      final batch = firestore.batch();
+      DocumentReference studentRef = firestore.collection("students").doc(docId);
+
+      if (widget.initialData == null) {
+        // --- CASE A: NEW REGISTRATION ---
+
+        // Check if a parent with this phone already exists (Sibling Check)
+        var existingUserQuery = await firestore.collection("users")
+            .where("phone", isEqualTo: parentPhone)
+            .where("role", isEqualTo: "parent")
+            .limit(1)
+            .get();
+
+        String parentUid;
+
+        if (existingUserQuery.docs.isNotEmpty) {
+          // Parent exists: Link this new student to existing Parent Account
+          parentUid = existingUserQuery.docs.first.id;
+          studentData['parentId'] = parentUid;
+
+          batch.set(studentRef, studentData);
+          batch.update(firestore.collection("parents").doc(parentUid), {
+            "studentIds": FieldValue.arrayUnion([docId]),
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+        } else {
+          // New Parent: Create User Account and Parent Document
+          DocumentReference newUserRef = firestore.collection("users").doc();
+          parentUid = newUserRef.id;
+          studentData['parentId'] = parentUid;
+
+          batch.set(studentRef, studentData);
+          batch.set(newUserRef, {
+            "uid": parentUid,
+            "role": "parent",
+            "name": parentName,
+            "phone": parentPhone,
+            "user_name": parentPhone,
+            "password": parentPhone,
+            "createdAt": FieldValue.serverTimestamp(),
+            "createdBy": adminUid,
+          });
+
+          batch.set(firestore.collection("parents").doc(parentUid), {
+            "parentUid": parentUid,
+            "studentIds": [docId],
+            "parentName": parentName,
+            "phone": parentPhone,
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+        }
       } else {
-        // Use the custom docId (milliseconds) for new records
-        await FirebaseFirestore.instance.collection("students").doc(docId).set(data);
+        // --- CASE B: EDIT EXISTING STUDENT ---
+
+        batch.update(studentRef, studentData);
+
+        // Sync changes to Parent and User documents if parentId exists
+        String? parentId = widget.initialData?['parentId'];
+        if (parentId != null) {
+          // Sync 'parents' collection
+          batch.update(firestore.collection("parents").doc(parentId), {
+            "parentName": parentName,
+            "phone": parentPhone,
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+
+          // Sync 'users' collection (Login Credentials)
+          batch.update(firestore.collection("users").doc(parentId), {
+            "name": parentName,
+            "phone": parentPhone,
+            "user_name": parentPhone, // Update username if phone changed
+          });
+        }
       }
+
+      // Execute all changes atomically
+      await batch.commit();
 
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
         Navigator.pop(context); // Go back to List
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.initialData == null ? "Student Registered" : "Profile Updated"),
+            content: Text(widget.initialData == null ? "Registration Successful" : "Profile Updated Successfully"),
             backgroundColor: Colors.green,
           ),
         );
@@ -437,7 +517,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     } catch (e) {
       if (mounted) Navigator.pop(context);
       debugPrint("Save Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to save: $e"), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to save: $e"), backgroundColor: Colors.red)
+      );
     }
   }
 }

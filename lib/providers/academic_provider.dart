@@ -31,28 +31,7 @@ class AcademicProvider extends ChangeNotifier {
     }
   }
 
-  /// 🔹 ADD STUDENT (Updated for Milliseconds ID)
-  Future<void> addStudent({required Map<String, dynamic> studentData}) async {
-    try {
-      // Logic: Use Milliseconds as the actual Firestore Document ID
-      String docId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      Map<String, dynamic> finalData = {
-        ...studentData,
-        "id": docId, // Keep the Document ID inside the fields for easy reference
-        "createdAt": FieldValue.serverTimestamp(),
-      };
-
-      // Set document with the timestamp ID
-      await db.collection("students").doc(docId).set(finalData);
-
-      // Refresh list
-      await fetchStudents();
-    } catch (e) {
-      debugPrint("Error adding student: $e");
-      rethrow;
-    }
-  }
 
   /// 🔹 UPDATE STUDENT
   Future<void> updateStudent(String docId, Map<String, dynamic> updatedData) async {
