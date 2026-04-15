@@ -5,7 +5,9 @@ import 'package:met_school/core/router/app_navigation.dart';
 import 'package:met_school/features/modules/teacher/home/presentation/widgets/quick_action_card.dart';
 import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
 import '../../../students/presentation/screens/my_students_screen.dart';
@@ -22,24 +24,31 @@ Widget buildQuickActions(BuildContext context) {
           crossAxisCount: 2,
           crossAxisSpacing: 16.w,
           mainAxisSpacing: 16.h,
-          childAspectRatio: 1.4,
+          childAspectRatio: 1.2,
         ),
         itemCount: actions.length,
         itemBuilder: (context65, index) {
           return InkWell(
-              onTap: (){
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final divisionId = prefs.getString("divisionId")??'';
+                final divisionName = prefs.getString("divisionName")??'';
+                final academicYearId = prefs.getString("academicYearId")??'';
+                final staffId = prefs.getString("staffId")??'';
                 switch(index){
                   case 0:
                     final provider = context.read<StudentProvider>();
                     provider. searchMyStdQuery = '';
-                    provider.fetchMyStudentsInitial();
                     NavigationService.push(context, MyStudentsScreen());
                     break;
                   case 1:
                     break;
                   case 2:
 
-                    NavigationService.push(context, const AttendanceScreen());
+                    NavigationService.push(context, AttendanceScreen(divisionId: divisionId, divisionName: divisionName, academicYearId:academicYearId, teacherId: staffId,));
+                    break;
+                  case 3:
+                    NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
                     break;
                   default:
                     break;

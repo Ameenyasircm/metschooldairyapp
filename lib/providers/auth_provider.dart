@@ -98,44 +98,68 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final staffSnapshot = await fireStore
+      final query = await fireStore
           .collection("users")
           .where("phone", isEqualTo: phoneNumber)
           .limit(1)
           .get();
 
-      if (staffSnapshot.docs.isNotEmpty) {
-        var staffData = staffSnapshot.docs.first.data();
+      if (query.docs.isEmpty) {
+        SnackbarService().showError("Teacher not found.");
+        return;
+      }
 
-        String dbPassword = staffData['password'] ?? "";
-        String staffName = staffData['name'] ?? "";
-        String staffPhone = staffData['phone'] ?? "";
+      final doc = query.docs.first;
+      final data = doc.data();
 
-        if (dbPassword == password) {
+      final dbPassword = data['password'] ?? "";
 
-          /// ✅ SAVE LOGIN DATA
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString("staffId", staffSnapshot.docs.first.id);
-          await prefs.setString("staffName", staffName);
-          await prefs.setString("staffPhone", staffPhone);
-          await prefs.setString("password", dbPassword);
-          if (context.mounted) {
-            callNextReplacement(
-              TeacherNavbarScreen(staffName: staffName,), context,
-            );
-          }
-        } else {
-          SnackbarService().showError("Incorrect password. Please try again.");
-        }
-      } else {
-        SnackbarService().showError("Teacher not found with this phone number.");
+      /// ⚠️ Replace this with HASH CHECK in real production
+      if (dbPassword != password) {
+        SnackbarService().showError("Incorrect password.");
+        return;
+      }
+
+      /// Extract fields safely
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString("password", password);
+      await prefs.setString("staffId", doc.id);
+      await prefs.setString("staffName", data['name'] ?? "");
+      await prefs.setString("staffPhone", data['phone'] ?? "");
+      await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
+      await prefs.setString("divisionId", data['division_id'] ?? "");
+      await prefs.setString("divisionName", data['division_name'] ?? "");
+      await prefs.setString("classId", data['class_id'] ?? "");
+      await prefs.setString("className", data['class_name'] ?? "");
+
+      final academicYear = await currentAcademicYearId();
+      if (academicYear != null) {
+        await prefs.setString("academicYearId", academicYear);
+      }
+
+      if (context.mounted) {
+        callNextReplacement(
+          TeacherNavbarScreen(staffName: data['name'] ?? ""),
+          context,
+        );
       }
     } catch (e) {
-      SnackbarService().showError("An error occurred: ${e.toString()}");
+      SnackbarService().showError("Something went wrong. Try again.");
     } finally {
       _isStaffLoginLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<String?> currentAcademicYearId() async {
+    final query = await fireStore
+        .collection('academic_years')
+        .where('is_current', isEqualTo: true)
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty ? query.docs.first.id : null;
   }
   void _showError(BuildContext context, String message) {
     if (context.mounted) {
