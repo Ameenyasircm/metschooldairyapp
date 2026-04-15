@@ -11,6 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../home/views/home/home_screen.dart';
 
 class ParentHomeScreen extends StatelessWidget {
   final String studentId;
@@ -47,7 +48,7 @@ class ParentHomeScreen extends StatelessWidget {
               await prefs.clear();
 
               if (context.mounted) {
-                callNextReplacement(LoginScreen(), context);
+                callNextReplacement(HomeScreen(), context);
               }
             },
           )

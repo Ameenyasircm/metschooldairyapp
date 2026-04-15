@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/features/home/views/home/home_screen.dart';
 import 'package:met_school/features/modules/parent/views/parent_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -47,7 +48,7 @@ class ParentStudentSelectionScreen extends StatelessWidget {
               await prefs.clear();
 
               if (context.mounted) {
-                callNextReplacement(LoginScreen(), context);
+                callNextReplacement(HomeScreen(), context);
               }
             },
           )

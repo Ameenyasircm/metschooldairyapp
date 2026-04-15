@@ -60,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
         final isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
 
         if (!isLoggedIn) {
-          pushAndRemoveUntil(LoginScreen(), context);
+          pushAndRemoveUntil(HomeScreen(), context);
           return;
         }
 
@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
           final studentIds = prefs.getStringList("studentIds") ?? [];
 
           if (studentIds.isEmpty) {
-            pushAndRemoveUntil(LoginScreen(), context);
+            pushAndRemoveUntil(HomeScreen(), context);
             return;
           }
 
@@ -94,9 +94,8 @@ class _SplashScreenState extends State<SplashScreen> {
         /// 🎯 TEACHER FLOW
         else {
           final staffName = prefs.getString("userName") ?? "";
-
           callNextReplacement(
-            TeacherNavbarScreen(staffName: staffName),
+            HomeScreen(),
             context,
           );
         }
