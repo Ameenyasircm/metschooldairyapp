@@ -30,6 +30,7 @@ class AttendanceViewModel extends ChangeNotifier {
     _divisionId = divisionId;
     _academicYearId = academicYearId;
     _teacherId = teacherId;
+    _selectedDate = DateTime.now(); // Reset to current date on init
     loadAttendance();
   }
 
@@ -51,22 +52,38 @@ class AttendanceViewModel extends ChangeNotifier {
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      
+      // Always fetch current enrollments to ensure new students are included
+      final enrollments = await _studentRepo.getEnrollmentsByDivision(_divisionId!);
+      
       final existingAttendance = await _service.fetchAttendanceByDate(dateStr, _divisionId!);
 
-      if (existingAttendance != null) {
-        _attendanceMap = Map.from(existingAttendance.students);
-      } else {
-        // Load students and initialize empty attendance
-        final enrollments = await _studentRepo.getEnrollmentsByDivision(_divisionId!);
-        _attendanceMap = {
-          for (var e in enrollments)
-            e.studentId: StudentAttendanceData(
-              studentId: e.studentId,
-              name: e.name,
-              rollNo: e.rollNumber,
-            )
-        };
+      Map<String, StudentAttendanceData> newAttendanceMap = {};
+
+      // 1. Initialize map with all current enrollments
+      for (var e in enrollments) {
+        newAttendanceMap[e.studentId] = StudentAttendanceData(
+          studentId: e.studentId,
+          name: e.name,
+          rollNo: e.rollNumber,
+          parentPhone: e.parentPhone,
+        );
       }
+
+      // 2. If attendance was already marked, merge the saved data
+      if (existingAttendance != null) {
+        existingAttendance.students.forEach((id, savedData) {
+          if (newAttendanceMap.containsKey(id)) {
+            // Update the existing entry with saved attendance status
+            newAttendanceMap[id]!.morning = savedData.morning;
+            newAttendanceMap[id]!.afternoon = savedData.afternoon;
+            newAttendanceMap[id]!.isLate = savedData.isLate;
+            newAttendanceMap[id]!.lateRemark = savedData.lateRemark;
+          }
+        });
+      }
+      
+      _attendanceMap = newAttendanceMap;
     } catch (e) {
       debugPrint("Error loading attendance: $e");
     } finally {
@@ -175,7 +192,7 @@ class AttendanceViewModel extends ChangeNotifier {
       // Trigger notifications for late students
       for (var data in _attendanceMap.values) {
         if (data.morning == AttendanceStatus.late) {
-           _sendLateNotification("MOCK_PHONE", data.name, data.lateRemark);
+           _sendLateNotification(data.parentPhone, data.name, data.lateRemark);
         }
       }
 
@@ -191,5 +208,9 @@ class AttendanceViewModel extends ChangeNotifier {
 
   void _sendLateNotification(String phone, String name, String remark) {
     debugPrint("NOTIFY: Student $name was late. Remark: $remark. Sent to $phone");
+  }
+
+  Future<void> refresh() async {
+    await loadAttendance();
   }
 }

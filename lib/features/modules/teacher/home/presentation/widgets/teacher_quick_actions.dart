@@ -44,7 +44,6 @@ Widget buildQuickActions(BuildContext context) {
                   case 1:
                     break;
                   case 2:
-
                     NavigationService.push(context, AttendanceScreen(divisionId: divisionId, divisionName: divisionName, academicYearId:academicYearId, teacherId: staffId,));
                     break;
                   case 3:

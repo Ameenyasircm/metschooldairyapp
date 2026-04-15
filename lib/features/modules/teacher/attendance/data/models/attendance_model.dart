@@ -8,6 +8,7 @@ class StudentAttendanceData {
   final String studentId;
   final String name;
   final String rollNo;
+  final String parentPhone;
   AttendanceStatus morning;
   AttendanceStatus afternoon;
   bool isLate;
@@ -17,6 +18,7 @@ class StudentAttendanceData {
     required this.studentId,
     required this.name,
     required this.rollNo,
+    this.parentPhone = '',
     this.morning = AttendanceStatus.none,
     this.afternoon = AttendanceStatus.none,
     this.isLate = false,
@@ -28,6 +30,7 @@ class StudentAttendanceData {
       studentId: id,
       name: map['name'] ?? '',
       rollNo: map['rollNo'] ?? '',
+      parentPhone: map['parentPhone'] ?? '',
       morning: _parseStatus(map['morning']),
       afternoon: _parseStatus(map['afternoon']),
       isLate: map['isLate'] ?? false,
@@ -48,6 +51,7 @@ class StudentAttendanceData {
     return {
       'name': name,
       'rollNo': rollNo,
+      'parentPhone': parentPhone,
       'morning': morning.name,
       'afternoon': afternoon.name,
       'isLate': isLate,

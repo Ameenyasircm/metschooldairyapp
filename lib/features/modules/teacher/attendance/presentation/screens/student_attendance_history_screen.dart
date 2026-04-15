@@ -114,42 +114,53 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
                           style: AppTypography.body1.copyWith(color: AppColors.grey5E)));
                 }
 
-                return ListView.builder(
-                  padding: AppPadding.pM,
-                  itemCount: vm.studentHistory.length,
-                  itemBuilder: (context, index) {
-                    final daily = vm.studentHistory[index];
-                    final data = daily.students[widget.studentId]!;
-                    final date = DateFormat('yyyy-MM-dd').parse(daily.date);
-
-                    return Card(
-                      elevation: 0,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.s)),
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      child: Padding(
+                return Column(
+                  children: [
+                    _buildHistorySummary(vm.studentHistory),
+                    Expanded(
+                      child: ListView.builder(
                         padding: AppPadding.pM,
-                        child: Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(DateFormat('dd MMM yyyy').format(date), style: AppTypography.subtitle2),
-                                Text(DateFormat('EEEE').format(date),
-                                    style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
-                                AppSpacing.h2,
-                                Text(data.lateRemark, style: AppTypography.caption.copyWith(color: AppColors.reddish)),
-                              ],
+                        itemCount: vm.studentHistory.length,
+                        itemBuilder: (context, index) {
+                          final daily = vm.studentHistory[index];
+                          final data = daily.students[widget.studentId];
+                          final date = DateFormat('yyyy-MM-dd').parse(daily.date);
+
+                          if (data == null) return const SizedBox.shrink();
+
+                          return Card(
+                            elevation: 0,
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.s)),
+                            margin: EdgeInsets.only(bottom: 8.h),
+                            child: Padding(
+                              padding: AppPadding.pM,
+                              child: Row(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(DateFormat('dd MMM yyyy').format(date), style: AppTypography.subtitle2),
+                                      Text(DateFormat('EEEE').format(date),
+                                          style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
+                                      if (data.lateRemark.isNotEmpty) ...[
+                                        AppSpacing.h2,
+                                        Text(data.lateRemark, style: AppTypography.caption.copyWith(color: AppColors.reddish)),
+                                      ],
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  _buildSessionIndicator("Morning", data.morning),
+                                  AppSpacing.hm,
+                                  _buildSessionIndicator("Afternoon", data.afternoon),
+                                ],
+                              ),
                             ),
-                            const Spacer(),
-                            _buildStatusIndicator("M", data.morning),
-                            AppSpacing.hs,
-                            _buildStatusIndicator("A", data.afternoon),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 );
               },
             ),
@@ -188,7 +199,60 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
     );
   }
 
-  Widget _buildStatusIndicator(String label, AttendanceStatus status) {
+  Widget _buildHistorySummary(List<DailyAttendanceModel> history) {
+    double present = 0;
+    double absent = 0;
+    int lateCount = 0;
+
+    for (var daily in history) {
+      final data = daily.students[widget.studentId];
+      if (data == null) continue;
+
+      if (data.morning == AttendanceStatus.present || data.morning == AttendanceStatus.late) {
+        present += 0.5;
+        if (data.morning == AttendanceStatus.late) lateCount++;
+      } else if (data.morning == AttendanceStatus.absent) {
+        absent += 0.5;
+      }
+
+      if (data.afternoon == AttendanceStatus.present) {
+        present += 0.5;
+      } else if (data.afternoon == AttendanceStatus.absent) {
+        absent += 0.5;
+      }
+    }
+
+    String format(double val) => val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
+
+    return Container(
+      margin: AppPadding.pM,
+      padding: AppPadding.pM,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppRadius.m),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildSummaryItem("Days Present", format(present), AppColors.successGreen),
+          _buildSummaryItem("Days Absent", format(absent), AppColors.errorRed),
+          _buildSummaryItem("Late Count", lateCount.toString(), AppColors.warningOrange),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: AppTypography.h6.copyWith(color: color)),
+        Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
+      ],
+    );
+  }
+
+  Widget _buildSessionIndicator(String session, AttendanceStatus status) {
     Color color = AppColors.greyB2;
     String text = "-";
 
@@ -209,12 +273,18 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
         break;
     }
 
-    return Container(
-      width: 32.w,
-      height: 32.w,
-      decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-      alignment: Alignment.center,
-      child: Text(text, style: AppTypography.label.copyWith(color: color, fontWeight: FontWeight.bold)),
+    return Column(
+      children: [
+        Text(session.substring(0, 1), style: AppTypography.caption.copyWith(fontSize: 10.sp, fontWeight: FontWeight.bold)),
+        AppSpacing.h4,
+        Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+          alignment: Alignment.center,
+          child: Text(text, style: AppTypography.label.copyWith(color: color, fontWeight: FontWeight.bold)),
+        ),
+      ],
     );
   }
 }

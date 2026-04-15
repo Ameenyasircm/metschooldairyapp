@@ -124,7 +124,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
   }
 
   Widget _buildSummaryCard(AttendanceReportViewModel vm) {
-    int totalPresent = 0, totalAbsent = 0, totalLate = 0;
+    double totalPresent = 0, totalAbsent = 0;
+    int totalLate = 0;
     for (var stat in vm.studentStats.values) {
       totalPresent += stat.present;
       totalAbsent += stat.absent;
@@ -142,18 +143,19 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildSummaryItem("Present", totalPresent, AppColors.successGreen),
-          _buildSummaryItem("Absent", totalAbsent, AppColors.errorRed),
-          _buildSummaryItem("Late", totalLate, AppColors.warningOrange),
+          _buildSummaryItem("Days Present", totalPresent, AppColors.successGreen),
+          _buildSummaryItem("Days Absent", totalAbsent, AppColors.errorRed),
+          _buildSummaryItem("Late Count", totalLate, AppColors.warningOrange),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryItem(String label, int value, Color color) {
+  Widget _buildSummaryItem(String label, dynamic value, Color color) {
+    String displayValue = value is double ? (value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1)) : value.toString();
     return Column(
       children: [
-        Text(value.toString(), style: AppTypography.h5.copyWith(color: color)),
+        Text(displayValue, style: AppTypography.h5.copyWith(color: color)),
         Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
       ],
     );
@@ -172,11 +174,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             ),
             child: Row(
               children: [
-                SizedBox(width: 30.w, child: Text("RN", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
+                SizedBox(width: 25.w, child: Text("RN", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
                 Expanded(child: Text("STUDENT NAME", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
-                SizedBox(width: 30.w, child: Text("P", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.successGreen), textAlign: TextAlign.center)),
-                SizedBox(width: 30.w, child: Text("A", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.errorRed), textAlign: TextAlign.center)),
-                SizedBox(width: 30.w, child: Text("L", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.warningOrange), textAlign: TextAlign.center)),
+                SizedBox(width: 40.w, child: Text("PRES", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.successGreen), textAlign: TextAlign.center)),
+                SizedBox(width: 40.w, child: Text("ABS", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.errorRed), textAlign: TextAlign.center)),
+                SizedBox(width: 35.w, child: Text("LATE", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.warningOrange), textAlign: TextAlign.center)),
+                SizedBox(width: 45.w, child: Text("PERC", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
               ],
             ),
           );
@@ -184,6 +187,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
         final studentId = vm.studentStats.keys.elementAt(index - 1);
         final stat = vm.studentStats[studentId]!;
+
+        String formatVal(double val) => val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
 
         return InkWell(
           onTap: () {
@@ -199,17 +204,25 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             ),
             child: Row(
               children: [
-                SizedBox(width: 30.w, child: Text(stat.rollNo, style: AppTypography.body2)),
-                Expanded(child: Text(stat.name, style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500))),
-                SizedBox(width: 30.w, child: Text(stat.present.toString(), style: AppTypography.body2, textAlign: TextAlign.center)),
-                SizedBox(width: 30.w, child: Text(stat.absent.toString(), style: AppTypography.body2, textAlign: TextAlign.center)),
-                SizedBox(width: 30.w, child: Text(stat.late.toString(), style: AppTypography.body2, textAlign: TextAlign.center)),
+                SizedBox(width: 25.w, child: Text(stat.rollNo, style: AppTypography.body2)),
+                Expanded(child: Text(stat.name, style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                SizedBox(width: 40.w, child: Text(formatVal(stat.present), style: AppTypography.body2, textAlign: TextAlign.center)),
+                SizedBox(width: 40.w, child: Text(formatVal(stat.absent), style: AppTypography.body2, textAlign: TextAlign.center)),
+                SizedBox(width: 35.w, child: Text(stat.late.toString(), style: AppTypography.body2, textAlign: TextAlign.center)),
+                SizedBox(width: 45.w, child: Text("${stat.attendancePercentage.toInt()}%", style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold, color: _getPercentageColor(stat.attendancePercentage)), textAlign: TextAlign.center)),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  Color _getPercentageColor(double percentage) {
+    if (percentage >= 90) return AppColors.successGreen;
+    if (percentage >= 75) return AppColors.primary;
+    if (percentage >= 50) return AppColors.warningOrange;
+    return AppColors.errorRed;
   }
 }
 

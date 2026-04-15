@@ -45,14 +45,26 @@ class AttendanceReportViewModel extends ChangeNotifier {
         
         final studentStat = stats[studentId]!;
         
+        double dayPresent = 0;
+        double dayAbsent = 0;
+
         // Morning Session
-        if (data.morning == AttendanceStatus.present) studentStat.present++;
-        else if (data.morning == AttendanceStatus.absent) studentStat.absent++;
-        else if (data.morning == AttendanceStatus.late) studentStat.late++;
+        if (data.morning == AttendanceStatus.present || data.morning == AttendanceStatus.late) {
+          dayPresent += 0.5;
+          if (data.morning == AttendanceStatus.late) studentStat.late++;
+        } else if (data.morning == AttendanceStatus.absent) {
+          dayAbsent += 0.5;
+        }
 
         // Afternoon Session
-        if (data.afternoon == AttendanceStatus.present) studentStat.present++;
-        else if (data.afternoon == AttendanceStatus.absent) studentStat.absent++;
+        if (data.afternoon == AttendanceStatus.present) {
+          dayPresent += 0.5;
+        } else if (data.afternoon == AttendanceStatus.absent) {
+          dayAbsent += 0.5;
+        }
+
+        studentStat.present += dayPresent;
+        studentStat.absent += dayAbsent;
       });
     }
 
@@ -94,12 +106,12 @@ class AttendanceReportViewModel extends ChangeNotifier {
 class StudentStats {
   final String name;
   final String rollNo;
-  int present = 0;
-  int absent = 0;
+  double present = 0;
+  double absent = 0;
   int late = 0;
 
   StudentStats({required this.name, required this.rollNo});
 
-  int get totalSessions => present + absent + late;
-  double get attendancePercentage => totalSessions == 0 ? 0 : (present / totalSessions) * 100;
+  double get totalDays => present + absent;
+  double get attendancePercentage => totalDays == 0 ? 0 : (present / totalDays) * 100;
 }
