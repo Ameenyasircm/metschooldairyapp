@@ -148,7 +148,7 @@ class MyStudentTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                student.divisionName,
+                student.className,
                 style: AppTypography.body2.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,

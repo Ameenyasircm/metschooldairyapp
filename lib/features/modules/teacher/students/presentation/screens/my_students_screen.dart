@@ -12,6 +12,7 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_typography.dart';
 import '../../../../../../core/widgets/buttons/gradient_button.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
+import '../../../attendance/presentation/screens/student_attendance_history_screen.dart';
 import '../provider/student_provider.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/student_shimmer.dart';
@@ -144,18 +145,25 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: provider.myStudents.length + (provider.hasMyStdMore ? 1 : 0),
         itemBuilder: (context, index) {
-          var item=provider.myStudents[index];
           if (index < provider.myStudents.length) {
+            var item = provider.myStudents[index];
             return InkWell(
-              onTap: (){
-                NavigationService.push(context, StudentAttendanceHistoryScreen(studentId: item.studentId, studentName:item.name,));
-              },
-                child: MyStudentTile(student: provider.myStudents[index]));
+                onTap: () {
+                  NavigationService.push(
+                      context,
+                      StudentAttendanceHistoryScreen(
+                        studentId: item.studentId,
+                        studentName: item.name,
+                      ));
+                },
+                child: MyStudentTile(student: item));
           } else {
-            return   Padding(
-              padding: AppPadding.pM,
-              child: Center(child: CupertinoActivityIndicator()),
-            );
+            return provider.isLoadingMyStdMore
+                ? Padding(
+                    padding: AppPadding.pM,
+                    child: Center(child: CupertinoActivityIndicator()),
+                  )
+                : const SizedBox.shrink();
           }
         },
       ),

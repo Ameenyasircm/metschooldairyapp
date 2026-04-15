@@ -1,0 +1,220 @@
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../../../core/constants/app_padding.dart';
+import '../../../../../../core/constants/app_radius.dart';
+import '../../../../../../core/constants/app_spacing.dart';
+import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/app_typography.dart';
+import '../../data/models/attendance_model.dart';
+import '../provider/attendance_report_view_model.dart';
+
+class StudentAttendanceHistoryScreen extends StatefulWidget {
+  final String studentId;
+  final String studentName;
+
+  const StudentAttendanceHistoryScreen({
+    super.key,
+    required this.studentId,
+    required this.studentName,
+  });
+
+  @override
+  State<StudentAttendanceHistoryScreen> createState() => _StudentAttendanceHistoryScreenState();
+}
+
+class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistoryScreen> {
+  DateTime? _startDate;
+  DateTime? _endDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _setInitialDates();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchHistory();
+    });
+  }
+
+  void _setInitialDates() {
+    final now = DateTime.now();
+    _startDate = DateTime(now.year, now.month, 1);
+    _endDate = now;
+  }
+
+  void _fetchHistory() {
+    context.read<AttendanceReportViewModel>().loadStudentHistory(
+          widget.studentId,
+          start: _startDate,
+          end: _endDate,
+        );
+  }
+
+  Future<void> _selectDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      initialDateRange: DateTimeRange(start: _startDate!, end: _endDate!),
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: AppColors.white,
+              onSurface: AppColors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+      _fetchHistory();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppBar(
+        title: Text(widget.studentName, style: AppTypography.h6.copyWith(color: AppColors.white)),
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: AppColors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.date_range),
+            onPressed: _selectDateRange,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          _buildDateRangeHeader(),
+          Expanded(
+            child: Consumer<AttendanceReportViewModel>(
+              builder: (context, vm, child) {
+                if (vm.isLoading) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                }
+
+                if (vm.studentHistory.isEmpty) {
+                  return Center(
+                      child: Text("No history available for the selected period.",
+                          style: AppTypography.body1.copyWith(color: AppColors.grey5E)));
+                }
+
+                return ListView.builder(
+                  padding: AppPadding.pM,
+                  itemCount: vm.studentHistory.length,
+                  itemBuilder: (context, index) {
+                    final daily = vm.studentHistory[index];
+                    final data = daily.students[widget.studentId]!;
+                    final date = DateFormat('yyyy-MM-dd').parse(daily.date);
+
+                    return Card(
+                      elevation: 0,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.s)),
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      child: Padding(
+                        padding: AppPadding.pM,
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(DateFormat('dd MMM yyyy').format(date), style: AppTypography.subtitle2),
+                                Text(DateFormat('EEEE').format(date),
+                                    style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
+                                AppSpacing.h2,
+                                Text(data.lateRemark, style: AppTypography.caption.copyWith(color: AppColors.reddish)),
+                              ],
+                            ),
+                            const Spacer(),
+                            _buildStatusIndicator("M", data.morning),
+                            AppSpacing.hs,
+                            _buildStatusIndicator("A", data.afternoon),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateRangeHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      color: AppColors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 16.w, color: AppColors.grey5E),
+              AppSpacing.w8,
+              Text(
+                "${DateFormat('dd MMM').format(_startDate!)} - ${DateFormat('dd MMM yyyy').format(_endDate!)}",
+                style: AppTypography.body2.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          InkWell(
+            onTap: _selectDateRange,
+            child: Text(
+              "Change",
+              style: AppTypography.body2.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusIndicator(String label, AttendanceStatus status) {
+    Color color = AppColors.greyB2;
+    String text = "-";
+
+    switch (status) {
+      case AttendanceStatus.present:
+        color = AppColors.successGreen;
+        text = "P";
+        break;
+      case AttendanceStatus.absent:
+        color = AppColors.errorRed;
+        text = "A";
+        break;
+      case AttendanceStatus.late:
+        color = AppColors.warningOrange;
+        text = "L";
+        break;
+      default:
+        break;
+    }
+
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: Text(text, style: AppTypography.label.copyWith(color: color, fontWeight: FontWeight.bold)),
+    );
+  }
+}

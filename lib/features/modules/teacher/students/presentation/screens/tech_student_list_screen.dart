@@ -39,7 +39,30 @@ class TechStudentListScreen extends StatelessWidget {
         child: Column(
           children: [
             AppSpacing.h12,
-            _buildSearchField(context),
+            Row(
+              children: [
+                Expanded(child: _buildSearchField(context)),
+                Consumer<StudentProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.students.isEmpty) return const SizedBox.shrink();
+                    return Row(
+                      children: [
+                        Checkbox(
+                          value: provider.isAllSelected,
+                          onChanged: (_) => provider.toggleSelectAll(),
+                          activeColor: AppColors.primary,
+                        ),
+                        Text(
+                          "All",
+                          style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        AppSpacing.w8,
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
             Expanded(
               child: Consumer<StudentProvider>(
                 builder: (context, provider, child) {
@@ -116,17 +139,19 @@ class TechStudentListScreen extends StatelessWidget {
             final student = provider.students[index];
             return StudentTile(
               student: student,
-              isSelected: provider.isSelected(student.studentId),
+              isSelected: provider.selectedStudentIds.contains(student.studentId),
               isSelectable: true,
               onTap: () {
                 provider.toggleSelection(student.studentId);
               },
             );
           } else {
-            return  Padding(
-              padding: AppPadding.pM,
-              child: Center(child: CupertinoActivityIndicator()),
-            );
+            return provider.isLoadingMore
+                ? Padding(
+                    padding: AppPadding.pM,
+                    child: Center(child: CupertinoActivityIndicator()),
+                  )
+                : const SizedBox.shrink();
           }
         },
       ),
@@ -156,7 +181,7 @@ class TechStudentListScreen extends StatelessWidget {
                   }
                 }
               },
-        text: "Assign (${provider.selectedStudentIds.length}) Students",
+        text: "Enroll (${provider.selectedStudentIds.length}) Students",
       ),
     );
   }

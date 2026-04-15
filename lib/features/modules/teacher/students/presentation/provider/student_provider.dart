@@ -202,6 +202,26 @@ class StudentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void selectAll() {
+    for (var student in students) {
+      selectedStudentIds.add(student.studentId);
+    }
+    notifyListeners();
+  }
+
+  void toggleSelectAll() {
+    if (selectedStudentIds.length == students.length && students.isNotEmpty) {
+      selectedStudentIds.clear();
+    } else {
+      for (var student in students) {
+        selectedStudentIds.add(student.studentId);
+      }
+    }
+    notifyListeners();
+  }
+
+  bool get isAllSelected => students.isNotEmpty && selectedStudentIds.length == students.length;
+
 
   Future<void> bulkEnroll() async {
     if (selectedStudentIds.isEmpty) throw Exception("Please select at least one student.");
