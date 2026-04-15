@@ -55,7 +55,7 @@ class LoginScreen extends StatelessWidget {
                  AppSpacing.h16,
                   // Title
                   Text(
-                    'Academic Atelier',
+                    'Met Public School',
                     style: AppTypography.h2.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
@@ -64,7 +64,7 @@ class LoginScreen extends StatelessWidget {
                   AppSpacing.h4,
                   // Subtitle
                   Text(
-                    'Educator Portal',
+                    'Payyanad',
                     style: AppTypography.body1.copyWith(
                       color: AppColors.grey5E,
                     ),

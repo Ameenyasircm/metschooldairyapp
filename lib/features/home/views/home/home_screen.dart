@@ -36,14 +36,29 @@ class HomeScreen extends StatelessWidget {
           GestureDetector(
             onTap: (){
               // NavigationService.push(context,LoginScreen());
-              NavigationService.push(context,TeacherNavbarScreen(staffName: '',));
+              NavigationService.push(context,LoginScreen());
             },
-            child: const CircleAvatar(
-                backgroundColor: primary,
-                radius: 18,
-                child: Icon(Icons.person, color: Colors.white, size: 18)
-            ),
+            child: Container(
+              height: 35,width: 80,
+              decoration: BoxDecoration(
+                color: primary,
+                borderRadius: BorderRadius.circular(10)
+              ),
+              child: Center(child: Text('Login',style: TextStyle(color: Colors.white,
+              fontSize: 15),)),
+            )
           ),
+          // GestureDetector(
+          //   onTap: (){
+          //     // NavigationService.push(context,LoginScreen());
+          //     NavigationService.push(context,TeacherNavbarScreen(staffName: '',));
+          //   },
+          //   child: const CircleAvatar(
+          //       backgroundColor: primary,
+          //       radius: 18,
+          //       child: Icon(Icons.person, color: Colors.white, size: 18)
+          //   ),
+          // ),
           const SizedBox(width: 15),
         ],
       ),

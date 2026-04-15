@@ -8,6 +8,9 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../home/views/home/home_screen.dart';
 import '../modules/admin/views/admin_home.dart';
+import '../modules/parent/views/parent_home.dart';
+import '../modules/parent/views/parent_select_child_screen.dart';
+import '../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -31,6 +34,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final authProvider = context.read<AuthProvider>();
 
+      /// =========================
+      /// 🌐 WEB (NO CHANGE)
+      /// =========================
       if (kIsWeb) {
         final adminPhone = prefs.getString("adminPhone");
         final password = prefs.getString("password");
@@ -40,28 +46,60 @@ class _SplashScreenState extends State<SplashScreen> {
           return;
         }
 
-         await authProvider.loginAdmin(
+        await authProvider.loginAdmin(
           phoneNumber: adminPhone,
           password: password,
           context: context,
         );
+      }
 
-      } else {
-        final staffPhone = prefs.getString("staffPhone");
-        final password = prefs.getString("password");
-        print("staffPhone  $staffPhone");
-        print("password  $password");
+      /// =========================
+      /// 📱 MOBILE (UPDATED)
+      /// =========================
+      else {
+        final isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
 
-        if (staffPhone == null || staffPhone.isEmpty || password == null) {
+        if (!isLoggedIn) {
           pushAndRemoveUntil(LoginScreen(), context);
           return;
         }
 
-         await authProvider.staffLogin(
-          phoneNumber: staffPhone,
-          password: password,
-          context: context,
-        );
+        final role = prefs.getString("role");
+
+        /// 🎯 PARENT FLOW
+        if (role == "parent") {
+          final studentIds = prefs.getStringList("studentIds") ?? [];
+
+          if (studentIds.isEmpty) {
+            pushAndRemoveUntil(LoginScreen(), context);
+            return;
+          }
+
+          if (studentIds.length == 1) {
+            final studentId =
+                prefs.getString("selectedStudentId") ?? studentIds.first;
+
+            callNextReplacement(
+              ParentHomeScreen(studentId: studentId),
+              context,
+            );
+          } else {
+            callNextReplacement(
+              ParentStudentSelectionScreen(studentIds: studentIds),
+              context,
+            );
+          }
+        }
+
+        /// 🎯 TEACHER FLOW
+        else {
+          final staffName = prefs.getString("userName") ?? "";
+
+          callNextReplacement(
+            TeacherNavbarScreen(staffName: staffName),
+            context,
+          );
+        }
       }
     } catch (e, stack) {
       debugPrint("Splash error: $e");
@@ -69,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
 
-      // Fallback navigation
+      /// Fallback navigation
       if (kIsWeb) {
         callNextReplacement(AdminLoginScreen(), context);
       } else {

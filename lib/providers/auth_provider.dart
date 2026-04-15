@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../features/modules/admin/views/admin_login_screen.dart';
 
 import '../core/utils/snackbarNotification/snackbar_notification.dart';
+import '../features/modules/parent/views/parent_home.dart';
+import '../features/modules/parent/views/parent_select_child_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -105,7 +107,7 @@ class AuthProvider with ChangeNotifier {
           .get();
 
       if (query.docs.isEmpty) {
-        SnackbarService().showError("Teacher not found.");
+        SnackbarService().showError("User not found.");
         return;
       }
 
@@ -114,35 +116,82 @@ class AuthProvider with ChangeNotifier {
 
       final dbPassword = data['password'] ?? "";
 
-      /// ⚠️ Replace this with HASH CHECK in real production
       if (dbPassword != password) {
         SnackbarService().showError("Incorrect password.");
         return;
       }
 
-      /// Extract fields safely
       final prefs = await SharedPreferences.getInstance();
 
+      /// ✅ SAVE LOGIN SESSION
       await prefs.setString("password", password);
-      await prefs.setString("staffId", doc.id);
-      await prefs.setString("staffName", data['name'] ?? "");
-      await prefs.setString("staffPhone", data['phone'] ?? "");
-      await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
-      await prefs.setString("divisionId", data['division_id'] ?? "");
-      await prefs.setString("divisionName", data['division_name'] ?? "");
-      await prefs.setString("classId", data['class_id'] ?? "");
-      await prefs.setString("className", data['class_name'] ?? "");
+      await prefs.setString("staffPhone", phoneNumber);
+      await prefs.setBool("isLoggedIn", true);
 
-      final academicYear = await currentAcademicYearId();
-      if (academicYear != null) {
-        await prefs.setString("academicYearId", academicYear);
+      /// Save common data
+      await prefs.setString("userId", doc.id);
+      await prefs.setString("userName", data['name'] ?? "");
+      await prefs.setString("phone", data['phone'] ?? "");
+      await prefs.setString("role", data['role'] ?? "");
+
+      final role = data['role'] ?? "";
+
+      /// =========================
+      /// 🎯 PARENT LOGIN
+      /// =========================
+      if (role == "parent") {
+        List studentIds = data['studentIds'] ?? [];
+
+        if (studentIds.isEmpty) {
+          SnackbarService().showError("No students found.");
+          return;
+        }
+
+        await prefs.setStringList(
+          "studentIds",
+          studentIds.map((e) => e.toString()).toList(),
+        );
+
+        if (studentIds.length == 1) {
+          await prefs.setString("selectedStudentId", studentIds.first);
+
+          if (context.mounted) {
+            callNextReplacement(
+              ParentHomeScreen(studentId: studentIds.first),
+              context,
+            );
+          }
+        } else {
+          if (context.mounted) {
+            callNextReplacement(
+              ParentStudentSelectionScreen(studentIds: studentIds),
+              context,
+            );
+          }
+        }
       }
 
-      if (context.mounted) {
-        callNextReplacement(
-          TeacherNavbarScreen(staffName: data['name'] ?? ""),
-          context,
-        );
+      /// =========================
+      /// 🎯 TEACHER LOGIN (DEFAULT)
+      /// =========================
+      else {
+        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
+        await prefs.setString("divisionId", data['division_id'] ?? "");
+        await prefs.setString("divisionName", data['division_name'] ?? "");
+        await prefs.setString("classId", data['class_id'] ?? "");
+        await prefs.setString("className", data['class_name'] ?? "");
+
+        final academicYear = await currentAcademicYearId();
+        if (academicYear != null) {
+          await prefs.setString("academicYearId", academicYear);
+        }
+
+        if (context.mounted) {
+          callNextReplacement(
+            TeacherNavbarScreen(staffName: data['name'] ?? ""),
+            context,
+          );
+        }
       }
     } catch (e) {
       SnackbarService().showError("Something went wrong. Try again.");
