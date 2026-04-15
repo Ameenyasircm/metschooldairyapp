@@ -48,7 +48,7 @@ class ParentHomeScreen extends StatelessWidget {
               await prefs.clear();
 
               if (context.mounted) {
-                callNextReplacement(HomeScreen(), context);
+                callNextReplacement(LoginScreen(), context);
               }
             },
           )

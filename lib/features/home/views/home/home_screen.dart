@@ -4,7 +4,10 @@ import 'package:met_school/features/about/about_us_screen.dart';
 import 'package:met_school/features/auth/presentation/screens/login_screen.dart';
 import 'package:met_school/features/home/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/router/app_navigation.dart';
+import '../../../modules/parent/views/parent_home.dart';
+import '../../../modules/parent/views/parent_select_child_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import '../contact_screen/contact_us_screen.dart';
 import '../gallary/gallery_screen.dart';
@@ -33,20 +36,72 @@ class HomeScreen extends StatelessWidget {
         actions: [
           const Icon(Icons.search, color: Colors.black),
           const SizedBox(width: 10),
-          GestureDetector(
-            onTap: (){
-              // NavigationService.push(context,LoginScreen());
-              NavigationService.push(context,LoginScreen());
+          FutureBuilder(
+            future: SharedPreferences.getInstance(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+
+              final prefs = snapshot.data!;
+              final isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+
+              return GestureDetector(
+                onTap: () async {
+                  final role = prefs.getString("role");
+
+                  if (!isLoggedIn) {
+                    NavigationService.push(context, LoginScreen());
+                    return;
+                  }
+
+                  /// 🎯 PARENT
+                  if (role == "parent") {
+                    final studentIds = prefs.getStringList("studentIds") ?? [];
+
+                    if (studentIds.length == 1) {
+                      final studentId =
+                          prefs.getString("selectedStudentId") ?? studentIds.first;
+
+                      NavigationService.push(
+                        context,
+                        ParentHomeScreen(studentId: studentId),
+                      );
+                    } else {
+                      NavigationService.push(
+                        context,
+                        ParentStudentSelectionScreen(studentIds: studentIds),
+                      );
+                    }
+                  }
+
+                  /// 🎯 TEACHER
+                  else {
+                    NavigationService.push(
+                      context,
+                      TeacherNavbarScreen(
+                        staffName: prefs.getString("userName") ?? "",
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  height: 35,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      isLoggedIn ? 'Continue' : 'Login',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              );
             },
-            child: Container(
-              height: 35,width: 80,
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.circular(10)
-              ),
-              child: Center(child: Text('Login',style: TextStyle(color: Colors.white,
-              fontSize: 15),)),
-            )
           ),
           // GestureDetector(
           //   onTap: (){
