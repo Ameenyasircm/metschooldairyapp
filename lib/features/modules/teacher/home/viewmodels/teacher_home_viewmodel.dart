@@ -28,7 +28,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
           },
         ),
         QuickAction(
-          title: 'Add Marks',
+          title: 'Punctuality Record',
           icon: Icons.edit_note_outlined,
           color: AppColors.greyGreen,
           onTap: () {

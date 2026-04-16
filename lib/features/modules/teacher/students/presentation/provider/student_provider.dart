@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/service/firebase_service.dart';
+import '../../../punctuality/data/models/PunctualityModel.dart';
 import '../../data/models/tech_division_model.dart';
 import '../../data/models/tech_student_model.dart';
 import '../../data/repository/student_repository.dart';
@@ -10,6 +11,7 @@ import '../../data/repository/student_repository.dart';
 class StudentProvider extends ChangeNotifier {
   final StudentRepository repository;
   StudentProvider(this.repository);
+  final FirebaseFirestore db = FirebaseFirestore.instance;
 
   // --- All Students State ---
   List<TechStudentModel> allStudents = []; 
@@ -324,6 +326,67 @@ class StudentProvider extends ChangeNotifier {
       isAddingStudents = false;
       notifyListeners();
     }
+  }
+
+
+  List<PunctualityRecordModel> records = [];
+
+  /// 🔽 Fetch for one student
+  Future<void> fetchStudentRecords(String studentId) async {
+    final snap = await db
+        .collection('students')
+        .doc(studentId)
+        .collection('punctuality_records')
+        .orderBy('date', descending: true)
+        .get();
+
+    records = snap.docs
+        .map((e) => PunctualityRecordModel.fromMap(e.id, e.data()))
+        .toList();
+
+    notifyListeners();
+  }
+
+  /// 🔥 Add record (DUAL WRITE)
+  Future<void> addRecord({
+    required EnrollerModel student,
+    required String code,
+    required String remark,
+    required DateTime date,
+  }) async {
+    final recordId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final data = {
+      "id": recordId,
+      "studentId": student.studentId,
+      "studentName": student.name,
+      "className": student.className,
+      "divisionName": student.divisionName,
+      "code": code,
+      "remark": remark,
+      "date": Timestamp.fromDate(date),
+      "createdAt": Timestamp.now(),
+    };
+
+    final batch = db.batch();
+
+    /// 1️⃣ Subcollection
+    final studentRef = db
+        .collection('students')
+        .doc(student.studentId)
+        .collection('punctuality_records')
+        .doc(recordId);
+
+    /// 2️⃣ Global collection
+    final globalRef =
+    db.collection('punctuality_records').doc(recordId);
+
+    batch.set(studentRef, data);
+    batch.set(globalRef, data);
+
+    await batch.commit();
+
+    await fetchStudentRecords(student.studentId);
   }
 
 }
