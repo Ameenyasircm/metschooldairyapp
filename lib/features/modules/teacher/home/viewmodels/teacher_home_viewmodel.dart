@@ -58,6 +58,14 @@ class TeacherHomeViewModel extends ChangeNotifier {
             debugPrint("Tapped Add Exam");
           },
         ),
+        QuickAction(
+          title: 'Time Table',
+          icon: Icons.table_chart_outlined,
+          color: AppColors.blueish,
+          onTap: () {
+            debugPrint("Tapped Time Table");
+          },
+        ),
       ];
 
   void setSelectedIndex(int index) {

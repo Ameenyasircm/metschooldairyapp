@@ -13,6 +13,7 @@ import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
 import '../../../students/presentation/provider/student_provider.dart';
 import '../../../students/presentation/screens/my_students_screen.dart';
+import '../../../timetable/presentation/screens/timetable_screen.dart';
 import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
@@ -37,6 +38,7 @@ Widget buildQuickActions(BuildContext context) {
                 final divisionName = prefs.getString("divisionName")??'';
                 final academicYearId = prefs.getString("academicYearId")??'';
                 final staffId = prefs.getString("staffId")??'';
+                final standard = prefs.getString("className") ?? '';
                 switch(index){
                   case 0:
                     final provider = context.read<StudentProvider>();
@@ -53,6 +55,13 @@ Widget buildQuickActions(BuildContext context) {
                     break;
                   case 3:
                     NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
+                    break;
+                  case 5:
+                    NavigationService.push(context,  TimetableScreen(
+                      standard: standard,
+                      division: divisionName,
+                    ));
+
                     break;
                   default:
                     break;
