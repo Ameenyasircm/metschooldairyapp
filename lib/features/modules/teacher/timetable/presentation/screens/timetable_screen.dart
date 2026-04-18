@@ -7,11 +7,13 @@ import '../provider/timetable_provider.dart';
 import '../widgets/timetable_table.dart';
 
 class TimetableScreen extends StatefulWidget {
+  final String academicId;
   final String standard;
   final String division;
 
   const TimetableScreen({
     super.key,
+    required this.academicId,
     required this.standard,
     required this.division,
   });
@@ -25,7 +27,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TimetableProvider>().fetchTimetable(widget.standard, widget.division);
+      context.read<TimetableProvider>().fetchTimetable(widget.standard,widget.division,widget.academicId);
     });
   }
 

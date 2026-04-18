@@ -8,6 +8,7 @@ import 'package:met_school/features/modules/teacher/students/presentation/screen
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:met_school/features/modules/teacher/homework/presentation/screens/homework_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
@@ -57,7 +58,11 @@ Widget buildQuickActions(BuildContext context) {
                     NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
                     break;
                   case 5:
+                    NavigationService.push(context, const HomeworkListScreen());
+                    break;
+                  case 6:
                     NavigationService.push(context,  TimetableScreen(
+                      academicId: academicYearId,
                       standard: standard,
                       division: divisionName,
                     ));

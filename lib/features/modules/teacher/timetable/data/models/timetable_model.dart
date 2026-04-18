@@ -1,9 +1,11 @@
 class TimetableModel {
+  final String academicId;
   final String standard;
   final String division;
   final Map<String, List<String>> timetable;
 
   TimetableModel({
+    required this.academicId,
     required this.standard,
     required this.division,
     required this.timetable,
@@ -11,6 +13,7 @@ class TimetableModel {
 
   factory TimetableModel.fromMap(Map<String, dynamic> map) {
     return TimetableModel(
+      academicId: map['academic_id'] ?? '',
       standard: map['standard'] ?? '',
       division: map['division'] ?? '',
       timetable: (map['timetable'] as Map<String, dynamic>?)?.map(
@@ -22,6 +25,7 @@ class TimetableModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'academic_id': academicId,
       'standard': standard,
       'division': division,
       'timetable': timetable,
@@ -29,9 +33,10 @@ class TimetableModel {
   }
 
   /// Creates an empty timetable with 5 days and 7 periods each.
-  factory TimetableModel.empty(String standard, String division) {
+  factory TimetableModel.empty(String standard, String division,String academicId) {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     return TimetableModel(
+      academicId: academicId,
       standard: standard,
       division: division,
       timetable: {

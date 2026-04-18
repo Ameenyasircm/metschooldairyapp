@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/timetable_model.dart';
 
 class TimetableProvider extends ChangeNotifier {
@@ -49,7 +50,7 @@ class TimetableProvider extends ChangeNotifier {
   }
 
   /// Fetches timetable for a specific class.
-  Future<void> fetchTimetable(String standard, String division) async {
+  Future<void> fetchTimetable(String standard, String division,String academicId) async {
     _isLoading = true;
     notifyListeners();
 
@@ -60,7 +61,7 @@ class TimetableProvider extends ChangeNotifier {
       if (doc.exists) {
         _timetable = TimetableModel.fromMap(doc.data()!);
       } else {
-        _timetable = TimetableModel.empty(standard, division);
+        _timetable = TimetableModel.empty(standard, division,academicId);
       }
       _syncControllersWithData();
     } catch (e) {
@@ -96,6 +97,10 @@ class TimetableProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final staffId = prefs.getString("staffId")??'';
+      final staffName = prefs.getString("staffName")??'';
+
       // Update memory from controllers
       controllers.forEach((day, list) {
         for (int i = 0; i < list.length; i++) {
@@ -103,9 +108,13 @@ class TimetableProvider extends ChangeNotifier {
         }
       });
 
-      final docId = '${_timetable!.standard}_${_timetable!.division}';
+      final docId = '${_timetable!.standard}_${_timetable!.division}_${timetable!.academicId}';
       await _firestore.collection('timetables').doc(docId).set(
-            _timetable!.toMap(),
+            {
+              ..._timetable!.toMap(),
+              "added_by_id": staffId,
+              "added_by": staffName,
+            },
             SetOptions(merge: true),
           );
       _isEditing = false;
