@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/providers/academic_provider.dart';
 import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
+import 'package:met_school/providers/conversation_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +44,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TimetableProvider()),
         ChangeNotifierProvider(create: (_) => AcademicProvider()),
         ChangeNotifierProvider(create: (_) => HomeworkProvider()),
+        ChangeNotifierProvider(create: (_) => ConversationProvider()),
         ChangeNotifierProvider(create: (_) => new_hw.HomeworkProvider()),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(

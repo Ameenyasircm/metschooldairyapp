@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import '../datasource/student_firestore.dart';
 import '../models/tech_student_model.dart';
 
@@ -44,4 +45,21 @@ class StudentRepository {
     );
     return snapshot.docs.map((doc) => EnrollerModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
   }
+
+  Future<Map<String, dynamic>?> getParentById(String parentId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('parents')
+          .doc(parentId)
+          .get();
+
+      if (doc.exists) {
+        return doc.data();
+      }
+    } catch (e) {
+      debugPrint("Error fetching parent: $e");
+    }
+    return null;
+  }
+
 }

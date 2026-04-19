@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:met_school/features/modules/teacher/homework/presentation/screens/homework_list_screen.dart';
+import '../../../../../communication/screens/students_parents_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
@@ -66,7 +67,10 @@ Widget buildQuickActions(BuildContext context) {
                       standard: standard,
                       division: divisionName,
                     ));
-
+                  case 7:
+                    final provider = context.read<StudentProvider>();
+                    provider.fetchMyStudentsInitial();
+                    callNext(StudentsParentsListScreen(), context);
                     break;
                   default:
                     break;

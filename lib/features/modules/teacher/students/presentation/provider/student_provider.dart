@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/service/firebase_service.dart';
+import '../../../../../communication/models/student_parent_model.dart';
 import '../../../punctuality/data/models/PunctualityModel.dart';
 import '../../data/models/tech_division_model.dart';
 import '../../data/models/tech_student_model.dart';
@@ -389,4 +390,56 @@ class StudentProvider extends ChangeNotifier {
     await fetchStudentRecords(student.studentId);
   }
 
+
+
+  List<StudentWithParentModel> myStudentsWithParent = [];
+  DocumentSnapshot? myStudentsWithParentLastDoc;
+  bool hasMoreMyStudentsWithParent = true;
+  bool isLoadingMyStudentsWithParent = false;
+
+  /// cache (important for performance)
+  Map<String, String> parentCache = {};
+
+
+  Future<void> fetchStudentsWithParentPage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final classId = prefs.getString("classId");
+    final result = await repository.getStudents(
+      lastDoc: myStudentsWithParentLastDoc,
+      isMyStudents: true,
+      classId: classId,
+    );
+
+    if (result.docs.isEmpty) {
+      hasMoreMyStudentsWithParent = false;
+      return;
+    }
+
+    myStudentsWithParentLastDoc = result.docs.last;
+
+    final futures = result.docs.map((doc) async {
+      final data = doc.data() as Map<String, dynamic>;
+
+      String parentId = (data['parent_id'] ?? '').toString();
+      String parentName = '';
+
+      if (parentCache.containsKey(parentId)) {
+        parentName = parentCache[parentId]!;
+      } else if (parentId.isNotEmpty) {
+        final parentData = await repository.getParentById(parentId);
+        parentName = (parentData?['parentName'] ?? '').toString();
+        parentCache[parentId] = parentName;
+      }
+
+      data['parentGuardian'] = parentName;
+
+      return StudentWithParentModel.fromMap(data);
+    }).toList();
+
+    final newItems = await Future.wait(futures);
+
+    myStudentsWithParent.addAll(newItems);
+    print('${myStudentsWithParent.length} KFRJFNRFJR ');
+    notifyListeners();
+  }
 }
