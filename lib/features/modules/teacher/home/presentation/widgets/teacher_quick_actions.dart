@@ -54,6 +54,11 @@ Widget buildQuickActions(BuildContext context) {
                   case 3:
                     NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
                     break;
+                  case 5:
+                    final provider = context.read<StudentProvider>();
+                    provider.fetchMyStudentsInitial();
+
+                    break;
                   default:
                     break;
 

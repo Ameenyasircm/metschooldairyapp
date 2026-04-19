@@ -58,6 +58,14 @@ class TeacherHomeViewModel extends ChangeNotifier {
             debugPrint("Tapped Add Exam");
           },
         ),
+      QuickAction(
+        title: 'Parent Communication',
+        icon: Icons.message_outlined,
+        color: AppColors.mint,
+        onTap: () {
+          debugPrint("Tapped Add Exam");
+        },
+      ),
       ];
 
   void setSelectedIndex(int index) {
