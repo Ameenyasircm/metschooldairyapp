@@ -146,7 +146,6 @@ class ParentHomeScreen extends StatelessWidget {
 
                           final parentId = prefs.getString("userId") ?? "";
 
-                          print('FNEGF $parentId');
                           final conversationId = await context
                               .read<ConversationProvider>()
                               .getOrCreateConversation(

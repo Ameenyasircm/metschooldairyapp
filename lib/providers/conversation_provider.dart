@@ -39,17 +39,19 @@ class ConversationProvider extends ChangeNotifier{
     required String conversationId,
     required String senderId,
     required String senderRole,
-    required String text,
+    String title = "",
+    required String description,
   }) async {
-    final messageRef = FirebaseFirestore.instance
+    final ref = FirebaseFirestore.instance
         .collection('conversations')
         .doc(conversationId)
         .collection('messages');
 
-    await messageRef.add({
+    await ref.add({
       'senderId': senderId,
       'senderRole': senderRole,
-      'message': text,
+      'title': title,
+      'description': description,
       'createdAt': Timestamp.now(),
       'isRead': false,
     });
@@ -58,11 +60,10 @@ class ConversationProvider extends ChangeNotifier{
         .collection('conversations')
         .doc(conversationId)
         .update({
-      'lastMessage': text,
+      'lastMessage': description,
       'lastMessageTime': Timestamp.now(),
     });
   }
-
   Stream<List<MessageModel>> getMessages(String conversationId) {
     return FirebaseFirestore.instance
         .collection('conversations')

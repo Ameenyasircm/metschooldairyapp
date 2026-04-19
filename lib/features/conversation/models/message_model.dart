@@ -4,17 +4,17 @@ class MessageModel {
   final String id;
   final String senderId;
   final String senderRole;
-  final String message;
+  final String title;
+  final String description;
   final Timestamp createdAt;
-  final bool isRead;
 
   MessageModel({
     required this.id,
     required this.senderId,
     required this.senderRole,
-    required this.message,
+    required this.title,
+    required this.description,
     required this.createdAt,
-    required this.isRead,
   });
 
   factory MessageModel.fromDoc(DocumentSnapshot doc) {
@@ -24,9 +24,9 @@ class MessageModel {
       id: doc.id,
       senderId: data['senderId'] ?? '',
       senderRole: data['senderRole'] ?? '',
-      message: data['message'] ?? '',
+      title: data['title'] ?? '',
+      description: data['description'] ?? '',
       createdAt: data['createdAt'] ?? Timestamp.now(),
-      isRead: data['isRead'] ?? false,
     );
   }
 }
