@@ -58,6 +58,24 @@ class TeacherHomeViewModel extends ChangeNotifier {
             debugPrint("Tapped Add Exam");
           },
         ),
+
+        QuickAction(
+          title: 'Homework',
+          icon: Icons.assignment_rounded,
+          color: AppColors.primary,
+
+          onTap: () {
+            debugPrint("Tapped Homework");
+          },
+        ),
+        QuickAction(
+          title: 'Time Table',
+          icon: Icons.table_chart_outlined,
+          color: AppColors.blueish,
+          onTap: () {
+            debugPrint("Tapped Time Table");
+          },
+        ),
       QuickAction(
         title: 'Parent Communication',
         icon: Icons.message_outlined,

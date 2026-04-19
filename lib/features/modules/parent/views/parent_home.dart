@@ -11,7 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
-import '../../../home/views/home/home_screen.dart';
+
 
 class ParentHomeScreen extends StatelessWidget {
   final String studentId;
@@ -71,6 +71,8 @@ class ParentHomeScreen extends StatelessWidget {
           final name = data['name'] ?? "";
           final className = data['className'] ?? "";
           final parentName = data['parentGuardian'] ?? "";
+          final classId = data['current_class_id'] ?? "";
+          final divisionId = data['current_division_id'] ?? "";
 
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -129,10 +131,9 @@ class ParentHomeScreen extends StatelessWidget {
                     crossAxisSpacing: 16.w,
                     mainAxisSpacing: 16.h,
                     children: [
-                      _buildCard(Icons.event, "Attendance"),
-                      _buildCard(Icons.menu_book, "Homework"),
-                      _buildCard(Icons.payment, "Fees"),
-                      _buildCard(Icons.notifications, "Notices"),
+                      _buildCard(Icons.event, "Attendance", onTap: () {}),
+                      _buildCard(Icons.payment, "Fees", onTap: () {}),
+                      _buildCard(Icons.notifications, "Notices", onTap: () {}),
                     ],
                   ),
                 ),
@@ -144,33 +145,36 @@ class ParentHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(IconData icon, String title) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.radiusL,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      padding: AppPadding.pM,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 32.sp, color: AppColors.primary),
-          AppSpacing.h12,
-          Text(
-            title,
-            style: AppTypography.body1.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkGreen,
+  Widget _buildCard(IconData icon, String title, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.radiusL,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
-          )
-        ],
+          ],
+        ),
+        padding: AppPadding.pM,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32.sp, color: AppColors.primary),
+            AppSpacing.h12,
+            Text(
+              title,
+              style: AppTypography.body1.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.darkGreen,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

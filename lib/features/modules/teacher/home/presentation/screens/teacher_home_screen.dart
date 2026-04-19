@@ -49,12 +49,7 @@ class TeacherHomeScreen extends StatelessWidget {
         ),
 
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.primary,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: AppColors.white),
-      ),
+
     );
   }
 
