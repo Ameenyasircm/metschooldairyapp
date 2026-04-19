@@ -3,7 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+import '../features/modules/admin/school_calaender/models/school_event_model.dart';
+
 class AdminProvider with ChangeNotifier {
+  final FirebaseFirestore db = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
@@ -506,5 +509,62 @@ class AdminProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+
+  /// add school calender
+
+  List<SchoolEventModel> eventList = [];
+
+  TextEditingController titleCt = TextEditingController();
+  TextEditingController descCt = TextEditingController();
+
+  DateTime? selectedDate;
+
+  void setDate(DateTime date) {
+    selectedDate = date;
+    notifyListeners();
+  }
+
+  Future<void> fetchEvents() async {
+    final snapshot =
+    await db.collection("SCHOOL_SPECIAL_DAYS").get();
+
+    eventList = snapshot.docs
+        .map((e) => SchoolEventModel.fromMap(e.data(), e.id))
+        .toList();
+
+    notifyListeners();
+  }
+
+  List<SchoolEventModel> getEventsByDate(DateTime date) {
+    return eventList.where((e) =>
+    e.date.year == date.year &&
+        e.date.month == date.month &&
+        e.date.day == date.day).toList();
+  }
+
+  Future<void> addEvent(BuildContext context) async {
+    if (titleCt.text.isEmpty || selectedDate == null) return;
+
+    isLoading = true;
+    notifyListeners();
+
+    await db.collection("SCHOOL_SPECIAL_DAYS").add({
+      "title": titleCt.text,
+      "description": descCt.text,
+      "date": selectedDate,
+      "createdAt": FieldValue.serverTimestamp(),
+    });
+
+    titleCt.clear();
+    descCt.clear();
+
+    await fetchEvents(); // 🔥 refresh calendar instantly
+
+    isLoading = false;
+    notifyListeners();
+
+    Navigator.pop(context);
   }
 }
