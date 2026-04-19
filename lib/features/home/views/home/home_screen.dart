@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/about/about_us_screen.dart';
@@ -55,20 +57,31 @@ class HomeScreen extends StatelessWidget {
 
                   /// 🎯 PARENT
                   if (role == "parent") {
-                    final studentIds = prefs.getStringList("studentIds") ?? [];
+                    final studentDataStringList =
+                        prefs.getStringList("studentDataList") ?? [];
 
-                    if (studentIds.length == 1) {
-                      final studentId =
-                          prefs.getString("selectedStudentId") ?? studentIds.first;
+                    final studentDataList = studentDataStringList
+                        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+                        .toList();
+
+                    if (studentDataList.length == 1) {
+                      final s = studentDataList.first;
 
                       NavigationService.push(
                         context,
-                        ParentHomeScreen(studentId: studentId),
+                        ParentHomeScreen(
+                          studentId: s['studentId'],
+                          academicYearID: s['academicYearId'],
+                          teacherName: s['teacherName'],
+                          teacherID: s['teacherId'],
+                        ),
                       );
                     } else {
                       NavigationService.push(
                         context,
-                        ParentStudentSelectionScreen(studentIds: studentIds),
+                        ParentStudentSelectionScreen(
+                          studentIds: studentDataList,
+                        ),
                       );
                     }
                   }

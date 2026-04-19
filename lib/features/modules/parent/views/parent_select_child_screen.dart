@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -61,94 +63,82 @@ class ParentStudentSelectionScreen extends StatelessWidget {
           itemCount: studentIds.length,
           separatorBuilder: (_, __) => AppSpacing.h16,
           itemBuilder: (context, index) {
-            final studentId = studentIds[index];
+            final student = studentIds[index];
 
-            return StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection("students")
-                  .doc(studentId)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return _loadingCard();
+            final studentId = student['studentId'];
+            final name = student['studentName'] ?? "No Name";
+            final className = student['className'] ?? "";
+
+            return GestureDetector(
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+
+                /// ✅ Save selected student
+                await prefs.setString("selectedStudentData", jsonEncode(student));
+
+                if (context.mounted) {
+                  callNext(
+                    ParentHomeScreen(
+                      studentId: student['studentId'],
+                      academicYearID: student['academicYearId'],
+                      teacherName: student['teacherName'],
+                      teacherID: student['teacherId'],
+                    ),
+                    context,
+                  );
                 }
-
-                final data =
-                    snapshot.data!.data() as Map<String, dynamic>? ?? {};
-
-                final name = data['name'] ?? "No Name";
-                final className = data['className'] ?? "";
-
-                return GestureDetector(
-                  onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setString("selectedStudentId", studentId);
-
-                    if (context.mounted) {
-                      callNext(
-                        ParentHomeScreen(studentId: studentId),
-                        context,
-                      );
-                    }
-                  },
-                  child: Container(
-                    padding: AppPadding.pL,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: AppRadius.radiusL,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 20,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        /// Avatar
-                        Container(
-                          width: 48.w,
-                          height: 48.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.lightGreen,
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Icon(Icons.person, color: AppColors.primary),
-                        ),
-
-                        AppSpacing.w16,
-
-                        /// Student Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: AppTypography.body1.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.darkGreen,
-                                ),
-                              ),
-                              AppSpacing.h4,
-                              Text(
-                                className,
-                                style: AppTypography.caption.copyWith(
-                                  color: AppColors.grey5E,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Icon(Icons.arrow_forward_ios,
-                            size: 16.sp, color: AppColors.grey5E)
-                      ],
-                    ),
-                  ),
-                );
               },
+              child: Container(
+                padding: AppPadding.pL,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: AppRadius.radiusL,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48.w,
+                      height: 48.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.lightGreen,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(Icons.person, color: AppColors.primary),
+                    ),
+                    AppSpacing.w16,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: AppTypography.body1.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.darkGreen,
+                            ),
+                          ),
+                          AppSpacing.h4,
+                          Text(
+                            className,
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.grey5E,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios,
+                        size: 16.sp, color: AppColors.grey5E)
+                  ],
+                ),
+              ),
             );
           },
         ),

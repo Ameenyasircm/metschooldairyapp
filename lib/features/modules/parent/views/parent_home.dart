@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_padding.dart';
@@ -10,15 +11,18 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
+import '../../../../providers/conversation_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../conversation/screens/conversation_screen.dart';
 
 
 class ParentHomeScreen extends StatelessWidget {
   final String studentId;
+  String academicYearID,teacherName,teacherID;
 
-  const ParentHomeScreen({
+   ParentHomeScreen({
     super.key,
-    required this.studentId,
+    required this.studentId,required this.academicYearID,required this.teacherName,required this.teacherID,
   });
 
   @override
@@ -134,6 +138,33 @@ class ParentHomeScreen extends StatelessWidget {
                       _buildCard(Icons.event, "Attendance", onTap: () {}),
                       _buildCard(Icons.payment, "Fees", onTap: () {}),
                       _buildCard(Icons.notifications, "Notices", onTap: () {}),
+                      _buildCard(
+                        Icons.message_outlined,
+                        "Communication",
+                        onTap: () async {
+                          final prefs = await SharedPreferences.getInstance();
+
+                          final parentId = prefs.getString("userId") ?? "";
+
+                          print('FNEGF $parentId');
+                          final conversationId = await context
+                              .read<ConversationProvider>()
+                              .getOrCreateConversation(
+                            studentId: studentId,
+                            parentId: parentId,
+                            teacherId: teacherID,
+                          );
+
+                          callNext(
+                            MessageScreen(
+                              conversationId: conversationId,
+                              currentUserId: parentId,
+                              role: "parent",
+                            ),
+                            context,
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

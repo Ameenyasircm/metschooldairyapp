@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -6,6 +8,7 @@ import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/admin/views/admin_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/auth/presentation/models/academic_year_model.dart';
 import '../features/modules/admin/views/admin_login_screen.dart';
 
 import '../core/utils/snackbarNotification/snackbar_notification.dart';
@@ -23,6 +26,10 @@ class AuthProvider with ChangeNotifier {
 
   bool get obscurePassword => _obscurePassword;
   bool get isLoading => _isLoading;
+
+  AuthProvider(){
+    loadCurrentAcademicYear();
+  }
 
   void togglePassword() {
     _obscurePassword = !_obscurePassword;
@@ -140,31 +147,83 @@ class AuthProvider with ChangeNotifier {
       /// 🎯 PARENT LOGIN
       /// =========================
       if (role == "parent") {
-        List studentIds = data['studentIds'] ?? [];
+        final academicYear = currentYear?.id;
 
-        if (studentIds.isEmpty) {
+        if (academicYear == null) {
+          SnackbarService().showError("Academic year not found.");
+          return;
+        }
+
+        final enrollments = await fireStore
+            .collection("enrollments")
+            .where("parent_id", isEqualTo: doc.id)
+            .where("academic_year_id", isEqualTo: academicYear)
+            .get();
+
+        if (enrollments.docs.isEmpty) {
           SnackbarService().showError("No students found.");
           return;
         }
 
+        /// ✅ Build full student list
+        List<Map<String, dynamic>> studentDataList = [];
+
+        for (var e in enrollments.docs) {
+          final enrollData = e.data();
+
+          final studentId = enrollData['student_id'];
+          final divisionId = enrollData['division_id'];
+
+          /// 🔥 Fetch teacher from division
+          final divisionDoc = await fireStore
+              .collection("divisions")
+              .doc(divisionId)
+              .get();
+
+          final divisionData = divisionDoc.data() ?? {};
+
+          studentDataList.add({
+            "studentId": studentId,
+            "academicYearId": academicYear,
+            "teacherName": divisionData['class_teacher_name'] ?? "",
+            "teacherId": divisionData['class_teacher_id'] ?? "",
+            "studentName": enrollData['student_name'] ?? "",
+            "className": enrollData['class_name'] ?? "",
+          });
+        }
+
+        /// ✅ Save full list
         await prefs.setStringList(
-          "studentIds",
-          studentIds.map((e) => e.toString()).toList(),
+          "studentDataList",
+          studentDataList.map((e) => jsonEncode(e)).toList(),
         );
 
-        if (studentIds.length == 1) {
-          await prefs.setString("selectedStudentId", studentIds.first);
+        /// ✅ SINGLE STUDENT
+        if (studentDataList.length == 1) {
+          final s = studentDataList.first;
+
+          await prefs.setString("selectedStudentData", jsonEncode(s));
 
           if (context.mounted) {
             callNextReplacement(
-              ParentHomeScreen(studentId: studentIds.first),
+              ParentHomeScreen(
+                studentId: s['studentId'],
+                academicYearID: s['academicYearId'],
+                teacherName: s['teacherName'],
+                teacherID: s['teacherId'],
+              ),
               context,
             );
           }
-        } else {
+        }
+
+        /// ✅ MULTIPLE STUDENTS
+        else {
           if (context.mounted) {
             callNextReplacement(
-              ParentStudentSelectionScreen(studentIds: studentIds),
+              ParentStudentSelectionScreen(
+                studentIds: studentDataList,
+              ),
               context,
             );
           }
@@ -172,7 +231,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       /// =========================
-      /// 🎯 TEACHER LOGIN (DEFAULT)
+      /// 🎯 TEACHER LOGIN
       /// =========================
       else {
         await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
@@ -188,7 +247,9 @@ class AuthProvider with ChangeNotifier {
 
         if (context.mounted) {
           callNextReplacement(
-            TeacherNavbarScreen(staffName: data['name'] ?? ""),
+            TeacherNavbarScreen(
+              staffName: data['name'] ?? "",
+            ),
             context,
           );
         }
@@ -200,7 +261,6 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
   Future<String?> currentAcademicYearId() async {
     final query = await fireStore
         .collection('academic_years')
@@ -210,6 +270,8 @@ class AuthProvider with ChangeNotifier {
 
     return query.docs.isNotEmpty ? query.docs.first.id : null;
   }
+
+
   void _showError(BuildContext context, String message) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -423,6 +485,34 @@ class AuthProvider with ChangeNotifier {
     /// Navigate to login
     if (context.mounted) {
       callNextReplacement(AdminLoginScreen(), context);
+    }
+  }
+
+  AcademicYearModel? currentYear;
+
+  Future<void> loadCurrentAcademicYear() async {
+
+    currentYear = await fetchCurrentAcademicYear();
+
+    notifyListeners();
+  }
+
+  Future<AcademicYearModel?> fetchCurrentAcademicYear() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('academic_years')
+          .where('is_current', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return AcademicYearModel.fromMap(snapshot.docs.first.data());
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching academic year: $e");
+      return null;
     }
   }
 
