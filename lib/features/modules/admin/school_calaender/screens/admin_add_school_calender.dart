@@ -1,14 +1,10 @@
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
 // Assuming these are your internal imports:
 import '../../../../../providers/admin_provider.dart';
-import '../../../../../providers/auth_provider.dart';
-// ... other imports
 
 class AdminCalendarWebScreen extends StatefulWidget {
   @override

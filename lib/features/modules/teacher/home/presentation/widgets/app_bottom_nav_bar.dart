@@ -34,9 +34,9 @@ class AppBottomNavBar extends StatelessWidget {
               label: 'Students',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart),
-              label: 'Reports',
+              icon: Icon(Icons.calendar_month),
+              activeIcon: Icon(Icons.calendar_month),
+              label: 'Calender',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
