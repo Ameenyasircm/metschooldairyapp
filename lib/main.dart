@@ -7,6 +7,7 @@ import 'package:met_school/providers/academic_provider.dart';
 import 'package:met_school/providers/admin_provider.dart';
 import 'package:met_school/providers/auth_provider.dart';
 import 'package:met_school/providers/conversation_provider.dart';
+import 'package:met_school/providers/fee_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +38,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => FeeProvider()),
         ChangeNotifierProvider(create: (_) => TeacherProvider()),
         ChangeNotifierProvider(create: (_) => ParentProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),

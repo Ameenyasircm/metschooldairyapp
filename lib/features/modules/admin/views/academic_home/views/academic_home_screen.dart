@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../../providers/admin_provider.dart';
 import 'classes_screen.dart';
+import 'fee_management_main.dart';
 
 class AcademicYearHomeScreen extends StatelessWidget {
   final String academicYearId;
@@ -75,6 +76,27 @@ class AcademicYearHomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClassesScreen(
+                            academicYearId: academicYearId,
+                            academicYear: yearName, userName: userName, userId: userId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _moduleCard(
+                    context,
+                    title: "Fee Management",
+                    icon: Icons.payment,
+                    color: Colors.blue,
+                    onTap: () {
+                      // 💡 PRE-FETCH DIVISIONS FOR BETTER UX
+                      context.read<AdminProvider>().fetchDivisionsGlobally(academicYearId);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FeeManagementMain(
                             academicYearId: academicYearId,
                             academicYear: yearName, userName: userName, userId: userId,
                           ),
