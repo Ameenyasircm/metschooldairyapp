@@ -48,7 +48,9 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
 
     try {
       for (var student in studentDetails) {
+
         final String sId = student['id'];
+        print(sId);
 
         final existing = await firestore
             .collection('enrollments')

@@ -55,12 +55,22 @@ class AuthProvider with ChangeNotifier {
       if (adminSnapshot.docs.isNotEmpty) {
         var adminData = adminSnapshot.docs.first.data();
 
+        // 🔹 1. CHECK IF ACCOUNT IS ACTIVE
+        // Default to true if the field doesn't exist yet
+        bool isActive = adminData['isActive'] ?? true;
+
+        if (!isActive) {
+          if (context.mounted) {
+            _showError(context, "Your account is temporarily deactivated. Please contact the administrator.");
+          }
+          return; // Stop the login process here
+        }
+
         String dbPassword = adminData['password'] ?? "";
         String adminName = adminData['name'] ?? "";
         String adminPhone = adminData['phone'] ?? "";
 
         if (dbPassword == password) {
-
           /// ✅ SAVE LOGIN DATA
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString("adminId", adminSnapshot.docs.first.id);
@@ -78,7 +88,6 @@ class AuthProvider with ChangeNotifier {
               context,
             );
           }
-
         } else {
           _showError(context, "Incorrect password. Please try again.");
         }
