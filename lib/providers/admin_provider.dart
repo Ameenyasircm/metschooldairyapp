@@ -567,4 +567,28 @@ class AdminProvider with ChangeNotifier {
 
     Navigator.pop(context);
   }
+
+  Future<void> toggleStaffStatus(String docId, bool currentStatus) async {
+    final batch = db.batch();
+
+    // Define the update data
+    final statusUpdate = {'isActive': !currentStatus};
+
+    // 1. Reference for Staff Profiles
+    DocumentReference staffRef = db.collection('staff_profiles').doc(docId);
+    // 2. Reference for Users
+    DocumentReference userRef = db.collection('users').doc(docId);
+
+    // Use set with merge: true to handle missing fields or missing documents safely
+    batch.set(staffRef, statusUpdate, SetOptions(merge: true));
+    batch.set(userRef, statusUpdate, SetOptions(merge: true));
+
+    try {
+      await batch.commit();
+      debugPrint("Status updated to ${!currentStatus} for $docId");
+    } catch (e) {
+      debugPrint("❌ Error toggling status: $e");
+      rethrow;
+    }
+  }
 }

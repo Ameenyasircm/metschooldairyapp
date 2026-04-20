@@ -416,8 +416,12 @@ class _StaffRow extends StatefulWidget {
 
 class _StaffRowState extends State<_StaffRow> {
   bool isH = false;
+
   @override
   Widget build(BuildContext context) {
+    // 🔹 DEFINE isActive HERE (Defaults to true if the field is missing in Firestore)
+    final bool isActive = widget.staff['isActive'] ?? true;
+
     return MouseRegion(
       onEnter: (_) => setState(() => isH = true),
       onExit: (_) => setState(() => isH = false),
@@ -430,36 +434,113 @@ class _StaffRowState extends State<_StaffRow> {
         ),
         child: Row(
           children: [
-            Expanded(flex: 3, child: Row(children: [
-              CircleAvatar(radius: 16, backgroundColor: AppColors.primary.withOpacity(0.1), child: Text(widget.staff['name']?[0] ?? "?", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary))),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            /// 🔹 STAFF NAME & AVATAR
+            Expanded(
+              flex: 3,
+              child: Row(
                 children: [
-                  Text(widget.staff['name'] ?? "—", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1B2559))),
-                  Text(widget.staff['qualification'] ?? "No Qualification", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: isActive
+                        ? AppColors.primary.withOpacity(0.1)
+                        : Colors.grey.shade200,
+                    child: Text(
+                      widget.staff['name']?[0] ?? "?",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isActive ? AppColors.primary : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.staff['name'] ?? "—",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isActive ? const Color(0xFF1B2559) : Colors.grey,
+                        ),
+                      ),
+                      Text(widget.staff['qualification'] ?? "No Qualification",
+                          style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                    ],
+                  ),
                 ],
               ),
-            ])),
-            Expanded(flex: 2, child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.staff['phone'] ?? "—", style: const TextStyle(fontSize: 13, color: Color(0xFF1B2559))),
-                Text("Aadhar: ${widget.staff['aadhar'] ?? 'N/A'}", style: const TextStyle(fontSize: 11, color: Color(0xFFA3AED0))),
-              ],
-            )),
-            Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(widget.staff['role']?.toUpperCase() ?? "STAFF", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF1B2559))),
-              Text(widget.staff['designation'] ?? "General", style: const TextStyle(fontSize: 10, color: Color(0xFFA3AED0))),
-            ])),
+            ),
+
+            /// 🔹 CONTACT / AADHAR
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.staff['phone'] ?? "—",
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF1B2559))),
+                  Text("Aadhar: ${widget.staff['aadhar'] ?? 'N/A'}",
+                      style: const TextStyle(fontSize: 11, color: Color(0xFFA3AED0))),
+                ],
+              ),
+            ),
+
+            /// 🔹 POSITION
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.staff['role']?.toUpperCase() ?? "STAFF",
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B2559))),
+                  Text(widget.staff['designation'] ?? "General",
+                      style: const TextStyle(fontSize: 10, color: Color(0xFFA3AED0))),
+                ],
+              ),
+            ),
+
+            /// 🔹 ACTIONS (All 4 features preserved)
             SizedBox(
-              width: 150,
+              width: 180, // Width adjusted to fit 4 buttons comfortably
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(onPressed: widget.onView, icon: const Icon(Icons.visibility_rounded, size: 18, color: Color(0xFF422AFB))),
-                  IconButton(onPressed: widget.onEdit, icon: const Icon(Icons.edit_square, size: 18, color: Color(0xFF1B2559))),
-                  IconButton(onPressed: widget.onDelete, icon: const Icon(Icons.delete_rounded, size: 18, color: Colors.redAccent)),
+                  // 1. Toggle Status (Active/Deactive)
+                  IconButton(
+                    tooltip: isActive ? "Deactivate" : "Activate",
+                    onPressed: () => context.read<AdminProvider>().toggleStaffStatus(
+                      widget.docId,
+                      isActive,
+                    ),
+                    icon: Icon(
+                      isActive ? Icons.check_circle_rounded : Icons.block_flipped,
+                      size: 18,
+                      color: isActive ? Colors.green : Colors.orange,
+                    ),
+                  ),
+
+                  // 2. View
+                  IconButton(
+                    onPressed: widget.onView,
+                    icon: const Icon(Icons.visibility_rounded, size: 18, color: Color(0xFF422AFB)),
+                  ),
+
+                  // 3. Edit
+                  IconButton(
+                    onPressed: widget.onEdit,
+                    icon: const Icon(Icons.edit_square, size: 18, color: Color(0xFF1B2559)),
+                  ),
+
+                  // 4. Delete
+                  IconButton(
+                    onPressed: widget.onDelete,
+                    icon: const Icon(Icons.delete_rounded, size: 18, color: Colors.redAccent),
+                  ),
                 ],
               ),
             ),
