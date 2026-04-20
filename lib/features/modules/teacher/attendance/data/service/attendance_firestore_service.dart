@@ -12,14 +12,13 @@ class AttendanceFirestoreService {
   }
 
   Future<DailyAttendanceModel?> fetchAttendanceByDate(String date, String divisionId) async {
-    final docId = "${date}_${divisionId}";
+    final docId = "${date}_$divisionId";
     final doc = await _db.collection(_collection).doc(docId).get();
     if (doc.exists) {
       return DailyAttendanceModel.fromFirestore(doc);
     }
     return null;
   }
-
   Future<List<DailyAttendanceModel>> fetchMonthlyAttendance(String divisionId, String monthYear) async {
     // monthYear format: "yyyy-MM"
     final snapshot = await _db.collection(_collection)

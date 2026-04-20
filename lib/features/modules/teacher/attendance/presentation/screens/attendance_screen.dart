@@ -9,6 +9,10 @@ import 'package:met_school/core/constants/app_padding.dart';
 import 'package:met_school/core/constants/app_radius.dart';
 import '../../data/models/attendance_model.dart';
 import '../provider/attendance_view_model.dart';
+import '../widgets/attendance_tile.dart';
+import '../widgets/attendance_session_toggle.dart';
+import '../widgets/attendance_action_chip.dart';
+import '../widgets/attendance_remark_dialogs.dart';
 
 class AttendanceScreen extends StatefulWidget {
   final String divisionId;
@@ -75,7 +79,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             session: vm.selectedSession,
                             onStatusChanged: (status) {
                               if (status == AttendanceStatus.late) {
-                                _showLateRemarkDialog(context, vm, studentId);
+                                AttendanceRemarkDialogs.showLateRemarkDialog(context, vm, studentId);
+                              } else if (status == AttendanceStatus.absent) {
+                                AttendanceRemarkDialogs.showAbsentRemarkDialog(context, vm, studentId);
                               } else {
                                 vm.markSingleStudent(studentId, status);
                               }
@@ -151,12 +157,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 child: Row(
                   children: [
-                    _SessionToggle(
+                    AttendanceSessionToggle(
                       label: 'Morning',
                       isSelected: vm.selectedSession == AttendanceSession.morning,
                       onTap: () => vm.setSelectedSession(AttendanceSession.morning),
                     ),
-                    _SessionToggle(
+                    AttendanceSessionToggle(
                       label: 'Afternoon',
                       isSelected: vm.selectedSession == AttendanceSession.afternoon,
                       onTap: () => vm.setSelectedSession(AttendanceSession.afternoon),
@@ -174,29 +180,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildActionBar(AttendanceViewModel vm) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _ActionChip(
-              label: "All Present",
-              color: AppColors.successGreen,
-              onTap: () => vm.markAll(AttendanceStatus.present),
-            ),
-            AppSpacing.hm,
-            _ActionChip(
-              label: "All Absent",
-              color: AppColors.errorRed,
-              onTap: () => vm.markAll(AttendanceStatus.absent),
-            ),
-            AppSpacing.hm,
-            _ActionChip(
-              label: "Reset All",
-              color: AppColors.grey5E,
-              onTap: () => vm.markAll(AttendanceStatus.none),
-            ),
-          ],
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          AttendanceActionChip(
+            label: "All Present",
+            color: AppColors.successGreen,
+            onTap: () => vm.markAll(AttendanceStatus.present),
+          ),
+          AppSpacing.hm,
+          AttendanceActionChip(
+            label: "Reset All",
+            color: AppColors.grey5E,
+            onTap: () => vm.markAll(AttendanceStatus.none),
+          ),
+        ],
       ),
     );
   }
@@ -245,224 +244,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     ),
                 ],
               ),
-      ),
-    );
-  }
-
-  void _showLateRemarkDialog(BuildContext context, AttendanceViewModel vm, String studentId) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
-        title: Text("Late Remark", style: AppTypography.h5),
-        content: TextField(
-          controller: controller,
-          style: AppTypography.body1,
-          decoration: InputDecoration(
-            hintText: "Enter reason for being late",
-            hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.xs)),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: AppTypography.label.copyWith(color: AppColors.grey5E)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
-            onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                vm.markSingleStudent(studentId, AttendanceStatus.late, remark: controller.text.trim());
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("Confirm"),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SessionToggle extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SessionToggle({required this.label, required this.isSelected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadius.s),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.label.copyWith(color: isSelected ? AppColors.white : AppColors.grey5E),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionChip extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ActionChip({required this.label, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius:AppRadius.radiusXL,
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.caption.copyWith(color: color, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-}
-
-class AttendanceTile extends StatelessWidget {
-  final StudentAttendanceData studentData;
-  final AttendanceSession session;
-  final Function(AttendanceStatus) onStatusChanged;
-
-  const AttendanceTile({
-    super.key,
-    required this.studentData,
-    required this.session,
-    required this.onStatusChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final status = session == AttendanceSession.morning ? studentData.morning : studentData.afternoon;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: AppPadding.pM,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius:AppRadius.radiusM,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: const BoxDecoration(color: AppColors.greyGreen, shape: BoxShape.circle),
-                alignment: Alignment.center,
-                child: Text(studentData.rollNo, style: AppTypography.label.copyWith(color: AppColors.primary)),
-              ),
-              AppSpacing.hm,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(studentData.name, style: AppTypography.h6),
-                    if (session == AttendanceSession.morning && studentData.morning == AttendanceStatus.late)
-                      Padding(
-                        padding: EdgeInsets.only(top: 4.h),
-                        child: Text("Remark: ${studentData.lateRemark}", style: AppTypography.caption.copyWith(color: AppColors.warningOrange)),
-                      ),
-                  ],
-                ),
-              ),
-              _buildStatusSelectors(status),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusSelectors(AttendanceStatus status) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _StatusButton(
-          label: 'P',
-          isSelected: status == AttendanceStatus.present,
-          color: AppColors.successGreen,
-          onTap: () => onStatusChanged(AttendanceStatus.present),
-        ),
-        AppSpacing.hs,
-        _StatusButton(
-          label: 'A',
-          isSelected: status == AttendanceStatus.absent,
-          color: AppColors.errorRed,
-          onTap: () => onStatusChanged(AttendanceStatus.absent),
-        ),
-        if (session == AttendanceSession.morning) ...[
-          AppSpacing.hs,
-          _StatusButton(
-            label: 'L',
-            isSelected: status == AttendanceStatus.late,
-            color: AppColors.warningOrange,
-            onTap: () => onStatusChanged(AttendanceStatus.late),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _StatusButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _StatusButton({
-    required this.label,
-    required this.isSelected,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 34.w,
-        height: 34.w,
-        decoration: BoxDecoration(
-          color: isSelected ? color : AppColors.white,
-          border: Border.all(color: isSelected ? color : AppColors.greyGreen, width: 1.5),
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: AppTypography.label.copyWith(
-            color: isSelected ? AppColors.white : AppColors.grey5E,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }

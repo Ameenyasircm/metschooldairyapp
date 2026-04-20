@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/homework_model.dart';
 
 class HomeworkProvider extends ChangeNotifier {
@@ -14,6 +13,23 @@ class HomeworkProvider extends ChangeNotifier {
 
   List<HomeworkSubmissionModel> _submissions = [];
   List<HomeworkSubmissionModel> get submissions => _submissions;
+
+  List<Map<String, dynamic>> _subjectsList = [];
+  List<Map<String, dynamic>> get subjectsList => _subjectsList;
+
+  // Fetch Subjects from Firestore
+  Future<void> fetchSubjects() async {
+    try {
+      final snapshot = await _db.collection('subjects').get();
+      _subjectsList = snapshot.docs.map((doc) => {
+        "id": doc.id,
+        "name": doc['name']?.toString() ?? 'Unknown',
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching subjects: $e");
+    }
+  }
 
   // Fetch Homework for a specific class and division
   Future<void> fetchHomework({

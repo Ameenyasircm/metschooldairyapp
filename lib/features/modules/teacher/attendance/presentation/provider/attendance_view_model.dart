@@ -79,6 +79,9 @@ class AttendanceViewModel extends ChangeNotifier {
             newAttendanceMap[id]!.afternoon = savedData.afternoon;
             newAttendanceMap[id]!.isLate = savedData.isLate;
             newAttendanceMap[id]!.lateRemark = savedData.lateRemark;
+            newAttendanceMap[id]!.lateDurationMinutes = savedData.lateDurationMinutes;
+            newAttendanceMap[id]!.morningAbsentRemark = savedData.morningAbsentRemark;
+            newAttendanceMap[id]!.afternoonAbsentRemark = savedData.afternoonAbsentRemark;
           }
         });
       }
@@ -92,7 +95,7 @@ class AttendanceViewModel extends ChangeNotifier {
     }
   }
 
-  void markSingleStudent(String studentId, AttendanceStatus status, {String? remark}) {
+  void markSingleStudent(String studentId, AttendanceStatus status, {String? remark, int? lateDuration, String? absentRemark}) {
     final data = _attendanceMap[studentId];
     if (data != null) {
       if (_selectedSession == AttendanceSession.morning) {
@@ -100,12 +103,25 @@ class AttendanceViewModel extends ChangeNotifier {
         if (status == AttendanceStatus.late) {
           data.isLate = true;
           if (remark != null) data.lateRemark = remark;
+          if (lateDuration != null) data.lateDurationMinutes = lateDuration;
         } else {
           data.isLate = false;
           data.lateRemark = '';
+          data.lateDurationMinutes = 0;
+        }
+
+        if (status == AttendanceStatus.absent) {
+          if (absentRemark != null) data.morningAbsentRemark = absentRemark;
+        } else {
+          data.morningAbsentRemark = '';
         }
       } else {
         data.afternoon = status;
+        if (status == AttendanceStatus.absent) {
+          if (absentRemark != null) data.afternoonAbsentRemark = absentRemark;
+        } else {
+          data.afternoonAbsentRemark = '';
+        }
       }
       notifyListeners();
     }
@@ -117,9 +133,11 @@ class AttendanceViewModel extends ChangeNotifier {
         data.morning = status;
         data.isLate = (status == AttendanceStatus.late);
         if (!data.isLate) data.lateRemark = '';
+        if (status != AttendanceStatus.absent) data.morningAbsentRemark = '';
       } else {
         // Afternoon doesn't have "late" according to requirements, but handle just in case
         data.afternoon = (status == AttendanceStatus.late) ? AttendanceStatus.present : status;
+        if (status != AttendanceStatus.absent) data.afternoonAbsentRemark = '';
       }
     });
     notifyListeners();

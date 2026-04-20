@@ -145,7 +145,15 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
                                           style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
                                       if (data.lateRemark.isNotEmpty) ...[
                                         AppSpacing.h2,
-                                        Text(data.lateRemark, style: AppTypography.caption.copyWith(color: AppColors.reddish)),
+                                        Text("Late: ${data.lateRemark}", style: AppTypography.caption.copyWith(color: AppColors.warningOrange)),
+                                      ],
+                                      if (data.morningAbsentRemark.isNotEmpty) ...[
+                                        AppSpacing.h2,
+                                        Text("Morning Absent: ${data.morningAbsentRemark}", style: AppTypography.caption.copyWith(color: AppColors.errorRed)),
+                                      ],
+                                      if (data.afternoonAbsentRemark.isNotEmpty) ...[
+                                        AppSpacing.h2,
+                                        Text("Afternoon Absent: ${data.afternoonAbsentRemark}", style: AppTypography.caption.copyWith(color: AppColors.errorRed)),
                                       ],
                                     ],
                                   ),

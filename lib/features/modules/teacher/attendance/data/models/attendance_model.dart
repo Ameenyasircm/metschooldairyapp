@@ -13,6 +13,9 @@ class StudentAttendanceData {
   AttendanceStatus afternoon;
   bool isLate;
   String lateRemark;
+  int lateDurationMinutes;
+  String morningAbsentRemark;
+  String afternoonAbsentRemark;
 
   StudentAttendanceData({
     required this.studentId,
@@ -23,6 +26,9 @@ class StudentAttendanceData {
     this.afternoon = AttendanceStatus.none,
     this.isLate = false,
     this.lateRemark = '',
+    this.lateDurationMinutes = 0,
+    this.morningAbsentRemark = '',
+    this.afternoonAbsentRemark = '',
   });
 
   factory StudentAttendanceData.fromMap(String id, Map<String, dynamic> map) {
@@ -35,6 +41,9 @@ class StudentAttendanceData {
       afternoon: _parseStatus(map['afternoon']),
       isLate: map['isLate'] ?? false,
       lateRemark: map['lateRemark'] ?? '',
+      lateDurationMinutes: map['lateDurationMinutes'] ?? 0,
+      morningAbsentRemark: map['morningAbsentRemark'] ?? '',
+      afternoonAbsentRemark: map['afternoonAbsentRemark'] ?? '',
     );
   }
 
@@ -56,6 +65,9 @@ class StudentAttendanceData {
       'afternoon': afternoon.name,
       'isLate': isLate,
       'lateRemark': lateRemark,
+      'lateDurationMinutes': lateDurationMinutes,
+      'morningAbsentRemark': morningAbsentRemark,
+      'afternoonAbsentRemark': afternoonAbsentRemark,
     };
   }
 }

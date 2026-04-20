@@ -25,7 +25,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _subjectController = TextEditingController();
+  String? _selectedSubject;
   DateTime? _selectedDate;
 
   String? _classId;
@@ -40,6 +40,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
   void initState() {
     super.initState();
     _loadTeacherData();
+    Future.microtask(() => context.read<HomeworkProvider>().fetchSubjects());
   }
 
   Future<void> _loadTeacherData() async {
@@ -74,10 +75,15 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
   }
 
   Future<void> _saveHomework() async {
-    if (!_formKey.currentState!.validate() || _selectedDate == null) {
+    if (!_formKey.currentState!.validate() || _selectedDate == null || _selectedSubject == null) {
       if (_selectedDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select a due date')),
+        );
+      }
+      if (_selectedSubject == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a subject')),
         );
       }
       return;
@@ -95,7 +101,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
       divisionName: _divisionName ?? '',
       teacherId: _teacherId ?? '',
       teacherName: _teacherName ?? '',
-      subject: _subjectController.text.trim(),
+      subject: _selectedSubject,
       academicYearId: _academicId??'',
     );
 
@@ -145,10 +151,44 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
                         style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600),
                       ),
                       AppSpacing.h20,
-                      AppTextField(
-                        controller: _subjectController,
-                        hintText: 'Subject (e.g., Mathematics)',
-                        prefixIcon: Icons.book,
+                      Consumer<HomeworkProvider>(
+                        builder: (context, provider, child) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            decoration: BoxDecoration(
+                              color: AppColors.greenE1,
+                              borderRadius: AppRadius.radiusS,
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedSubject,
+                                decoration: InputDecoration(
+                                  hintText: 'Select Subject',
+                                  hintStyle: AppTypography.body1.copyWith(
+                                    color: AppColors.grey5E.withValues(alpha: 0.5),
+                                  ),
+                                  prefixIcon: Icon(Icons.book, size: 20.sp),
+                                  border: InputBorder.none,
+                                ),
+                                items: provider.subjectsList.map((subject) {
+                                  return DropdownMenuItem<String>(
+                                    value: subject['name'],
+                                    child: Text(
+                                      subject['name'],
+                                      style: AppTypography.body1.copyWith(color: AppColors.darkGreen),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedSubject = value;
+                                  });
+                                },
+                                validator: (v) => v == null ? 'Select subject' : null,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       AppSpacing.h16,
                       AppTextField(
