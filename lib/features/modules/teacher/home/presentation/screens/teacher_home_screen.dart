@@ -55,27 +55,6 @@ class TeacherHomeScreen extends StatelessWidget {
 
 
 
-  Widget _buildGreeting(BuildContext context) {
-    return Consumer<TeacherHomeViewModel>(
-      builder: (context, vm, _) {
-        final greeting = '${vm.greetingText}';
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              greeting,
-              style: AppTypography.h5.copyWith(color: AppColors.darkGreen, height: 1.2),
-            ),
-            AppSpacing.vs,
-            Text(
-              "Your workspace is organized and ready for today's sessions.",
-              style: AppTypography.body2.copyWith(color: AppColors.grey5E),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
 
 }

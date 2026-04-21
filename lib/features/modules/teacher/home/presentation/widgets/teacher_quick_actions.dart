@@ -5,11 +5,14 @@ import 'package:met_school/core/router/app_navigation.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/teacher/home/presentation/widgets/quick_action_card.dart';
 import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
+import 'package:met_school/providers/admin_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:met_school/features/modules/teacher/homework/presentation/screens/homework_list_screen.dart';
 import '../../../../../communication/screens/students_parents_list_screen.dart';
+import '../../../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
+import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
@@ -71,6 +74,16 @@ Widget buildQuickActions(BuildContext context) {
                     final provider = context.read<StudentProvider>();
                     provider.fetchMyStudentsInitial();
                     callNext(StudentsParentsListScreen(), context);
+                    break;
+                  case 8:
+                    final provider = context.read<AdminProvider>();
+                    provider.fetchRules();
+                    callNext(RulesUserScreen(), context);
+                    break;
+                  case 9:
+                    final provider = context.read<AdminProvider>();
+                    provider.fetchBellTiming();
+                    callNext(BellTimingUserScreen(), context);
                     break;
                   default:
                     break;
