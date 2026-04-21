@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 
 import '../../../../providers/admin_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../rules_timing/screens/admin_rules_and_regulations.dart';
+import '../rules_timing/screens/bell_timing_admin_screen.dart';
 import '../school_calaender/screens/admin_add_school_calender.dart';
 import 'academic_year_management.dart';
 import 'list_all_students_screen.dart';
@@ -55,6 +57,10 @@ class AdminHome extends StatelessWidget {
         return ParentMasterDirectory();
         case 6:
         return AdminCalendarWebScreen();
+      case 7:
+        return BellTimingAdminScreen();
+        case 8:
+        return RulesAdminScreen();
       default:
 
         return _buildDashboardGrid(context);
@@ -92,6 +98,23 @@ class AdminHome extends StatelessWidget {
                     _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, Colors.teal),
                     _buildModuleCard(context, 5, "Parent Management", "Manage Parent Data", Icons.school_outlined, Colors.teal),
                     _buildModuleCard(context, 6, "School Calender", "Manage Parent Data", Icons.calendar_month, Colors.lightBlue),
+                    _buildModuleCard(
+                      context,
+                      7,
+                      "Bell Timing",
+                      "Manage School Timing",
+                      Icons.access_time,
+                      Colors.indigo,
+                    ),
+                    _buildModuleCard(
+                      context,
+                      8,
+                      "Rules & Regulations",
+                      "Manage School Rules",
+                      Icons.rule,
+                      Colors.redAccent,
+                    ),
+
                   ],
                 ),
               ],

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+import '../features/modules/admin/rules_timing/models/bell_timing_model.dart';
 import '../features/modules/admin/school_calaender/models/school_event_model.dart';
 
 class AdminProvider with ChangeNotifier {
@@ -591,4 +592,154 @@ class AdminProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+
+
+  List<BellTimingModel> regularList = [];
+  List<BellTimingModel> fridayList = [];
+
+
+  /// 🔹 FETCH DATA
+  Future<void> fetchBellTiming() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final doc =
+      await db.collection("school_settings").doc("bell_timing").get();
+
+      if (doc.exists) {
+        regularList = (doc['regularDay'] as List)
+            .map((e) => BellTimingModel.fromMap(e))
+            .toList();
+
+        fridayList = (doc['friday'] as List)
+            .map((e) => BellTimingModel.fromMap(e))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  /// 🔹 ADD ROW
+  void addRow({required bool isFriday}) {
+    if (isFriday) {
+      fridayList.add(BellTimingModel(title: "", time: ""));
+    } else {
+      regularList.add(BellTimingModel(title: "", time: ""));
+    }
+    notifyListeners();
+  }
+
+  /// 🔹 UPDATE FIELD
+  void updateTitle(int index, String value, {required bool isFriday}) {
+    if (isFriday) {
+      fridayList[index].title = value;
+    } else {
+      regularList[index].title = value;
+    }
+    notifyListeners();
+  }
+
+  void updateTime(int index, String value, {required bool isFriday}) {
+    if (isFriday) {
+      fridayList[index].time = value;
+    } else {
+      regularList[index].time = value;
+    }
+    notifyListeners();
+  }
+
+  /// 🔹 DELETE ROW
+  void deleteRow(int index, {required bool isFriday}) {
+    if (isFriday) {
+      fridayList.removeAt(index);
+    } else {
+      regularList.removeAt(index);
+    }
+    notifyListeners();
+  }
+
+  /// 🔹 SAVE TO FIRESTORE
+  Future<void> saveBellTiming() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      await db.collection("school_settings").doc("bell_timing").set({
+        "regularDay": regularList.map((e) => e.toMap()).toList(),
+        "friday": fridayList.map((e) => e.toMap()).toList(),
+      });
+    } catch (e) {
+      debugPrint("Save Error: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  // ==========================================
+  // RULES AND REGULATIONS LOGIC
+  // ==========================================
+  List<String> rulesList = [];
+
+  /// 🔹 FETCH RULES FROM DB
+  Future<void> fetchRules() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final doc = await db.collection("school_settings").doc("rules_regulations").get();
+
+      if (doc.exists && doc.data()!.containsKey('rules')) {
+        // Load the array of rules from Firestore
+        rulesList = List<String>.from(doc['rules']);
+      }
+    } catch (e) {
+      debugPrint("Error fetching rules: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  /// 🔹 SAVE CURRENT LIST TO DB
+  Future<void> saveRules() async {
+    try {
+      // Overwrites the document with the updated array
+      await db.collection("school_settings").doc("rules_regulations").set({
+        "rules": rulesList,
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint("Save Error: $e");
+    }
+  }
+
+  /// 🔹 ADD NEW POINT TO DB
+  Future<void> addRule(String rule) async {
+    rulesList.add(rule);
+    notifyListeners(); // Update UI immediately
+    await saveRules(); // Sync to database
+  }
+
+  /// 🔹 EDIT CURRENT POINT IN DB
+  Future<void> updateRule(int index, String newRule) async {
+    rulesList[index] = newRule;
+    notifyListeners(); // Update UI immediately
+    await saveRules(); // Sync to database
+  }
+
+  /// 🔹 DELETE POINT FROM DB
+  Future<void> deleteRule(int index) async {
+    rulesList.removeAt(index);
+    notifyListeners(); // Update UI immediately
+    await saveRules(); // Sync to database
+  }
+
+
 }
