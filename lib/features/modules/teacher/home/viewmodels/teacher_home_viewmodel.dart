@@ -100,6 +100,14 @@ class TeacherHomeViewModel extends ChangeNotifier {
         debugPrint("Tapped Add Exam");
       },
     ),
+    QuickAction(
+      title: 'Leave Requests',
+      icon: Icons.event_note_outlined,
+      color: AppColors.mint,
+      onTap: () {
+        debugPrint("Tapped Leave Requests");
+      },
+    ),
       ];
 
   void setSelectedIndex(int index) {

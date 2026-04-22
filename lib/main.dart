@@ -10,6 +10,8 @@ import 'package:met_school/providers/conversation_provider.dart';
 import 'package:met_school/providers/fee_provider.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
+import 'package:met_school/data/repositories/leave_repository.dart';
+import 'package:met_school/providers/leave_provider.dart';
 import 'package:provider/provider.dart';
 import 'core/utils/snackbarNotification/snackbar_notification.dart';
 import 'features/home/views/home/home_provider.dart';
@@ -48,6 +50,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HomeworkProvider()),
         ChangeNotifierProvider(create: (_) => ConversationProvider()),
         ChangeNotifierProvider(create: (_) => new_hw.HomeworkProvider()),
+        Provider(create: (_) => LeaveRepository()),
+        ChangeNotifierProvider(
+          create: (context) => LeaveProvider(context.read<LeaveRepository>()),
+        ),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(
             StudentRepository(StudentFirestore()),

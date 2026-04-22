@@ -248,6 +248,7 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString("divisionName", data['division_name'] ?? "");
         await prefs.setString("classId", data['class_id'] ?? "");
         await prefs.setString("className", data['class_name'] ?? "");
+        await prefs.setString("staffId", data['uid'] ?? "");
 
         final academicYear = await currentAcademicYearId();
         if (academicYear != null) {

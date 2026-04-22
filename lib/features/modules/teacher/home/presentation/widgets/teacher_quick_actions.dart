@@ -19,6 +19,7 @@ import '../../../punctuality/data/screens/students_list_punctuality.dart';
 import '../../../students/presentation/provider/student_provider.dart';
 import '../../../students/presentation/screens/my_students_screen.dart';
 import '../../../timetable/presentation/screens/timetable_screen.dart';
+import '../../../leaves/presentation/screens/teacher_leave_management_screen.dart';
 import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
@@ -84,6 +85,9 @@ Widget buildQuickActions(BuildContext context) {
                     final provider = context.read<AdminProvider>();
                     provider.fetchBellTiming();
                     callNext(BellTimingUserScreen(), context);
+                    break;
+                  case 10:
+                    callNext(const TeacherLeaveManagementScreen(), context);
                     break;
                   default:
                     break;

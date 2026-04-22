@@ -15,6 +15,7 @@ import '../../../../providers/conversation_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../conversation/screens/conversation_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
+import '../leaves/presentation/screens/leave_list_screen.dart';
 
 
 class ParentHomeScreen extends StatelessWidget {
@@ -167,6 +168,19 @@ class ParentHomeScreen extends StatelessWidget {
                       ),
                       _buildCard(Icons.calendar_month, "School\ncalender", onTap: () {
                         callNext(SchoolCalendarMobileScreen(), context);
+                      }),
+                      _buildCard(Icons.request_page_outlined, "Leaves", onTap: () {
+                        callNext(
+                          ParentLeaveListScreen(
+                            studentId: studentId,
+                            studentName: name,
+                            teacherId: teacherID,
+                            academicYearId: academicYearID,
+                            classId: classId,
+                            className: className,
+                          ),
+                          context,
+                        );
                       }),
                     ],
                   ),
