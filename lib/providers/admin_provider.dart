@@ -15,6 +15,7 @@ class AdminProvider with ChangeNotifier {
   AdminProvider() {
     fetchSubjects();
     fetchClasses();
+    seedParentInstructionsFromImage();
   }
 
   int _currentIndex = 0;
@@ -739,6 +740,86 @@ class AdminProvider with ChangeNotifier {
     rulesList.removeAt(index);
     notifyListeners(); // Update UI immediately
     await saveRules(); // Sync to database
+  }
+
+  // ==========================================
+  // INSTRUCTIONS TO PARENTS LOGIC
+  // ==========================================
+  List<String> parentInstructionsList = [];
+
+  /// 🔹 FETCH PARENT INSTRUCTIONS FROM DB
+  Future<void> fetchParentInstructions() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final doc = await db.collection("school_settings").doc("parent_instructions").get();
+
+      if (doc.exists && doc.data()!.containsKey('instructions')) {
+        parentInstructionsList = List<String>.from(doc['instructions']);
+      }
+    } catch (e) {
+      debugPrint("Error fetching parent instructions: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  /// 🔹 SAVE CURRENT LIST TO DB
+  Future<void> saveParentInstructions() async {
+    try {
+      await db.collection("school_settings").doc("parent_instructions").set({
+        "instructions": parentInstructionsList,
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint("Save Error: $e");
+    }
+  }
+
+  /// 🔹 ADD NEW INSTRUCTION TO DB
+  Future<void> addParentInstruction(String instruction) async {
+    parentInstructionsList.add(instruction);
+    notifyListeners(); // Update UI immediately
+    await saveParentInstructions(); // Sync to database
+  }
+
+  /// 🔹 EDIT CURRENT INSTRUCTION IN DB
+  Future<void> updateParentInstruction(int index, String newInstruction) async {
+    parentInstructionsList[index] = newInstruction;
+    notifyListeners(); // Update UI immediately
+    await saveParentInstructions(); // Sync to database
+  }
+
+  /// 🔹 DELETE INSTRUCTION FROM DB
+  Future<void> deleteParentInstruction(int index) async {
+    parentInstructionsList.removeAt(index);
+    notifyListeners(); // Update UI immediately
+    await saveParentInstructions(); // Sync to database
+  }
+
+  /// 🔹 LOOP & SEED MALAYALAM TEXT FROM IMAGE
+  Future<void> seedParentInstructionsFromImage() async {
+    isLoading = true;
+    notifyListeners();
+
+    parentInstructionsList = [
+      "പ്രിൻസിപ്പാൾ / മാനേജ്‌മെന്റ് വിദ്യാർത്ഥികളുടെ പഠന - പാഠ്യേതര പ്രവർത്തനങ്ങളുടെ മേന്മക്കായി നടപ്പിൽ വരുത്തുന്ന കാര്യങ്ങളുമായി സഹകരിക്കേണ്ടതാണ്.",
+      "സ്കൂൾ ഡയറി എല്ലാദിവസവും പരിശോധിക്കുക.",
+      "സ്കൂൾ പ്രവർത്തി ദിവസങ്ങളിൽ വിവാഹം വിരുന്ന് തുടങ്ങിയ കാര്യങ്ങളിൽ നിന്ന് കുട്ടികളെ പരമാവധി ഒഴിവാക്കുക.",
+      "പൂർണ്ണമായും യൂണിഫോം ധരിപ്പിച്ച് മാത്രമേ കുട്ടികളെ സ്കൂളിൽ അയക്കാവൂ.",
+      "ജനറൽ ബോഡി യോഗങ്ങളിലും, ക്ലാസ് പി.ടി.എ കളിലും രക്ഷിതാക്കൾ നിർബന്ധമായും പങ്കെടുക്കേണ്ടതാണ്.",
+      "ട്യൂഷൻ ഫീ നിശ്ചയിക്കപ്പെട്ട ദിവസങ്ങളിൽ അടക്കേണ്ടതാണ്. അല്ലാത്തപക്ഷം ഫൈൻ ഉണ്ടായിരിക്കുന്നതാണ്.",
+      "സ്കൂൾ വാഹനങ്ങളിൽ വരുന്ന വിദ്യാർത്ഥികൾ വാഹന ഫീസ് ഓരോ മാസവും ആദ്യ ആഴ്ചയിൽ തന്നെ അടക്കേണ്ടതാണ്.",
+      "സ്കൂളിൽ നടക്കുന്ന കലാ-കായിക പരിശീലനങ്ങളിലും മത്സരങ്ങളിലും കുട്ടികൾ പങ്കെടുക്കേണ്ടതാണ്. പ്രത്യേക കാരണങ്ങളാൽ പങ്കെടുക്കാത്ത സാഹചര്യം രക്ഷിതാവ് ഹെഡ്മാസ്റ്ററെ മുൻകൂട്ടി അറിയിക്കേണ്ടതാണ്.",
+      "സ്കൂളുമായി ബന്ധപ്പെട്ട ഡയറിയിൽ വിവരിച്ച നിർദ്ദേശങ്ങൾ കുട്ടിയും രക്ഷിതാവും വായിച്ച് ഒപ്പ് വെക്കേണ്ടതാണ്."
+    ];
+
+    await saveParentInstructions(); // Uploads to Firestore
+
+    isLoading = false;
+    notifyListeners();
   }
 
 

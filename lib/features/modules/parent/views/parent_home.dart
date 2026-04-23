@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -181,6 +182,9 @@ class ParentHomeScreen extends StatelessWidget {
                           context,
                         );
                       }),
+                      _buildCard(Icons.request_page_outlined, "Parent Instructions", onTap: () {
+                        callNext(ParentInstructionsScreen(), context);
+                      }),
                       _buildCard(Icons.request_page_outlined, "School Timing", onTap: () {
                         final provider = context.read<AdminProvider>();
                         provider.fetchBellTiming();
@@ -191,6 +195,7 @@ class ParentHomeScreen extends StatelessWidget {
                         provider.fetchRules();
                         callNext(RulesUserScreen(), context);
                       }),
+
                     ],
                   ),
                 ),
@@ -225,6 +230,7 @@ class ParentHomeScreen extends StatelessWidget {
             AppSpacing.h12,
             Text(
               title,
+              textAlign: TextAlign.center,
               style: AppTypography.body1.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.darkGreen,
