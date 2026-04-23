@@ -14,6 +14,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
+import '../../../../core/widgets/dialogs/logout_alert.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 
 class ParentStudentSelectionScreen extends StatelessWidget {
@@ -46,12 +47,7 @@ class ParentStudentSelectionScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.logout, color: AppColors.primary),
             onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-
-              if (context.mounted) {
-                callNextReplacement(LoginScreen(), context);
-              }
+              showLogoutDialog(context);
             },
           )
         ],

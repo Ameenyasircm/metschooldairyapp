@@ -11,9 +11,13 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
+import '../../../../core/widgets/dialogs/logout_alert.dart';
+import '../../../../providers/admin_provider.dart';
 import '../../../../providers/conversation_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../conversation/screens/conversation_screen.dart';
+import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
+import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
 
@@ -50,12 +54,7 @@ class ParentHomeScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.logout, color: AppColors.primary),
             onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-
-              if (context.mounted) {
-                callNextReplacement(LoginScreen(), context);
-              }
+              showLogoutDialog(context);
             },
           )
         ],
@@ -181,6 +180,16 @@ class ParentHomeScreen extends StatelessWidget {
                           ),
                           context,
                         );
+                      }),
+                      _buildCard(Icons.request_page_outlined, "School Timing", onTap: () {
+                        final provider = context.read<AdminProvider>();
+                        provider.fetchBellTiming();
+                        callNext(BellTimingUserScreen(), context);
+                      }),
+                      _buildCard(Icons.request_page_outlined, "Rules and Regulations", onTap: () {
+                        final provider = context.read<AdminProvider>();
+                        provider.fetchRules();
+                        callNext(RulesUserScreen(), context);
                       }),
                     ],
                   ),
