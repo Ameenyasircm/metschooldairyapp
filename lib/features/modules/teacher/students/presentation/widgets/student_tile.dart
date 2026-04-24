@@ -128,6 +128,19 @@ class MyStudentTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          CircleAvatar(
+            backgroundColor: const Color(0xFFF1F5F9),
+            radius: 18.r,
+            child: Text(
+              student.rollNumber != 0 ? student.rollNumber.toString() : "-",
+              style: const TextStyle(
+                color: Color(0xFF0F766E),
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          AppSpacing.w12,
           // 🔹 Main Info
           Expanded(
             child: Column(

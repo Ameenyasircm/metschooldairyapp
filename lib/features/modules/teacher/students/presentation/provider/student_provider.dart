@@ -33,6 +33,7 @@ class StudentProvider extends ChangeNotifier {
   bool isLoadingMyStdMore = false;
 
   bool isAddingStudents = false;
+  bool isAssigningRollNumbers = false;
   Set<String> selectedStudentIds = {};
 
   DivisionModel? _assignedDivision;
@@ -326,6 +327,52 @@ class StudentProvider extends ChangeNotifier {
       rethrow;
     } finally {
       isAddingStudents = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> autoAssignRollNumbers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final divisionId = prefs.getString("divisionId") ?? '';
+    final academicYearId = prefs.getString("academicYearId") ?? '';
+
+    if (divisionId.isEmpty || academicYearId.isEmpty) return;
+
+    isAssigningRollNumbers = true;
+    notifyListeners();
+
+    try {
+      final querySnapshot = await db.collection('enrollments')
+          .where('division_id', isEqualTo: divisionId)
+          .where('academic_year_id', isEqualTo: academicYearId)
+          .get();
+
+      List<QueryDocumentSnapshot> enrollments = querySnapshot.docs;
+
+      // Sort Alphabetically by student_name
+      enrollments.sort((a, b) {
+        String nameA = (a.data() as Map<String, dynamic>)['student_name']?.toString().toLowerCase() ?? "";
+        String nameB = (b.data() as Map<String, dynamic>)['student_name']?.toString().toLowerCase() ?? "";
+        return nameA.compareTo(nameB);
+      });
+
+      final batch = db.batch();
+      for (int i = 0; i < enrollments.length; i++) {
+        batch.update(enrollments[i].reference, {
+          'roll_number': (i + 1),
+        });
+      }
+
+      await batch.commit();
+
+      // Refresh the list after assigning roll numbers
+      await fetchMyStudentsInitial();
+
+    } catch (e) {
+      debugPrint("Sort Error: $e");
+      rethrow;
+    } finally {
+      isAssigningRollNumbers = false;
       notifyListeners();
     }
   }

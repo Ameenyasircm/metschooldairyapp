@@ -127,7 +127,7 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
 
       for (var doc in querySnapshot.docs) {
         var studentDoc = await firestore.collection('students').doc(doc['student_id']).get();
-        String name = (studentDoc.data() as Map<String, dynamic>?)?['name'] ?? "ZZZ";
+        String name = (studentDoc.data())?['name'] ?? "ZZZ";
 
         enrollmentList.add({
           'ref': doc.reference,

@@ -24,7 +24,7 @@ import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
   return Consumer<TeacherHomeViewModel>(
-    builder: (context, vm, _) {
+    builder: (context4, vm, _) {
       final actions = vm.quickActions;
       return GridView.builder(
         shrinkWrap: true,
@@ -50,6 +50,7 @@ Widget buildQuickActions(BuildContext context) {
                   case 0:
                     final provider = context.read<StudentProvider>();
                     provider. searchMyStdQuery = '';
+                    context.read<StudentProvider>().fetchMyStudentsInitial();
                     NavigationService.push(context, MyStudentsScreen());
                     break;
                   case 1:

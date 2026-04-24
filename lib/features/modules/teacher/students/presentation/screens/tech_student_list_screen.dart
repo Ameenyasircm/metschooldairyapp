@@ -33,6 +33,7 @@ class TechStudentListScreen extends StatelessWidget {
         ),
         leading: const BackButton(),
         elevation: 0,
+
       ),
       body: Padding(
         padding: AppPadding.phS,

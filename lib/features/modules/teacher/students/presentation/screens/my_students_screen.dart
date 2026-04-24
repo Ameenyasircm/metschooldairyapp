@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/utils/snackbarNotification/snackbar_notification.dart';
 import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -18,21 +19,8 @@ import '../widgets/empty_state.dart';
 import '../widgets/student_shimmer.dart';
 import '../widgets/student_tile.dart';
 
-class MyStudentsScreen extends StatefulWidget {
+class MyStudentsScreen extends StatelessWidget {
   const MyStudentsScreen({super.key});
-
-  @override
-  State<MyStudentsScreen> createState() => _MyStudentsScreenState();
-}
-
-class _MyStudentsScreenState extends State<MyStudentsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StudentProvider>().fetchMyStudentsInitial();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +35,37 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
         ),
         leading: const BackButton(),
         elevation: 0,
+        actions: [
+          Padding(
+            padding: AppPadding.pM,
+            child: Consumer<StudentProvider>(
+              builder: (context, provider, child) {
+                if (provider.isAssigningRollNumbers) {
+                  return const Center(child: CupertinoActivityIndicator());
+                }
+                return IconButton(
+                  tooltip: "Assign Roll Numbers",
+                  icon:Icon(Icons.sort_by_alpha, color: AppColors.primary,size: 22,),
+                  onPressed: () async {
+                    bool? confirm = await _showConfirmDialog(context);
+                    if (confirm == true) {
+                      try {
+                        await provider.autoAssignRollNumbers();
+                        if (context.mounted) {
+                          SnackbarService().showSuccess("Roll numbers assigned alphabetically!");
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          SnackbarService().showError("Error: $e");
+                        }
+                      }
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -166,6 +185,44 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                 : const SizedBox.shrink();
           }
         },
+      ),
+    );
+  }
+
+  Future<bool?> _showConfirmDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
+        title: Text(
+          "Assign Roll Numbers?",
+          style: AppTypography.h5,
+        ),
+        content: Text(
+          "This will sort all enrolled students alphabetically and assign roll numbers.",
+          style: AppTypography.body2.copyWith(color: AppColors.grey5E),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              "Cancel",
+              style: AppTypography.label.copyWith(color: AppColors.grey5E),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              "Assign",
+              style: AppTypography.label.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
