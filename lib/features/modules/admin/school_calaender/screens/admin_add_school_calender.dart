@@ -62,6 +62,7 @@ class _AdminCalendarWebScreenState extends State<AdminCalendarWebScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
+
         leading: IconButton(
           onPressed: () {
             Provider.of<AdminProvider>(context, listen: false).setIndex(0);
@@ -74,7 +75,7 @@ class _AdminCalendarWebScreenState extends State<AdminCalendarWebScreen> {
         ),
         backgroundColor: primary,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Center(
