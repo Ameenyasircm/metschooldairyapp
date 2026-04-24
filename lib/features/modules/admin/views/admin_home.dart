@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:met_school/features/modules/admin/rules_timing/screens/school_gallery_screen.dart';
 import 'package:met_school/features/modules/admin/views/parents_list.dart';
 import 'package:met_school/features/modules/admin/views/staff_management.dart';
 import 'package:provider/provider.dart';
@@ -49,7 +50,7 @@ class AdminHome extends StatelessWidget {
       case 1:
         return StaffManagementPage(userName: userName, userId: userid);
       case 3:
-        return  Center(child: Text("Gallery Screen"));
+        return  SchoolGalleryScreen();
       case 2:
         return  AcademicYearScreen(userName: userName, userId:userid,);
       case 4:
