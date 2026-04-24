@@ -9,44 +9,46 @@ class BellTimingUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: InkWell(
-            onTap: (){
-              Navigator.pop(context);
-            },
-            child: Icon(Icons.arrow_back_ios,color: Colors.white,)),
-        title: const Text("School Timing",style: TextStyle(color: Colors.white),),
-        backgroundColor: const Color(0xFF0F766E),
-      ),
-      body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : provider.regularList.isEmpty
-          ? const Center(child: Text("No timing available"))
-          : Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            _buildHeader(),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: provider.regularList.length,
-                itemBuilder: (context, index) {
-                  final regular = provider.regularList[index];
-                  final friday = provider.fridayList.length > index
-                      ? provider.fridayList[index]
-                      : null;
-
-                  return _buildRow(
-                    regular.title,
-                    regular.time,
-                    friday?.time ?? "",
-                  );
-                },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          leading: InkWell(
+              onTap: (){
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.arrow_back_ios,color: Colors.white,)),
+          title: const Text("School Timing",style: TextStyle(color: Colors.white),),
+          backgroundColor: const Color(0xFF0F766E),
+        ),
+        body: provider.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : provider.regularList.isEmpty
+            ? const Center(child: Text("No timing available"))
+            : Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              _buildHeader(),
+      
+              Expanded(
+                child: ListView.builder(
+                  itemCount: provider.regularList.length,
+                  itemBuilder: (context, index) {
+                    final regular = provider.regularList[index];
+                    final friday = provider.fridayList.length > index
+                        ? provider.fridayList[index]
+                        : null;
+      
+                    return _buildRow(
+                      regular.title,
+                      regular.time,
+                      friday?.time ?? "",
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

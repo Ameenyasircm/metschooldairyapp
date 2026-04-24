@@ -170,7 +170,7 @@ class AuthProvider with ChangeNotifier {
             .get();
 
         if (enrollments.docs.isEmpty) {
-          SnackbarService().showError("No students found.");
+          SnackbarService().showError("Ensure the Student is Assigned To Class");
           return;
         }
 
