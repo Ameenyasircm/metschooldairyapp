@@ -107,6 +107,7 @@ class HomeworkProvider extends ChangeNotifier {
         'status': 'pending',
         'updatedAt': FieldValue.serverTimestamp(),
         'parentPhone': data['parent_phone'],
+        'roll_number': data['roll_number'] ?? 0,
       });
     }
     await batch.commit();
@@ -127,6 +128,7 @@ class HomeworkProvider extends ChangeNotifier {
       _submissions = snapshot.docs
           .map((doc) => HomeworkSubmissionModel.fromMap(doc.data()))
           .toList();
+      _submissions.sort((a, b) => a.rollNo.compareTo(b.rollNo));
     } catch (e) {
       debugPrint('Error fetching submissions: $e');
     } finally {
@@ -155,19 +157,69 @@ class HomeworkProvider extends ChangeNotifier {
       // Update local state
       final index = _submissions.indexWhere((s) => s.studentId == studentId);
       if (index != -1) {
-        final updated = HomeworkSubmissionModel(
+        final newList = List<HomeworkSubmissionModel>.from(_submissions);
+        newList[index] = HomeworkSubmissionModel(
           studentId: _submissions[index].studentId,
           studentName: _submissions[index].studentName,
           status: status,
           updatedAt: DateTime.now(),
           parentPhone: _submissions[index].parentPhone,
+          rollNo: _submissions[index].rollNo,
         );
-        _submissions[index] = updated;
+        _submissions = newList;
         notifyListeners();
       }
     } catch (e) {
       debugPrint('Error updating status: $e');
       rethrow;
+    }
+  }
+
+  Future<void> bulkUpdateSubmissionStatus({
+    required String homeworkId,
+    required List<String> studentIds,
+    required String status,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final batch = _db.batch();
+      for (var studentId in studentIds) {
+        final submissionRef = _db
+            .collection('homework')
+            .doc(homeworkId)
+            .collection('submissions')
+            .doc(studentId);
+        batch.update(submissionRef, {
+          'status': status,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+
+      // Update local state
+      final newList = List<HomeworkSubmissionModel>.from(_submissions);
+      for (var studentId in studentIds) {
+        final index = newList.indexWhere((s) => s.studentId == studentId);
+        if (index != -1) {
+          newList[index] = HomeworkSubmissionModel(
+            studentId: newList[index].studentId,
+            studentName: newList[index].studentName,
+            status: status,
+            updatedAt: DateTime.now(),
+            parentPhone: newList[index].parentPhone,
+            rollNo: newList[index].rollNo,
+          );
+        }
+      }
+      _submissions = newList;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error bulk updating status: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

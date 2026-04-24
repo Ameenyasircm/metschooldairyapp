@@ -78,6 +78,7 @@ class HomeworkSubmissionModel {
   final String status; // 'completed' | 'pending'
   final DateTime updatedAt;
   final String? parentPhone;
+  final int rollNo;
 
   HomeworkSubmissionModel({
     required this.studentId,
@@ -85,6 +86,7 @@ class HomeworkSubmissionModel {
     required this.status,
     required this.updatedAt,
     this.parentPhone,
+    this.rollNo = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -94,6 +96,7 @@ class HomeworkSubmissionModel {
       'status': status,
       'updatedAt': Timestamp.fromDate(updatedAt),
       'parentPhone': parentPhone,
+      'roll_number': rollNo,
     };
   }
 
@@ -104,6 +107,7 @@ class HomeworkSubmissionModel {
       status: map['status'] ?? 'pending',
       updatedAt: (map['updatedAt'] as Timestamp).toDate(),
       parentPhone: map['parentPhone'],
+      rollNo: map['roll_number'] ?? 0,
     );
   }
 }

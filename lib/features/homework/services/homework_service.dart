@@ -87,4 +87,24 @@ class HomeworkService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> bulkUpdateSubmissionStatus({
+    required String homeworkId,
+    required List<String> studentIds,
+    required String status,
+  }) async {
+    final batch = _db.batch();
+    for (var studentId in studentIds) {
+      final submissionRef = _db
+          .collection('homework')
+          .doc(homeworkId)
+          .collection('submissions')
+          .doc(studentId);
+      batch.update(submissionRef, {
+        'status': status,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+  }
 }

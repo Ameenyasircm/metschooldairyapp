@@ -201,7 +201,9 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
                       AppTextField(
                         controller: _descriptionController,
                         hintText: 'Description',
+                        maxLine: 3,
                         prefixIcon: Icons.description,
+
                         // Removed maxLines as AppTextField doesn't seem to support it in the current definition
                       ),
                       AppSpacing.h16,

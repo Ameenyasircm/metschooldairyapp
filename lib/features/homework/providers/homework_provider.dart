@@ -130,18 +130,60 @@ class HomeworkProvider extends ChangeNotifier {
 
       final index = _submissions.indexWhere((s) => s.studentId == studentId);
       if (index != -1) {
-        _submissions[index] = HomeworkSubmissionModel(
+        // Create a new list instance to ensure UI update
+        final newList = List<HomeworkSubmissionModel>.from(_submissions);
+        newList[index] = HomeworkSubmissionModel(
           studentId: _submissions[index].studentId,
           studentName: _submissions[index].studentName,
           status: status,
           updatedAt: DateTime.now(),
           parentPhone: _submissions[index].parentPhone,
         );
+        _submissions = newList;
         notifyListeners();
       }
     } catch (e) {
       debugPrint('Error updating status: $e');
       rethrow;
+    }
+  }
+
+  Future<void> bulkUpdateSubmissionStatus({
+    required String homeworkId,
+    required List<String> studentIds,
+    required String status,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _service.bulkUpdateSubmissionStatus(
+        homeworkId: homeworkId,
+        studentIds: studentIds,
+        status: status,
+      );
+      
+      // Update local state with a new list instance
+      final newList = List<HomeworkSubmissionModel>.from(_submissions);
+      for (var studentId in studentIds) {
+        final index = newList.indexWhere((s) => s.studentId == studentId);
+        if (index != -1) {
+          newList[index] = HomeworkSubmissionModel(
+            studentId: newList[index].studentId,
+            studentName: newList[index].studentName,
+            status: status,
+            updatedAt: DateTime.now(),
+            parentPhone: newList[index].parentPhone,
+          );
+        }
+      }
+      _submissions = newList;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error bulk updating status: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
