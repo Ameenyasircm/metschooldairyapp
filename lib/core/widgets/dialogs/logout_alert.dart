@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/app_spacing.dart';
 import '../../theme/app_colors.dart';
@@ -40,7 +41,10 @@ Future<bool?> showLogoutDialog(BuildContext context) {
                     onCancel: () {
                       Navigator.of(context).pop(false);
                     },
-                    onSave: () {
+                    onSave: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.clear();
+                      Navigator.of(context).pop(false);
                       Navigator.of(context).pop(true);
                     },
                   ),

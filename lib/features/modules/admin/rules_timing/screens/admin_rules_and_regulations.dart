@@ -26,6 +26,10 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
+        leading: IconButton(onPressed: (){
+          Provider.of<AdminProvider>(context, listen: false).setIndex(0);
+
+        }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Rules and Regulations"),
         backgroundColor: const Color(0xFF0F766E),
         foregroundColor: Colors.white,

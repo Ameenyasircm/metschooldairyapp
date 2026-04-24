@@ -26,6 +26,10 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
+        leading: IconButton(onPressed: (){
+          Provider.of<AdminProvider>(context, listen: false).setIndex(0);
+
+        }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Bell Timing"),
         backgroundColor: const Color(0xFF0F766E),
         foregroundColor: Colors.white,

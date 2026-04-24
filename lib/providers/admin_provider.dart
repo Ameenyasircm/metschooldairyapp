@@ -530,7 +530,7 @@ class AdminProvider with ChangeNotifier {
 
   Future<void> fetchEvents() async {
     final snapshot =
-    await db.collection("SCHOOL_SPECIAL_DAYS").get();
+    await db.collection("school_special_days").get();
 
     eventList = snapshot.docs
         .map((e) => SchoolEventModel.fromMap(e.data(), e.id))
@@ -552,7 +552,7 @@ class AdminProvider with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    await db.collection("SCHOOL_SPECIAL_DAYS").add({
+    await db.collection("school_special_days").add({
       "title": titleCt.text,
       "description": descCt.text,
       "date": selectedDate,
@@ -568,6 +568,32 @@ class AdminProvider with ChangeNotifier {
     notifyListeners();
 
     Navigator.pop(context);
+  }
+
+  Future<void> deleteEvent(BuildContext context, dynamic event) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      // Query to find the document matching title + date
+      final snapshot = await db
+          .collection("school_special_days")
+          .where("title", isEqualTo: event.title)
+          .where("date", isEqualTo: event.date)
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      await fetchEvents(); // 🔥 refresh calendar instantly
+
+    } catch (e) {
+      debugPrint("Delete error: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
   }
 
   Future<void> toggleStaffStatus(String docId, bool currentStatus) async {
