@@ -40,12 +40,6 @@ class AttendanceFirestoreService {
       query = query.where('date', isLessThanOrEqualTo: endDate);
     }
 
-    // Since Firestore doesn't support array-contains style queries on nested maps efficiently 
-    // for every possible studentId key without indexing each studentId, 
-    // we might need to restructure or fetch more and filter in-memory if the collection is small,
-    // OR use a more optimized schema for student-specific queries.
-    // For now, we'll fetch based on date range and filter in-memory.
-    
     final snapshot = await query.get();
     return snapshot.docs
         .map((doc) => DailyAttendanceModel.fromFirestore(doc))

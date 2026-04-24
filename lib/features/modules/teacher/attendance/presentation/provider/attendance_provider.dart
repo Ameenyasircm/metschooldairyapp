@@ -58,7 +58,7 @@ class AttendanceProvider extends ChangeNotifier {
       final query = _searchQuery.toLowerCase();
       _filteredStudents = _allStudents.where((s) {
         return s.name.toLowerCase().contains(query) ||
-               s.rollNo.toLowerCase().contains(query);
+               s.rollNo.toString().contains(query);
       }).toList();
     }
     notifyListeners();

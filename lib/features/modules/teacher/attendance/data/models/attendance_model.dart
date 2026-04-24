@@ -7,7 +7,7 @@ enum AttendanceSession { morning, afternoon }
 class StudentAttendanceData {
   final String studentId;
   final String name;
-  final String rollNo;
+  final int rollNo;
   final String parentPhone;
   AttendanceStatus morning;
   AttendanceStatus afternoon;
@@ -35,7 +35,7 @@ class StudentAttendanceData {
     return StudentAttendanceData(
       studentId: id,
       name: map['name'] ?? '',
-      rollNo: map['rollNo'] ?? '',
+      rollNo: map['rollNo'] ?? 0,
       parentPhone: map['parentPhone'] ?? '',
       morning: _parseStatus(map['morning']),
       afternoon: _parseStatus(map['afternoon']),

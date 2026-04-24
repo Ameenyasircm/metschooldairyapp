@@ -204,7 +204,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             ),
             child: Row(
               children: [
-                SizedBox(width: 25.w, child: Text(stat.rollNo, style: AppTypography.body2)),
+                SizedBox(width: 25.w, child: Text(stat.rollNo.toString(), style: AppTypography.body2)),
                 Expanded(child: Text(stat.name, style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis)),
                 SizedBox(width: 40.w, child: Text(formatVal(stat.present), style: AppTypography.body2, textAlign: TextAlign.center)),
                 SizedBox(width: 40.w, child: Text(formatVal(stat.absent), style: AppTypography.body2, textAlign: TextAlign.center)),

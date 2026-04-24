@@ -76,7 +76,7 @@ class EnrollerModel {
   final String name;
   final String parentId;
   final String parentPhone;
-  final String rollNumber;
+  final int rollNumber;
   final String className;
   final String divisionName;
 
@@ -100,7 +100,7 @@ class EnrollerModel {
       name: (map['student_name'] as String?)?.trim() ?? '',
       parentId: (map['parent_id'] as String?)?.trim() ?? '',
       parentPhone: (map['parent_phone'] as String?)?.trim() ?? '',
-      rollNumber: (map['roll_number'] as String?)?.trim() ?? '',
+      rollNumber: (map['roll_number'] as int?)??0,
       className: (map['class_name'] as String?)?.trim() ?? '',
       divisionName: (map['division_name'] as String?)?.trim() ?? '',
     );

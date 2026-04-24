@@ -91,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                     NavigationService.push(
                       context,
                       TeacherNavbarScreen(
-                        staffName: prefs.getString("userName") ?? "",
+                        staffName: prefs.getString("staffName") ?? "",
                       ),
                     );
                   }

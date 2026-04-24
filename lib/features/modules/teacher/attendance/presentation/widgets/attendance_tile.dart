@@ -41,7 +41,7 @@ class AttendanceTile extends StatelessWidget {
                 height: 36.w,
                 decoration: const BoxDecoration(color: AppColors.greyGreen, shape: BoxShape.circle),
                 alignment: Alignment.center,
-                child: Text(studentData.rollNo, style: AppTypography.label.copyWith(color: AppColors.primary)),
+                child: Text(studentData.rollNo.toString(), style: AppTypography.label.copyWith(color: AppColors.primary)),
               ),
               AppSpacing.hm,
               Expanded(

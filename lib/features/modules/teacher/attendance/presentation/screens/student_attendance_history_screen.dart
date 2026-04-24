@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../../core/constants/app_padding.dart';
@@ -105,13 +106,16 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
             child: Consumer<AttendanceReportViewModel>(
               builder: (context, vm, child) {
                 if (vm.isLoading) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(child: CustomLoader());
                 }
 
                 if (vm.studentHistory.isEmpty) {
                   return Center(
-                      child: Text("No history available for the selected period.",
-                          style: AppTypography.body1.copyWith(color: AppColors.grey5E)));
+                      child: Padding(
+                        padding: AppPadding.phS,
+                        child: Text("No history available for the selected period.",
+                            style: AppTypography.body1.copyWith(color: AppColors.grey5E)),
+                      ));
                 }
 
                 return Column(

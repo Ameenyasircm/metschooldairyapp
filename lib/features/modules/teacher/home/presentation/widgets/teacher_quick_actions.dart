@@ -44,6 +44,7 @@ Widget buildQuickActions(BuildContext context) {
                 final divisionName = prefs.getString("divisionName")??'';
                 final academicYearId = prefs.getString("academicYearId")??'';
                 final staffId = prefs.getString("staffId")??'';
+                final staffName = prefs.getString("staffName")??'';
                 final standard = prefs.getString("className") ?? '';
                 switch(index){
                   case 0:

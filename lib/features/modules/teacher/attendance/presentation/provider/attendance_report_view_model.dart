@@ -71,8 +71,8 @@ class AttendanceReportViewModel extends ChangeNotifier {
     // Sort by roll number
     _studentStats = Map.fromEntries(
       stats.entries.toList()..sort((a, b) {
-        int rollA = int.tryParse(a.value.rollNo) ?? 0;
-        int rollB = int.tryParse(b.value.rollNo) ?? 0;
+        int rollA = a.value.rollNo;
+        int rollB = a.value.rollNo;
         return rollA.compareTo(rollB);
       })
     );
@@ -105,7 +105,7 @@ class AttendanceReportViewModel extends ChangeNotifier {
 
 class StudentStats {
   final String name;
-  final String rollNo;
+  final int rollNo;
   double present = 0;
   double absent = 0;
   int late = 0;

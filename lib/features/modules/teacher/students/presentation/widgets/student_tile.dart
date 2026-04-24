@@ -7,6 +7,8 @@ import 'package:met_school/core/constants/app_spacing.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
 
+import '../../../../../../core/constants/app_assets.dart';
+import '../../../../../../core/service/url_launcher_service.dart';
 import '../../data/models/tech_student_model.dart';
 
 class StudentTile extends StatelessWidget {
@@ -123,8 +125,9 @@ class MyStudentTile extends StatelessWidget {
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-
           // 🔹 Main Info
           Expanded(
             child: Column(
@@ -138,26 +141,13 @@ class MyStudentTile extends StatelessWidget {
                 ),
                 AppSpacing.h4,
                 Text(student.parentPhone, style: AppTypography.captionL),
-                Text(student.rollNumber, style: AppTypography.captionL),
               ],
             ),
           ),
 
-          // 🔹 Right Side Info
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                student.className,
-                style: AppTypography.body2.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-              AppSpacing.h4,
-
-            ],
-          ),
+          IconButton(onPressed: (){
+            UrlLauncherService.openUrl('https://wa.me/${student.parentPhone}');
+          }, icon: Image.asset(AppAssets.whatsapp,width: 22.w,height: 22.h,)),
         ],
       ),
     );

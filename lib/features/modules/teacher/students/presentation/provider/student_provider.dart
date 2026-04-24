@@ -185,7 +185,7 @@ class StudentProvider extends ChangeNotifier {
       final query = searchMyStdQuery.toLowerCase();
       myStudents = myAllStudents.where((student) {
         return student.name.toLowerCase().contains(query) || 
-               student.rollNumber.toLowerCase().contains(query);
+               student.rollNumber.toString().contains(query);
       }).toList();
     }
     notifyListeners();
@@ -245,14 +245,15 @@ class StudentProvider extends ChangeNotifier {
       final firestore = FirebaseFirestore.instance;
       final prefs = await SharedPreferences.getInstance();
 
-      final staffId = prefs.getString("staffId");
-      final staffName = prefs.getString("staffName");
-      final divisionName = prefs.getString("divisionName");
-      final divisionId = prefs.getString("divisionId");
-      final className = prefs.getString("className");
-      final classId = prefs.getString("classId");
-      final academicYearId = prefs.getString("academicYearId");
+      final staffId = prefs.getString("staffId")??'';
+      final staffName = prefs.getString("staffName")??'';
+      final divisionName = prefs.getString("divisionName")??'';
+      final divisionId = prefs.getString("divisionId")??'';
+      final className = prefs.getString("className")??'';
+      final classId = prefs.getString("classId")??'';
+      final academicYearId = prefs.getString("academicYearId")??'';
 
+      print('dknjnvjinfvnufn $staffId   $staffName');
       // 1. Fetch Existing Enrollments Efficiently (Avoid N+1)
       Set<String> alreadyEnrolledIds = {};
       for (var i = 0; i < selectedData.length; i += 30) {
