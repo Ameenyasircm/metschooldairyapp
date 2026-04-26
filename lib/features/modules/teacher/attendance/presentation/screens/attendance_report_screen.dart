@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:met_school/features/modules/teacher/attendance/presentation/screens/student_attendance_history_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -57,7 +58,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             child: Consumer<AttendanceReportViewModel>(
               builder: (context, vm, child) {
                 if (vm.isLoading) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(child: CustomLoader());
                 }
 
                 if (vm.studentStats.isEmpty) {
@@ -107,6 +108,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             DateFormat('MMMM yyyy').format(_selectedMonth),
             style: AppTypography.h6.copyWith(color: AppColors.primary),
           ),
+          if(_selectedMonth.isBefore(DateTime(DateTime.now().year, DateTime.now().month)))
           IconButton(
             icon: const Icon(Icons.chevron_right, color: AppColors.primary),
             onPressed: _selectedMonth.isBefore(DateTime(DateTime.now().year, DateTime.now().month))
@@ -117,7 +119,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     _loadReport();
                   }
                 : null,
-          ),
+          )else
+            SizedBox()
         ],
       ),
     );
