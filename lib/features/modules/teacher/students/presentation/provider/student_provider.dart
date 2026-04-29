@@ -377,6 +377,68 @@ class StudentProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteStudent(String studentId, String remark) async {
+    final prefs = await SharedPreferences.getInstance();
+    final staffId = prefs.getString("staffId") ?? 'unknown';
+    final staffName = prefs.getString("staffName") ?? 'unknown';
+
+    try {
+      // 1. Fetch data before batch (as batch can't read)
+      final studentDoc = await db.collection('students').doc(studentId).get();
+      if (!studentDoc.exists) throw Exception("Student not found");
+
+      final userDoc = await db.collection('users').doc(studentId).get();
+      final enrollmentsQuery = await db.collection('enrollments')
+          .where('student_id', isEqualTo: studentId)
+          .get();
+
+      final batch = db.batch();
+
+      // 2. Prepare deleted record
+      final deletedRef = db.collection('deleted_students').doc();
+      batch.set(deletedRef, {
+        "studentId": studentId,
+        "originalStudentData": studentDoc.data(),
+        "originalUserData": userDoc.exists ? userDoc.data() : null,
+        "originalEnrollments": enrollmentsQuery.docs.map((e) => e.data()).toList(),
+        "deletedAt": FieldValue.serverTimestamp(),
+        "deletedBy": staffName,
+        "deletedBy_Id": staffId,
+        "deleteRemark": remark,
+      });
+
+      // 3. Delete records
+      batch.delete(studentDoc.reference);
+      if (userDoc.exists) batch.delete(userDoc.reference);
+      for (var doc in enrollmentsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 4. Cleanup parent links if any
+      final parentId = studentDoc.data()?['parentId'];
+      if (parentId != null && parentId.toString().isNotEmpty) {
+        batch.update(db.collection('parents').doc(parentId.toString()), {
+          "studentIds": FieldValue.arrayRemove([studentId])
+        });
+        batch.update(db.collection('users').doc(parentId.toString()), {
+          "studentIds": FieldValue.arrayRemove([studentId])
+        });
+      }
+
+      await batch.commit();
+
+      // 5. Update UI state
+      myAllStudents.removeWhere((s) => s.studentId == studentId);
+      allStudents.removeWhere((s) => s.studentId == studentId);
+      _applyMyStdSearch();
+      _applyLocalSearch();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Delete Student Error: $e");
+      rethrow;
+    }
+  }
+
 
   List<PunctualityRecordModel> records = [];
 

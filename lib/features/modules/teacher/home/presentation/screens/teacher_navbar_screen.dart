@@ -20,11 +20,8 @@ class TeacherNavbarScreen extends StatelessWidget {
             children:[
               TeacherHomeScreen(staffName:staffName,),
               SizedBox(),
-              SchoolCalendarMobileScreen(),
-              SizedBox(),
             ],
           ),
-
           bottomNavigationBar: const AppBottomNavBar(),
         );
       },

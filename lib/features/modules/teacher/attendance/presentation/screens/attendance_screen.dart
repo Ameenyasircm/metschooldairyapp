@@ -13,6 +13,7 @@ import '../widgets/attendance_tile.dart';
 import '../widgets/attendance_session_toggle.dart';
 import '../widgets/attendance_action_chip.dart';
 import '../widgets/attendance_remark_dialogs.dart';
+import '../widgets/bottom_button.dart';
 
 class AttendanceScreen extends StatefulWidget {
   final String divisionId;
@@ -54,6 +55,53 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         backgroundColor: AppColors.primary,
         iconTheme: const IconThemeData(color: AppColors.white),
         elevation: 0,
+        actions: [
+        Consumer<AttendanceViewModel>(
+            builder: (context, vm, child) {
+            return InkWell(
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: vm.selectedDate,
+                  firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                  lastDate: DateTime.now(),
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: AppColors.primary,
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (date != null) vm.setSelectedDate(date);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                margin: EdgeInsets.symmetric(horizontal: 6.w,),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.greyGreen),
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 16, color: AppColors.white),
+                    AppSpacing.hs,
+                    Text(
+                      DateFormat('dd MMM yyyy').format(vm.selectedDate),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.white,fontSize: 10.sp
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        ),
+      ],
       ),
       body: Consumer<AttendanceViewModel>(
         builder: (context, vm, child) {
@@ -64,7 +112,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           return Column(
             children: [
               _buildHeader(context, vm),
-              _buildActionBar(vm),
               Expanded(
                 child: vm.attendanceMap.isEmpty
                     ? Center(child: Text("No students found", style: AppTypography.body1.copyWith(color: AppColors.grey5E)))
@@ -94,7 +141,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           );
         },
       ),
-      bottomNavigationBar: _buildBottomButton(context),
+      bottomNavigationBar: buildBottomButton(context),
     );
   }
 
@@ -108,48 +155,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: vm.selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(days: 30)),
-                      lastDate: DateTime.now(),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: AppColors.primary,
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (date != null) vm.setSelectedDate(date);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.greyGreen),
-                      borderRadius: BorderRadius.circular(AppRadius.xs),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
-                        AppSpacing.hs,
-                        Text(
-                          DateFormat('dd MMM yyyy').format(vm.selectedDate),
-                          style: AppTypography.subtitle2,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              AppSpacing.hm,
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.greyGreen.withOpacity(0.3),
@@ -162,6 +170,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       isSelected: vm.selectedSession == AttendanceSession.morning,
                       onTap: () => vm.setSelectedSession(AttendanceSession.morning),
                     ),
+                    AppSpacing.hm,
                     AttendanceSessionToggle(
                       label: 'Afternoon',
                       isSelected: vm.selectedSession == AttendanceSession.afternoon,
@@ -170,6 +179,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ],
                 ),
               ),
+              AttendanceActionChip(
+                label: "All Present",
+                color: AppColors.successGreen,
+                onTap: () => vm.markAll(AttendanceStatus.present),
+              ),
             ],
           ),
         ],
@@ -177,74 +191,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildActionBar(AttendanceViewModel vm) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          AttendanceActionChip(
-            label: "All Present",
-            color: AppColors.successGreen,
-            onTap: () => vm.markAll(AttendanceStatus.present),
-          ),
-          AppSpacing.hm,
-          AttendanceActionChip(
-            label: "Reset All",
-            color: AppColors.grey5E,
-            onTap: () => vm.markAll(AttendanceStatus.none),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildBottomButton(BuildContext context) {
-    final vm = context.watch<AttendanceViewModel>();
-    return Container(
-      padding: AppPadding.pM,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          minimumSize: Size(double.infinity, 50.h),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
-          disabledBackgroundColor: AppColors.greyB2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xs)),
-          elevation: 0,
-        ),
-        onPressed: (vm.isLoading || !vm.isValid) ? null : () async {
-          final success = await vm.saveAttendance();
-          if (mounted) {
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Attendance saved successfully!'), backgroundColor: AppColors.successGreen),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(vm.validationMessage ?? 'Error saving attendance.'), backgroundColor: AppColors.errorRed),
-              );
-            }
-          }
-        },
-        child: vm.isLoading
-            ? SizedBox(height: 20.h, width: 20.h, child: const CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Save Attendance', style: AppTypography.h6.copyWith(color: AppColors.white)),
-                  if (!vm.isValid && vm.attendanceMap.isNotEmpty)
-                    Text(
-                      vm.validationMessage ?? '',
-                      style: TextStyle(fontSize: 10.sp, color: AppColors.white.withOpacity(0.8)),
-                    ),
-                ],
-              ),
-      ),
-    );
-  }
+
+
+
 }

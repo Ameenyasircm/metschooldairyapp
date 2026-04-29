@@ -62,7 +62,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
         QuickAction(
           title: 'Homework',
           icon: Icons.assignment_rounded,
-          color: AppColors.primary,
+          color: AppColors.successGreen,
 
           onTap: () {
             debugPrint("Tapped Homework");
@@ -104,6 +104,13 @@ class TeacherHomeViewModel extends ChangeNotifier {
       title: 'Leave Requests',
       icon: Icons.event_note_outlined,
       color: AppColors.mint,
+      onTap: () {
+        debugPrint("Tapped Leave Requests");
+      },
+    ),   QuickAction(
+      title: 'School Calender',
+      icon: Icons.calendar_month_sharp,
+      color: AppColors.primaryBlue,
       onTap: () {
         debugPrint("Tapped Leave Requests");
       },

@@ -43,25 +43,25 @@ class TechStudentListScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(child: _buildSearchField(context)),
-                Consumer<StudentProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.students.isEmpty) return const SizedBox.shrink();
-                    return Row(
-                      children: [
-                        Checkbox(
-                          value: provider.isAllSelected,
-                          onChanged: (_) => provider.toggleSelectAll(),
-                          activeColor: AppColors.primary,
-                        ),
-                        Text(
-                          "All",
-                          style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500),
-                        ),
-                        AppSpacing.w8,
-                      ],
-                    );
-                  },
-                ),
+                // Consumer<StudentProvider>(
+                //   builder: (context, provider, child) {
+                //     if (provider.students.isEmpty) return const SizedBox.shrink();
+                //     return Row(
+                //       children: [
+                //         Checkbox(
+                //           value: provider.isAllSelected,
+                //           onChanged: (_) => provider.toggleSelectAll(),
+                //           activeColor: AppColors.primary,
+                //         ),
+                //         Text(
+                //           "All",
+                //           style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500),
+                //         ),
+                //         AppSpacing.w8,
+                //       ],
+                //     );
+                //   },
+                // ),
               ],
             ),
             Expanded(
@@ -110,7 +110,8 @@ class TechStudentListScreen extends StatelessWidget {
       ),
       child: TextField(
         decoration: InputDecoration(
-          hintText: "Search by Name/Admission No.",
+          prefixIcon: Icon(Icons.search,color: AppColors.greyB2,size: 19,),
+          hintText: "Search name,Admission No.",
           hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
           border: InputBorder.none,
           isDense: true,
