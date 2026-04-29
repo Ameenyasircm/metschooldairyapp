@@ -24,6 +24,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _startSplash();
+    AuthProvider authPro =
+    Provider.of<AuthProvider>(context, listen: false);
+    authPro..getAppVersion();
+    authPro.lockApp();
   }
 
 
@@ -81,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          'assets/images/LoGoGreenNew.png',
+          'assets/images/SchoolLogoNewPng.png',
           width: kIsWeb?400:250,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
@@ -91,6 +95,15 @@ class _SplashScreenState extends State<SplashScreen> {
               color: Colors.deepPurple,
             );
           },
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset("assets/images/codematesLogo.png",scale:10),
+          ],
         ),
       ),
     );

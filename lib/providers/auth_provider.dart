@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,20 +7,35 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/admin/views/admin_home.dart';
+import 'package:met_school/providers/parent_provider.dart';
+import 'package:met_school/providers/teacher_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/auth/presentation/models/academic_year_model.dart';
+import '../features/home/views/home/home_provider.dart';
+import '../features/homework/providers/homework_provider.dart';
 import '../features/modules/admin/views/admin_login_screen.dart';
 
 import '../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../features/modules/parent/views/parent_home.dart';
 import '../features/modules/parent/views/parent_select_child_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
+import '../features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
+import '../features/modules/teacher/timetable/presentation/provider/timetable_provider.dart';
+import '../features/splash/splash_screen.dart';
+import '../features/update/update_screen.dart';
+import 'academic_provider.dart';
+import 'admin_provider.dart';
+import 'conversation_provider.dart';
+import 'fee_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
+  final DatabaseReference mRoot = FirebaseDatabase.instance.ref();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -29,6 +45,8 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider(){
     loadCurrentAcademicYear();
+    getAppVersion();
+    lockApp();
   }
 
   void togglePassword() {
@@ -526,5 +544,164 @@ class AuthProvider with ChangeNotifier {
       return null;
     }
   }
+
+  void lockApp() {
+    mRoot.child("0").onValue.listen((event) async {
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> map = event.snapshot.value as Map;
+        List<String> versions =Platform.isIOS?map['iOSVersion'].toString().split(','): map['AppVersion'].toString().split(',');
+        print('$appVersion current version and in List $versions');
+        if (!versions.contains(appVersion)) {
+          print(' FUJEUIRFERF ');
+          // bool versionStatus = await checkVersionExist();
+
+          // if (!versionStatus) {
+            String address = map[Platform.isIOS?"ADDRESS_iOS":'ADDRESS'].toString();
+            String button = map['BUTTON'].toString();
+            String text = map['TEXT'].toString();
+            runApp(
+                MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(create: (_) => AuthProvider()),
+                    ChangeNotifierProvider(create: (_) => AdminProvider()),
+                    ChangeNotifierProvider(create: (_) => FeeProvider()),
+                    ChangeNotifierProvider(create: (_) => TeacherProvider()),
+                    ChangeNotifierProvider(create: (_) => ParentProvider()),
+                    ChangeNotifierProvider(create: (_) => HomeProvider()),
+                    ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+                    ChangeNotifierProvider(create: (_) => TimetableProvider()),
+                    ChangeNotifierProvider(create: (_) => AcademicProvider()),
+                    ChangeNotifierProvider(create: (_) => HomeworkProvider()),
+                    ChangeNotifierProvider(create: (_) => ConversationProvider()),
+                  ],
+                  child: MaterialApp(
+                      debugShowCheckedModeBanner: false,
+                      theme: ThemeData(
+                        useMaterial3: true,
+                        primarySwatch: Colors.blue,
+                      ),
+                      home: Update(
+                        ADDRESS: address,
+                        button: button,
+                        text: text,
+                      )
+                  ),
+                ));
+          // }
+        }else{
+          print("ellse printed  $appVersion");
+        }
+      }
+    });
+  }
+  String? appVersion;
+  String currentVersion='';
+  String buildNumber="";
+  Future<void> getAppVersion() async {
+    PackageInfo.fromPlatform().then((value) {
+      currentVersion=value.version;
+      buildNumber = value.buildNumber;
+      appVersion=buildNumber;
+      print(appVersion.toString()+"edfesappversion");
+      notifyListeners();
+    });
+
+  }
+
+
+  Future<bool> checkVersionExist() async {
+    DatabaseEvent dataSnapshot ;
+    if(Platform.isIOS){
+      dataSnapshot=  await mRoot.child("0").child('iOSVersion').once();
+    }else{
+      dataSnapshot=  await mRoot.child("0").child('AppVersion').once();
+
+    }
+    List<String> versions = dataSnapshot.snapshot.value.toString().split(',');
+
+    print("c  $versions");
+    print("currentVersion,  $appVersion");
+
+    if (versions.contains(appVersion)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void lockAppUpdateScreen() {
+    mRoot.child("0").once().then((event) async {
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> map = event.snapshot.value as Map;
+        List<String> versions =Platform.isIOS?map['iOSVersion'].toString().split(','): map['AppVersion'].toString().split(',');
+        print(' PRINT HERE HERE HERE HERE '+versions.toString()+' '+appVersion.toString());
+
+        if (!versions.contains(appVersion)) {
+          print(' FIRFNEJKRF ');
+          // bool versionStatus = await checkVersionExist();
+          String address = map[Platform.isIOS?"ADDRESS_iOS":'ADDRESS'].toString();
+          String button = map['BUTTON'].toString();
+          String text = map['TEXT'].toString();
+          runApp(
+              MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(create: (_) => AuthProvider()),
+                  ChangeNotifierProvider(create: (_) => AdminProvider()),
+                  ChangeNotifierProvider(create: (_) => FeeProvider()),
+                  ChangeNotifierProvider(create: (_) => TeacherProvider()),
+                  ChangeNotifierProvider(create: (_) => ParentProvider()),
+                  ChangeNotifierProvider(create: (_) => HomeProvider()),
+                  ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+                  ChangeNotifierProvider(create: (_) => TimetableProvider()),
+                  ChangeNotifierProvider(create: (_) => AcademicProvider()),
+                  ChangeNotifierProvider(create: (_) => HomeworkProvider()),
+                  ChangeNotifierProvider(create: (_) => ConversationProvider()),
+                ],
+                child: MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    theme: ThemeData(
+                      useMaterial3: true,
+                      primarySwatch: Colors.blue,
+                    ),
+                    home: Update(
+                      ADDRESS: address,
+                      button: button,
+                      text: text,
+                    )
+                ),
+              ));
+        }else{
+          print(' KKKSKDKDS NJJERNFERNF FJERNFER F ');
+          runApp(
+              MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(create: (_) => AuthProvider()),
+                  ChangeNotifierProvider(create: (_) => AdminProvider()),
+                  ChangeNotifierProvider(create: (_) => FeeProvider()),
+                  ChangeNotifierProvider(create: (_) => TeacherProvider()),
+                  ChangeNotifierProvider(create: (_) => ParentProvider()),
+                  ChangeNotifierProvider(create: (_) => HomeProvider()),
+                  ChangeNotifierProvider(create: (_) => TeacherHomeViewModel()),
+                  ChangeNotifierProvider(create: (_) => TimetableProvider()),
+                  ChangeNotifierProvider(create: (_) => AcademicProvider()),
+                  ChangeNotifierProvider(create: (_) => HomeworkProvider()),
+                  ChangeNotifierProvider(create: (_) => ConversationProvider()),
+                ],
+                child: MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    theme: ThemeData(
+                      useMaterial3: true,
+                      primarySwatch: Colors.blue,
+                    ),
+                    home: SplashScreen()
+                ),
+              ));
+          print("ellse printed  $appVersion");
+        }
+      }
+    });
+  }
+
+
 
 }
