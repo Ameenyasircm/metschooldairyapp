@@ -8,10 +8,9 @@ import '../../../../../../core/constants/app_spacing.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_typography.dart';
 import '../../../students/data/models/tech_student_model.dart';
-import '../../../students/presentation/provider/student_provider.dart'
-    show StudentProvider;
 
 
+import '../../../students/presentation/provider/student_provider.dart';
 import 'PunctualityScreen.dart';
 
 class PunctualityStudentListScreen extends StatelessWidget {
@@ -24,219 +23,172 @@ class PunctualityStudentListScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
+
+      /// 🔹 MODERN APP BAR (Like Rules Screen)
+      appBar: AppBar(
+        elevation: 0,
+        leading: InkWell(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
+        title: const Text(
+          "Punctuality",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary,
+                AppColors.secondary,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+      ),
+
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-              AppSpacing.h24,
 
-              /// 🔹 MAIN CARD
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: AppPadding.pL,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: AppRadius.radiusL,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+
+              AppSpacing.h20,
+
+              /// 🔹 SECTION TITLE
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Student List (${students.length})",
+                    style: AppTypography.h5.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                ],
+              ),
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              AppSpacing.h12,
 
-                      /// 🔹 SMALL HEADER (FIXED)
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        child: Row(
-                          children: [
-                            /// 🔹 Back Button (Styled)
-                            InkWell(
-                              borderRadius: BorderRadius.circular(12.r),
-                              onTap: () => Navigator.pop(context),
-                              child: Container(
-                                padding: EdgeInsets.all(10.w),
-                                decoration: BoxDecoration(
-                                  color: AppColors.lightGreen,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  size: 18.sp,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
+              /// 🔹 LIST
+              Expanded(
+                child: students.isEmpty
+                    ? Center(
+                  child: Text(
+                    "No students found",
+                    style: AppTypography.body1.copyWith(
+                      color: AppColors.grey5E,
+                    ),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
 
-                            SizedBox(width: 12.w),
-
-                            /// 🔹 Title Section
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Punctuality",
-                                    style: AppTypography.h4.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.primary,
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 12.h),
+                      child: Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.r),
+                        elevation: 2,
+                        shadowColor: Colors.black.withOpacity(0.05),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16.r),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    StudentPunctualityScreen(
+                                      student: student,
                                     ),
-                                  ),
-                                  SizedBox(height: 2.h),
-                                  Text(
-                                    "Student Records",
-                                    style: AppTypography.caption.copyWith(
-                                      color: AppColors.grey5E,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      AppSpacing.h4,
-
-                      Text(
-                        "Student List",
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.grey5E,
-                        ),
-                      ),
-
-                      AppSpacing.h16,
-
-                      /// 🔹 CONTENT
-                      Expanded(
-                        child: students.isEmpty
-                            ? Center(
-                          child: Text(
-                            "No students found",
-                            style: AppTypography.body1.copyWith(
-                              color: AppColors.grey5E,
-                            ),
-                          ),
-                        )
-                            : ListView.separated(
-                          itemCount: students.length,
-                          separatorBuilder: (_, __) => Divider(
-                            color: AppColors.greenE1,
-                            height: 1,
-                          ),
-                          itemBuilder: (context, index) {
-                            final student = students[index];
-
-                            return InkWell(
-                              borderRadius: AppRadius.radiusM,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        StudentPunctualityScreen(
-                                          student: student,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 12.h),
-                                child: Row(
-                                  children: [
-                                    /// 🔹 Avatar
-                                    CircleAvatar(
-                                      radius: 22.r,
-                                      backgroundColor:
-                                      AppColors.lightGreen,
-                                      child: Text(
-                                        student.name.isNotEmpty
-                                            ? student.name[0]
-                                            .toUpperCase()
-                                            : "?",
-                                        style: AppTypography.body1
-                                            .copyWith(
-                                          color:
-                                          AppColors.primary,
-                                          fontWeight:
-                                          FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-
-                                    AppSpacing.w12,
-
-                                    /// 🔹 Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            student.name,
-                                            style: AppTypography
-                                                .body1
-                                                .copyWith(
-                                              fontWeight:
-                                              FontWeight.w600,
-                                            ),
-                                          ),
-                                          AppSpacing.h4,
-                                          Text(
-                                            "Roll No: ${student.rollNumber}",
-                                            style: AppTypography
-                                                .caption
-                                                .copyWith(
-                                              color: AppColors
-                                                  .grey5E,
-                                            ),
-                                          ),
-                                          Text(
-                                            "${student.className}-${student.divisionName}",
-                                            style: AppTypography
-                                                .caption
-                                                .copyWith(
-                                              color: AppColors
-                                                  .grey5E,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    /// 🔹 Arrow
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 16.sp,
-                                      color:
-                                      AppColors.grey5E,
-                                    ),
-                                  ],
-                                ),
                               ),
                             );
                           },
+                          child: Padding(
+                            padding: EdgeInsets.all(14.w),
+                            child: Row(
+                              children: [
+                                /// 🔹 AVATAR
+                                Container(
+                                  width: 48.w,
+                                  height: 48.w,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.third,
+                                    borderRadius:
+                                    BorderRadius.circular(14.r),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      student.name.isNotEmpty
+                                          ? student.name[0].toUpperCase()
+                                          : "?",
+                                      style: AppTypography.h5.copyWith(
+                                        color: AppColors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                AppSpacing.w12,
+
+                                /// 🔹 INFO
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        student.name,
+                                        style: AppTypography.body1
+                                            .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      AppSpacing.h4,
+                                      Text(
+                                        "Roll No: ${student.rollNumber}",
+                                        style: AppTypography.caption
+                                            .copyWith(
+                                          color: AppColors.grey5E,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${student.className}-${student.divisionName}",
+                                        style: AppTypography.caption
+                                            .copyWith(
+                                          color: AppColors.grey5E,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                /// 🔹 ARROW
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16.sp,
+                                  color: AppColors.grey5E,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
-
-              AppSpacing.h16,
 
               /// 🔹 FOOTER
               Text(
                 "Select a student to view punctuality",
-                style: AppTypography.captionL.copyWith(
+                style: AppTypography.caption.copyWith(
                   color: AppColors.grey5E,
                 ),
               ),

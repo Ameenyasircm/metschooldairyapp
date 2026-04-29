@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/providers/admin_provider.dart';
 import 'package:provider/provider.dart';
 // TODO: Import your specific provider here
@@ -31,12 +37,12 @@ class _ParentInstructionsScreenState extends State<ParentInstructionsScreen> {
       backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
         title: const Text("Instructions to Parents"),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor:  AppColors.secondary,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0F766E)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.secondary))
           : provider.parentInstructionsList.isEmpty
           ? _buildEmptyState()
           : _buildInstructionsList(provider.parentInstructionsList),
@@ -71,15 +77,15 @@ class _ParentInstructionsScreenState extends State<ParentInstructionsScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+              gradient:  LinearGradient(
+                colors: [AppColors.secondary, AppColors.secondary.withOpacity(0.7),],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F766E).withOpacity(0.3),
+                  color:  AppColors.secondary.withOpacity(0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -140,7 +146,7 @@ class _ParentInstructionsScreenState extends State<ParentInstructionsScreen> {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F766E).withOpacity(0.1),
+                        color:  AppColors.secondary.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -148,7 +154,7 @@ class _ParentInstructionsScreenState extends State<ParentInstructionsScreen> {
                           "${index + 1}",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F766E),
+                            color: AppColors.secondary,
                             fontSize: 13,
                           ),
                         ),
