@@ -154,6 +154,7 @@ class LoginScreen extends StatelessWidget {
                         AppTextField(
                           controller: passwordController,
                           hintText: 'Enter your password',
+                          maxLine: 1,
                           prefixIcon: Icons.lock_outline,
                           obscureText: authProvider.obscurePassword,
                           suffixIcon: IconButton(

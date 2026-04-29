@@ -29,7 +29,7 @@ class AppTextField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
-    this.maxLine,
+    this.maxLine=1,
     this.suffixIcon,
     this.validator,
   });
