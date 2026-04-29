@@ -46,7 +46,7 @@ class AuthProvider with ChangeNotifier {
   AuthProvider(){
     loadCurrentAcademicYear();
     getAppVersion();
-    lockApp();
+    // lockApp();
   }
 
   void togglePassword() {

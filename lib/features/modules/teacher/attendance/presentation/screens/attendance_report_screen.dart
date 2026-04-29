@@ -90,13 +90,13 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   Widget _buildMonthPicker(BuildContext context) {
     return Container(
-      padding: AppPadding.pM,
+      padding: AppPadding.pXs,
       color: AppColors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left, color: AppColors.primary),
+            icon: const Icon(Icons.chevron_left, color: AppColors.primary,size: 24,),
             onPressed: () {
               setState(() {
                 _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
@@ -108,9 +108,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             DateFormat('MMMM yyyy').format(_selectedMonth),
             style: AppTypography.h6.copyWith(color: AppColors.primary),
           ),
-          if(_selectedMonth.isBefore(DateTime(DateTime.now().year, DateTime.now().month)))
           IconButton(
-            icon: const Icon(Icons.chevron_right, color: AppColors.primary),
+            icon: const Icon(Icons.chevron_right, color: AppColors.primary,size: 24,),
             onPressed: _selectedMonth.isBefore(DateTime(DateTime.now().year, DateTime.now().month))
                 ? () {
                     setState(() {
@@ -119,8 +118,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     _loadReport();
                   }
                 : null,
-          )else
-            SizedBox()
+          )
         ],
       ),
     );
@@ -137,7 +135,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
     return Container(
       margin: AppPadding.pM,
-      padding: AppPadding.pM,
+      padding: AppPadding.pS,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppRadius.m),
@@ -153,17 +151,45 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       ),
     );
   }
-
   Widget _buildSummaryItem(String label, dynamic value, Color color) {
     String displayValue = value is double ? (value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1)) : value.toString();
     return Column(
       children: [
-        Text(displayValue, style: AppTypography.h5.copyWith(color: color)),
-        Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
+        Text(displayValue, style: AppTypography.h6.copyWith(color: color)),
+        Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E,fontSize: 11.sp)),
       ],
     );
   }
 
+  Widget _cell(
+      String text, {
+        double? width,
+        int flex = 0,
+        bool isHeader = false,
+        Color? color,
+        bool isBold = false,
+      }) {
+    final style = isHeader
+        ? AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: color)
+        : AppTypography.body2.copyWith(
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+      color: color,
+    );
+
+    Widget child = Text(
+      text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: style,
+    );
+
+    if (flex > 0) {
+      return Expanded(flex: flex, child: child);
+    }
+
+    return SizedBox(width: width, child: child);
+  }
   Widget _buildStatsTable(AttendanceReportViewModel vm) {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -178,11 +204,11 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
             child: Row(
               children: [
                 SizedBox(width: 25.w, child: Text("RN", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(child: Text("STUDENT NAME", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
-                SizedBox(width: 40.w, child: Text("PRES", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.successGreen), textAlign: TextAlign.center)),
-                SizedBox(width: 40.w, child: Text("ABS", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.errorRed), textAlign: TextAlign.center)),
-                SizedBox(width: 35.w, child: Text("LATE", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.warningOrange), textAlign: TextAlign.center)),
-                SizedBox(width: 45.w, child: Text("PERC", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                Expanded(child: Text("Student Name", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
+                SizedBox(width: 40.w, child: Text("Pres", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.successGreen), textAlign: TextAlign.center)),
+                SizedBox(width: 40.w, child: Text("Abs", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.errorRed), textAlign: TextAlign.center)),
+                SizedBox(width: 35.w, child: Text("Late", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.warningOrange), textAlign: TextAlign.center)),
+                SizedBox(width: 45.w, child: Text("%", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
               ],
             ),
           );

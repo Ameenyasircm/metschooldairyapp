@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../../../core/constants/app_assets.dart';
+import '../../../../../../core/service/url_launcher_service.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_typography.dart';
 import '../../data/models/homework_model.dart';
@@ -361,10 +363,6 @@ class _CommunicationActions extends StatelessWidget {
     required this.homeworkTitle,
   });
 
-  Future<void> _makeCall() async {
-    final Uri uri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-  }
 
   Future<void> _sendWhatsApp() async {
     final message = "Dear Parent, this is a reminder regarding the homework '$homeworkTitle' for $studentName. It is currently pending. Please ensure it is completed by the due date.";
@@ -388,12 +386,26 @@ class _CommunicationActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.phone, color: Colors.blue, size: 20),
-          onPressed: _makeCall,
+          onPressed: () {
+            UrlLauncherService.openUrl('tel:$phone');
+          },
+          icon: Icon(
+            Icons.phone,
+            size: 20,
+            color: AppColors.primaryBlue,
+          ),
         ),
+
         IconButton(
-          icon: const Icon(Icons.message, color: Colors.green, size: 20),
-          onPressed: _sendWhatsApp,
+          onPressed: () {
+            _sendWhatsApp();
+          },
+          icon: Image.asset(
+            AppAssets.whatsapp,
+            width: 22.w,
+            height: 22.h,
+            color: AppColors.successGreen,
+          ),
         ),
       ],
     );

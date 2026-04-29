@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     AuthProvider authPro =
     Provider.of<AuthProvider>(context, listen: false);
     authPro..getAppVersion();
-    authPro.lockApp();
+    // authPro.lockApp();
   }
 
 
