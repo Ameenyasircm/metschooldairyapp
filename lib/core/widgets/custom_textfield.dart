@@ -36,33 +36,41 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.greenE1,
-        borderRadius: AppRadius.radiusS,
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      style: AppTypography.body1.copyWith(
+        color: AppColors.darkGreen,
       ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        style: AppTypography.body1.copyWith(
-          color: AppColors.darkGreen,
+      maxLines:maxLine ,
+      decoration: InputDecoration(
+        fillColor: AppColors.greyE0,
+        filled: true,
+        hintText: hintText,
+        hintStyle: AppTypography.body1.copyWith(
+          color: AppColors.grey5E.withValues(alpha: 0.5),
         ),
-        maxLines:maxLine ,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: AppTypography.body1.copyWith(
-            color: AppColors.grey5E.withValues(alpha: 0.5),
-          ),
-          prefixIcon: Icon(prefixIcon, size: 20.sp),
-          suffixIcon: suffixIcon,
-          border: InputBorder.none,
-          contentPadding:
-          EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        prefixIcon: Icon(prefixIcon, size: 20.sp),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: AppRadius.radiusM,
+          borderSide: BorderSide(color: AppColors.greyE0),
         ),
-        validator: validator,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: AppRadius.radiusM,
+          borderSide: BorderSide(color:AppColors.greyE0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.radiusM,
+          borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+        ),
+        contentPadding:
+        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+
       ),
+      validator: validator,
     );
   }
 }
