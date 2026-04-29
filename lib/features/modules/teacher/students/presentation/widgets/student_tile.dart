@@ -31,7 +31,7 @@ class StudentTile extends StatelessWidget {
       onTap: isSelectable ? onTap : null,
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        padding: AppPadding.p12,
+        padding: AppPadding.pS,
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.shade50 : Colors.white,
           borderRadius: AppRadius.radiusS,
@@ -110,19 +110,14 @@ class MyStudentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      padding: AppPadding.p12,
+      padding: AppPadding.pS,
       decoration: BoxDecoration(
         color:  Colors.white,
         borderRadius: AppRadius.radiusS,
         border: Border.all(
           color: Colors.grey.shade300,
         ),
-        boxShadow: const [
-          BoxShadow(
-            blurRadius: 4,
-            color: Colors.black12,
-          ),
-        ],
+
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,11 +125,11 @@ class MyStudentTile extends StatelessWidget {
         children: [
           CircleAvatar(
             backgroundColor: const Color(0xFFF1F5F9),
-            radius: 18.r,
+            radius: 17.r,
             child: Text(
               student.rollNumber != 0 ? student.rollNumber.toString() : "-",
               style: const TextStyle(
-                color: Color(0xFF0F766E),
+                color: AppColors.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -148,6 +143,8 @@ class MyStudentTile extends StatelessWidget {
               children: [
                 Text(
                   student.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTypography.body1.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -157,10 +154,29 @@ class MyStudentTile extends StatelessWidget {
               ],
             ),
           ),
+          IconButton(
+            onPressed: () {
+              UrlLauncherService.openUrl('tel:${student.parentPhone}');
+            },
+            icon: Icon(
+              Icons.phone,
+              size: 20,
+              color: AppColors.primaryBlue,
+            ),
+          ),
 
-          IconButton(onPressed: (){
-            UrlLauncherService.openUrl('https://wa.me/${student.parentPhone}');
-          }, icon: Image.asset(AppAssets.whatsapp,width: 22.w,height: 22.h,)),
+          IconButton(
+            onPressed: () {
+              UrlLauncherService.openUrl('https://wa.me/${student.parentPhone}');
+            },
+            icon: Image.asset(
+              AppAssets.whatsapp,
+              width: 22.w,
+              height: 22.h,
+              color: AppColors.successGreen,
+            ),
+          ),
+          
         ],
       ),
     );

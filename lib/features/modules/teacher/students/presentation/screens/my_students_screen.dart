@@ -15,6 +15,7 @@ import '../../../../../../core/widgets/buttons/gradient_button.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/student_attendance_history_screen.dart';
 import '../provider/student_provider.dart';
+import '../../data/models/tech_student_model.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/student_shimmer.dart';
 import '../widgets/student_tile.dart';
@@ -27,6 +28,7 @@ class MyStudentsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
+        toolbarHeight: 80.h,
         backgroundColor: AppColors.white,
         automaticallyImplyLeading: false,
         title: Text(
@@ -41,11 +43,9 @@ class MyStudentsScreen extends StatelessWidget {
             child: Consumer<StudentProvider>(
               builder: (context, provider, child) {
                 if (provider.isAssigningRollNumbers) {
-                  return const Center(child: CupertinoActivityIndicator());
+                  return const CupertinoActivityIndicator();
                 }
-                return IconButton(
-                  tooltip: "Assign Roll Numbers",
-                  icon:Icon(Icons.sort_by_alpha, color: AppColors.primary,size: 22,),
+                return TextButton(
                   onPressed: () async {
                     bool? confirm = await _showConfirmDialog(context);
                     if (confirm == true) {
@@ -61,6 +61,21 @@ class MyStudentsScreen extends StatelessWidget {
                       }
                     }
                   },
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.black,
+                    padding:EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.radiusM,
+                      side: BorderSide(color: AppColors.black.withOpacity(0.15)),
+                    ),
+                  ),
+                  child: Text(
+                    'Assign Roll No.',
+                    style: AppTypography.body2.copyWith(
+                      fontWeight: FontWeight.w600,fontSize: 13.sp,
+                      color: AppColors.black,
+                    ),
+                  ),
                 );
               },
             ),
@@ -138,7 +153,8 @@ class MyStudentsScreen extends StatelessWidget {
       ),
       child: TextField(
         decoration: InputDecoration(
-          hintText: "Search by name/Admission No.",
+          prefixIcon: Icon(Icons.search,color: AppColors.greyB2,size: 19,),
+          hintText: "Search name,Admission No.",
           hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
           border: InputBorder.none,
           isDense: true,
@@ -175,6 +191,7 @@ class MyStudentsScreen extends StatelessWidget {
                         studentName: item.name,
                       ));
                 },
+                onLongPress: () => _showDeleteDialog(context, item),
                 child: MyStudentTile(student: item));
           } else {
             return provider.isLoadingMyStdMore
@@ -225,5 +242,99 @@ class MyStudentsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context, EnrollerModel student) async {
+    final formKey = GlobalKey<FormState>();
+    final remarkController = TextEditingController();
+
+    try {
+      bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.white,
+          surfaceTintColor: AppColors.white,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
+          title: Text("Delete Student?", style: AppTypography.h5),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Are you sure you want to delete ${student.name}? This action will remove all their records.",
+                  style: AppTypography.body2.copyWith(color: AppColors.grey5E),
+                ),
+                AppSpacing.h16,
+                TextFormField(
+                  controller: remarkController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: "Reason for deletion*",
+                    hintText: "Enter mandatory remark",
+                    labelStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
+                    hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.radiusM,
+                      borderSide: BorderSide(color: AppColors.greyE0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppRadius.radiusM,
+                      borderSide: BorderSide(color: AppColors.greyE0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppRadius.radiusM,
+                      borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Remark is mandatory";
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+                Navigator.pop(context, false);
+              },
+              child: Text("Cancel", style: AppTypography.label.copyWith(color: AppColors.grey5E)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  FocusScope.of(context).unfocus();
+                  Navigator.pop(context, true);
+                }
+              },
+              child: Text(
+                "Delete",
+                style: AppTypography.label.copyWith(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true) {
+        if (context.mounted) {
+          await context.read<StudentProvider>().deleteStudent(student.studentId, remarkController.text.trim());
+          if (context.mounted) {
+            SnackbarService().showSuccess("Student deleted successfully");
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarService().showError("Failed to delete student: $e");
+      }
+    } finally {
+      remarkController.dispose();
+    }
   }
 }

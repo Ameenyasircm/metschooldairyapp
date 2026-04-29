@@ -42,7 +42,7 @@ class TeacherLeaveCard extends StatelessWidget {
             children: [
               Text(
                 leave.studentName,
-                style: AppTypography.h6.copyWith(fontWeight: FontWeight.bold),
+                style: AppTypography.subtitle2.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
                 "${_formatDate(leave.startDate)} - ${_formatDate(leave.endDate)}",
@@ -52,9 +52,21 @@ class TeacherLeaveCard extends StatelessWidget {
           ),
           AppSpacing.h4,
           Text(leave.className, style: AppTypography.caption.copyWith(color: AppColors.primary)),
-          AppSpacing.h12,
-          Text("Reason:", style: AppTypography.caption.copyWith(color: Colors.grey)),
-          Text(leave.reason, style: AppTypography.body2),
+          AppSpacing.h2,
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: "Reason: ",
+                  style: AppTypography.caption.copyWith(color: Colors.grey),
+                ),
+                TextSpan(
+                  text: leave.reason,
+                  style: AppTypography.body2,
+                ),
+              ],
+            ),
+          ),
           
           if (leave.status == 'pending') ...[
             AppSpacing.h16,
@@ -85,11 +97,23 @@ class TeacherLeaveCard extends StatelessWidget {
               ],
             ),
           ] else if (leave.status == 'rejected' && leave.rejectionReason != null) ...[
-            AppSpacing.h12,
-            const Divider(),
-            AppSpacing.h8,
-            Text("Rejection Note:", style: AppTypography.caption.copyWith(color: Colors.red)),
-            Text(leave.rejectionReason!, style: AppTypography.body2.copyWith(color: Colors.red)),
+            AppSpacing.h4,
+             Divider(color: AppColors.greyE0,),
+            AppSpacing.h4,
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Rejection Note: ",
+                    style: AppTypography.caption.copyWith(color: Colors.red),
+                  ),
+                  TextSpan(
+                    text: leave.rejectionReason ?? "",
+                    style: AppTypography.body2.copyWith(color: Colors.red),
+                  ),
+                ],
+              ),
+            )
           ],
         ],
       ),

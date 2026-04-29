@@ -14,8 +14,9 @@ class AttendanceRemarkDialogs {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
-        title: Text("Late Remark", style: AppTypography.h5),
+        title: Text("Late Remark", style: AppTypography.h6),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -25,7 +26,18 @@ class AttendanceRemarkDialogs {
               decoration: InputDecoration(
                 hintText: "Enter reason for being late",
                 hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.xs)),
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: BorderSide(color: AppColors.greyE0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: BorderSide(color:AppColors.greyE0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+                ),
               ),
               autofocus: true,
             ),
@@ -37,7 +49,18 @@ class AttendanceRemarkDialogs {
               decoration: InputDecoration(
                 hintText: "Enter duration of late (minutes)",
                 hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.xs)),
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: BorderSide(color: AppColors.greyE0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: BorderSide(color:AppColors.greyE0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.radiusM,
+                  borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+                ),
               ),
             )
           ],
@@ -61,7 +84,9 @@ class AttendanceRemarkDialogs {
                 Navigator.pop(context);
               }
             },
-            child: const Text("Confirm"),
+            child: Text("Confirm",style: AppTypography.body2.copyWith(
+              color: AppColors.white
+            ),),
           ),
         ],
       ),
@@ -81,24 +106,34 @@ class AttendanceRemarkDialogs {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
-        title: Text("${vm.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'} Absent Remark (Optional)", style: AppTypography.h5),
+        title: Text("${vm.selectedSession == AttendanceSession.morning ? 'Morning' : 'Afternoon'} Absent Remark (Optional)", style: AppTypography.h6),
         content: TextField(
           controller: controller,
           style: AppTypography.body1,
           decoration: InputDecoration(
             hintText: "Enter reason for absence",
             hintStyle: AppTypography.body2.copyWith(color: AppColors.greyB2),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.xs)),
+            border: OutlineInputBorder(
+              borderRadius: AppRadius.radiusM,
+              borderSide: BorderSide(color: AppColors.greyE0),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusM,
+              borderSide: BorderSide(color:AppColors.greyE0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusM,
+              borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+            ),
           ),
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () {
-              vm.markSingleStudent(studentId, AttendanceStatus.absent);
               Navigator.pop(context);
             },
-            child: Text("Skip", style: AppTypography.label.copyWith(color: AppColors.grey5E)),
+            child: Text("Cancel", style: AppTypography.label.copyWith(color: AppColors.grey5E)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
@@ -106,8 +141,9 @@ class AttendanceRemarkDialogs {
               vm.markSingleStudent(studentId, AttendanceStatus.absent, absentRemark: controller.text.trim());
               Navigator.pop(context);
             },
-            child: const Text("Confirm"),
-          ),
+            child: Text("Confirm",style: AppTypography.body2.copyWith(
+                color: AppColors.white
+            ),),),
         ],
       ),
     );

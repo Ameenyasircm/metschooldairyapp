@@ -28,20 +28,11 @@ class AppBottomNavBar extends StatelessWidget {
               activeIcon: Icon(Icons.home_filled),
               label: 'Home',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.people_outline),
-              activeIcon: Icon(Icons.people),
-              label: 'Students',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
-              activeIcon: Icon(Icons.calendar_month),
-              label: 'Calender',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         );

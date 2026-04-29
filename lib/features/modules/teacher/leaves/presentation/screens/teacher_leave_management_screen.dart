@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/constants/app_radius.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
 import 'package:met_school/core/constants/app_spacing.dart';
@@ -55,7 +56,7 @@ class _TeacherLeaveManagementScreenState extends State<TeacherLeaveManagementScr
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: Text("Leave Management", style: AppTypography.h4.copyWith(color: AppColors.primary)),
+        title: Text("Leave Management", style: AppTypography.h5.copyWith(color: AppColors.primary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -63,16 +64,63 @@ class _TeacherLeaveManagementScreenState extends State<TeacherLeaveManagementScr
           icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(text: "Pending"),
-            Tab(text: "Approved"),
-            Tab(text: "Rejected"),
-          ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(50.h),
+          child: Container(
+            margin:  EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: AppRadius.radiusM,
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey.shade600,
+              labelStyle:  AppTypography.caption.copyWith(
+                fontWeight: FontWeight.bold
+              ),
+              unselectedLabelStyle:  AppTypography.caption,
+              indicator: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: AppRadius.radiusS,
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              padding: AppPadding.pXs,
+              tabs:  [
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.hourglass_empty_rounded, size: 15),
+                      AppSpacing.w4,
+                      Text("Pending"),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded, size: 15),
+                      AppSpacing.w4,
+                      Text("Approved",),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cancel_outlined, size: 15),
+                      AppSpacing.w4,
+                      Text("Rejected"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: TabBarView(

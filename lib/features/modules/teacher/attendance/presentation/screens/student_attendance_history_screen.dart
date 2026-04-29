@@ -184,7 +184,7 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
 
   Widget _buildDateRangeHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       color: AppColors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,7 +238,7 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
 
     return Container(
       margin: AppPadding.pM,
-      padding: AppPadding.pM,
+      padding: AppPadding.pS,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppRadius.m),
@@ -259,7 +259,7 @@ class _StudentAttendanceHistoryScreenState extends State<StudentAttendanceHistor
     return Column(
       children: [
         Text(value, style: AppTypography.h6.copyWith(color: color)),
-        Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E)),
+        Text(label, style: AppTypography.caption.copyWith(color: AppColors.grey5E,fontSize: 11.sp)),
       ],
     );
   }

@@ -16,6 +16,7 @@ import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
+import '../../../school_calender/screens/school_calender_mobile_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
 import '../../../students/presentation/screens/my_students_screen.dart';
 import '../../../timetable/presentation/screens/timetable_screen.dart';
@@ -91,6 +92,9 @@ Widget buildQuickActions(BuildContext context) {
                     break;
                   case 10:
                     callNext(const TeacherLeaveManagementScreen(), context);
+                    break;
+                    case 11:
+                    callNext(const SchoolCalendarMobileScreen(), context);
                     break;
                   default:
                     break;
