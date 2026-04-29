@@ -5,7 +5,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_padding.dart';
-import '../models/homework_model.dart';
+import '../../modules/teacher/homework/data/models/homework_model.dart';
 
 class HomeworkCard extends StatelessWidget {
   final HomeworkModel homework;
@@ -38,7 +38,7 @@ class HomeworkCard extends StatelessWidget {
                 style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
-            if (homework.subject.isNotEmpty)
+            if (homework.subject!='')
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -46,7 +46,7 @@ class HomeworkCard extends StatelessWidget {
                   borderRadius: AppRadius.radiusS,
                 ),
                 child: Text(
-                  homework.subject,
+                  homework.subject??'',
                   style: AppTypography.caption.copyWith(color: AppColors.primary),
                 ),
               ),

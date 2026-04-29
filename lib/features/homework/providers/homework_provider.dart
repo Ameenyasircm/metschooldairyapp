@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/homework_model.dart';
+import '../../modules/teacher/homework/data/models/homework_model.dart';
 import '../services/homework_service.dart';
 
 class HomeworkProvider extends ChangeNotifier {

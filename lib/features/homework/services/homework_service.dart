@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/homework_model.dart';
+import '../../modules/teacher/homework/data/models/homework_model.dart';
 
 class HomeworkService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
