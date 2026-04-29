@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../features/home/views/home/home_screen.dart';
 import '../../constants/app_spacing.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -44,8 +45,18 @@ Future<bool?> showLogoutDialog(BuildContext context) {
                     onSave: () async {
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.clear();
-                      Navigator.of(context).pop(false);
-                      Navigator.of(context).pop(true);
+
+                      // ❌ REMOVE THESE:
+                      // Navigator.of(context).pop(false);
+                      // Navigator.of(context).pop(true);
+
+                      // ✅ REPLACE WITH: clears stack + forces HomeScreen to rebuild fresh
+                      if (context.mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => HomeScreen()),
+                              (route) => false,
+                        );
+                      }
                     },
                   ),
                 ),
