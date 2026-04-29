@@ -4,7 +4,8 @@ class AppColors {
 
   /// NEW FIGMA COLORS BELOW
 
-  static const Color primary = Color(0xff00796B);
+  // static const Color primary = Color(0xff00796B);
+  static const Color primary = Color(0xff001839);
   static const Color secondary = Color(0xff006B5F);
   static const Color lightGreen = Color(0xff97F3E2);
   static const Color greenE1 = Color(0xffDAE5E1);
@@ -26,6 +27,15 @@ class AppColors {
   // Base color of the images in the image
   static const Color baseImageColor = Color(0xFFC0D2CC);
 
+  static const Color greyBFB = Color(0xFFFBFBFB);
+  static const Color greyB9 = Color(0xFFA9B5B9);
+  static const Color grey9E = Color(0xFF9B9C9E);
+  static const Color greyAD = Color(0xFFADADAD);
+  static const Color greyFB = Color(0xFFB4B4B4);
+  static const Color greyAA = Color(0xFFACAAAA);
+  static const Color grey75 = Color(0xFF555755);
+  static const Color greyE0 = Color(0xFFE0E0E0);
+  static const Color greyFC = Color(0xFFF9FAFC);
 
 
 
