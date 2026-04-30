@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
+import '../../../profile/presentation/screens/teacher_profile_screen.dart';
 import '../../../school_calender/screens/school_calender_mobile_screen.dart';
 import '../widgets/app_bottom_nav_bar.dart';
 import 'teacher_home_screen.dart';
@@ -19,7 +20,7 @@ class TeacherNavbarScreen extends StatelessWidget {
             index: vm.selectedIndex,
             children:[
               TeacherHomeScreen(staffName:staffName,),
-              SizedBox(),
+              const TeacherProfileScreen(),
             ],
           ),
           bottomNavigationBar: const AppBottomNavBar(),

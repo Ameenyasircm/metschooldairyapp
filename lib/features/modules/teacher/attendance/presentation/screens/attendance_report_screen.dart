@@ -161,92 +161,80 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     );
   }
 
-  Widget _cell(
-      String text, {
-        double? width,
-        int flex = 0,
-        bool isHeader = false,
-        Color? color,
-        bool isBold = false,
-      }) {
-    final style = isHeader
-        ? AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: color)
-        : AppTypography.body2.copyWith(
-      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-      color: color,
-    );
-
-    Widget child = Text(
-      text,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      textAlign: TextAlign.center,
-      style: style,
-    );
-
-    if (flex > 0) {
-      return Expanded(flex: flex, child: child);
-    }
-
-    return SizedBox(width: width, child: child);
-  }
   Widget _buildStatsTable(AttendanceReportViewModel vm) {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      itemCount: vm.studentStats.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.greyGreen, width: 2)),
-            ),
-            child: Row(
-              children: [
-                SizedBox(width: 25.w, child: Text("RN", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(child: Text("Student Name", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold))),
-                SizedBox(width: 40.w, child: Text("Pres", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.successGreen), textAlign: TextAlign.center)),
-                SizedBox(width: 40.w, child: Text("Abs", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.errorRed), textAlign: TextAlign.center)),
-                SizedBox(width: 35.w, child: Text("Late", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.warningOrange), textAlign: TextAlign.center)),
-                SizedBox(width: 45.w, child: Text("%", style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-              ],
-            ),
-          );
-        }
+    final students = vm.studentStats.entries.toList();
 
-        final studentId = vm.studentStats.keys.elementAt(index - 1);
-        final stat = vm.studentStats[studentId]!;
+    String formatVal(double val) =>
+        val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
 
-        String formatVal(double val) => val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: AppPadding.phM,
+          child: DataTable(
+            columnSpacing: 16,
+            showCheckboxColumn: false,
+            border: TableBorder.all( // ✅ full border
+              color: AppColors.greyGreen,
+              width: 1,
+            ),
+            headingRowColor: MaterialStateProperty.all(AppColors.lightBackground),
+            columns: [
+              DataColumn(label: Text("RN", style: AppTypography.caption)),
+              DataColumn(label: Text("Student Name", style: AppTypography.caption)),
+              DataColumn(label: Text("Pres", style: AppTypography.caption.copyWith(color: AppColors.successGreen))),
+              DataColumn(label: Text("Abs", style: AppTypography.caption.copyWith(color: AppColors.errorRed))),
+              DataColumn(label: Text("Late", style: AppTypography.caption.copyWith(color: AppColors.warningOrange))),
+              DataColumn(label: Text("%", style: AppTypography.caption)),
+            ],
+            rows: List.generate(students.length, (index) {
+              final studentId = students[index].key;
+              final stat = students[index].value;
 
-        return InkWell(
-          onTap: () {
-            // Navigate to Student Wise Report
-             Navigator.push(context, MaterialPageRoute(
-               builder: (_) => StudentAttendanceHistoryScreen(studentId: studentId, studentName: stat.name)
-             ));
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.greyGreen, width: 1)),
-            ),
-            child: Row(
-              children: [
-                SizedBox(width: 25.w, child: Text(stat.rollNo.toString(), style: AppTypography.body2)),
-                Expanded(child: Text(stat.name, style: AppTypography.body2.copyWith(fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                SizedBox(width: 40.w, child: Text(formatVal(stat.present), style: AppTypography.body2, textAlign: TextAlign.center)),
-                SizedBox(width: 40.w, child: Text(formatVal(stat.absent), style: AppTypography.body2, textAlign: TextAlign.center)),
-                SizedBox(width: 35.w, child: Text(stat.late.toString(), style: AppTypography.body2, textAlign: TextAlign.center)),
-                SizedBox(width: 45.w, child: Text("${stat.attendancePercentage.toInt()}%", style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold, color: _getPercentageColor(stat.attendancePercentage)), textAlign: TextAlign.center)),
-              ],
-            ),
+              return DataRow(
+                onSelectChanged: (_) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StudentAttendanceHistoryScreen(
+                        studentId: studentId,
+                        studentName: stat.name,
+                      ),
+                    ),
+                  );
+                },
+                cells: [
+                  DataCell(Text(stat.rollNo.toString())),
+                  DataCell(
+                    SizedBox(
+                      width: 120,
+                      child: Text(
+                        stat.name,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(Text(formatVal(stat.present))),
+                  DataCell(Text(formatVal(stat.absent))),
+                  DataCell(Text(stat.late.toString())),
+                  DataCell(
+                    Text(
+                      "${stat.attendancePercentage.toInt()}%",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _getPercentageColor(stat.attendancePercentage),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
-
   Color _getPercentageColor(double percentage) {
     if (percentage >= 90) return AppColors.successGreen;
     if (percentage >= 75) return AppColors.primary;

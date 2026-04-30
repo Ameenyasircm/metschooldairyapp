@@ -13,10 +13,11 @@ import '../theme/app_typography.dart';
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
-  final IconData prefixIcon;
+  final IconData? prefixIcon; // Fixed type
   final bool obscureText;
   final Widget? suffixIcon;
   final int? maxLine;
+  final Color? fillColor;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
@@ -25,11 +26,12 @@ class AppTextField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.hintText,
-    required this.prefixIcon,
+    this. prefixIcon,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
     this.maxLine=1,
+    this.fillColor=AppColors.greyE0,
     this.suffixIcon,
     this.validator,
   });
@@ -37,6 +39,7 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      textAlign: TextAlign.start,
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
@@ -46,13 +49,14 @@ class AppTextField extends StatelessWidget {
       ),
       maxLines:maxLine ,
       decoration: InputDecoration(
-        fillColor: AppColors.greyE0,
+        fillColor:fillColor,
+        alignLabelWithHint: true,
         filled: true,
         hintText: hintText,
         hintStyle: AppTypography.body1.copyWith(
           color: AppColors.grey5E.withValues(alpha: 0.5),
         ),
-        prefixIcon: Icon(prefixIcon, size: 20.sp),
+        prefixIcon: prefixIcon!=null?Icon(prefixIcon, size: 20.sp, color: AppColors.darkGreen):null,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: AppRadius.radiusM,

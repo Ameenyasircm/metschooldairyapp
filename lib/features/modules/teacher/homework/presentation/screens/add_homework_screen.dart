@@ -124,128 +124,153 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final homeworkProvider = context.watch<HomeworkProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.white,
-        title:Text('Add Homework',style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600),),
+        centerTitle: true,
+        leading: const BackButton(color: AppColors.black),
+        title: Text(
+          'Add Homework',
+          style: AppTypography.body1.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 18.sp,
+          ),
+        ),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding:AppPadding.pL,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Card(
-                color: AppColors.white,
-                elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
-                child: Padding(
-                  padding:AppPadding.pM,
-                  child: Column(
-                    children: [
-                      Text(
-                        'Class: $_className - $_divisionName',
-                        style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      AppSpacing.h20,
-                      Consumer<HomeworkProvider>(
-                        builder: (context, provider, child) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.greenE1,
-                              borderRadius: AppRadius.radiusS,
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButtonFormField<String>(
-                                value: _selectedSubject,
-                                decoration: InputDecoration(
-                                  hintText: 'Select Subject',
-                                  hintStyle: AppTypography.body1.copyWith(
-                                    color: AppColors.grey5E.withValues(alpha: 0.5),
-                                  ),
-                                  prefixIcon: Icon(Icons.book, size: 20.sp),
-                                  border: InputBorder.none,
-                                ),
-                                items: provider.subjectsList.map((subject) {
-                                  return DropdownMenuItem<String>(
-                                    value: subject['name'],
-                                    child: Text(
-                                      subject['name'],
-                                      style: AppTypography.body1.copyWith(color: AppColors.darkGreen),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedSubject = value;
-                                  });
-                                },
-                                validator: (v) => v == null ? 'Select subject' : null,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      AppSpacing.h16,
-                      AppTextField(
-                        controller: _titleController,
-                        hintText: 'Homework Title',
-                        prefixIcon: Icons.title,
-                        validator: (v) => v!.isEmpty ? 'Enter title' : null,
-                      ),
-                      AppSpacing.h16,
-                      AppTextField(
-                        controller: _descriptionController,
-                        hintText: 'Description',
-                        maxLine: 3,
-                        prefixIcon: Icons.description,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: AppPadding.pL,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppSpacing.h6,
+                    Text("Homework Details",
+                        style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey5E)
+                    ),
+                    AppSpacing.h12,
 
-                        // Removed maxLines as AppTextField doesn't seem to support it in the current definition
-                      ),
-                      AppSpacing.h16,
-                      InkWell(
-                        onTap: _pickDate,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 15..h),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
+                    // Subject Dropdown
+                    Consumer<HomeworkProvider>(
+                      builder: (context, provider, child) {
+                        return _buildInputWrapper(
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedSubject,
+                            dropdownColor: Colors.white,
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            decoration: InputDecoration(
+                              hintText: 'Select Subject',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                            ),
+                            items: provider.subjectsList.map((subject) {
+                              return DropdownMenuItem<String>(
+                                value: subject['name'],
+                                child: Text(subject['name'] ?? ''),
+                              );
+                            }).toList(),
+                            onChanged: (value) => setState(() => _selectedSubject = value),
+                            validator: (v) => v == null ? 'Please select a subject' : null,
                           ),
+                        );
+                      },
+                    ),
+                    AppSpacing.h16,
+
+                    // Title Field
+                    AppTextField(
+                      prefixIcon: null,
+                      controller: _titleController,
+                      hintText: 'Homework Title',
+                      fillColor: AppColors.white,
+                      validator: (v) => v!.isEmpty ? 'Enter title' : null,
+                    ),
+                    AppSpacing.h16,
+
+                    // Description Field
+                    AppTextField(
+                      fillColor: AppColors.white,
+                      controller: _descriptionController,
+                      hintText: 'Describe the assignment...',
+                      maxLine: 3,
+                    ),
+                    AppSpacing.h16,
+
+                    // Date Picker Field
+                    InkWell(
+                      onTap: _pickDate,
+                      borderRadius: AppRadius.radiusM,
+                      child: _buildInputWrapper(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 4.w),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today, color: Colors.blue),
+                              Icon(Icons.calendar_month_outlined, color: AppColors.darkGreen, size: 20.sp),
                               AppSpacing.w12,
                               Text(
                                 _selectedDate == null
                                     ? 'Select Due Date'
                                     : 'Due Date: ${DateFormat('dd MMM yyyy').format(_selectedDate!)}',
-                                style: TextStyle(
-                                  color: _selectedDate == null ? Colors.grey : Colors.black,
+                                style: AppTypography.body1.copyWith(
+                                  color: _selectedDate == null ? AppColors.grey5E.withValues(alpha: 0.6) : AppColors.black,
                                 ),
                               ),
+                              const Spacer(),
+                              const Icon(Icons.chevron_right, color: AppColors.grey5E),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    AppSpacing.h32,
+                  ],
                 ),
               ),
-              AppSpacing.h32,
-              context.watch<HomeworkProvider>().isLoading
-                  ? const Center(child: CustomLoader())
-                  : gradientButton(
-                      text: 'Create Homework',
-                      onPressed: _saveHomework,
-                    ),
-            ],
+            ),
           ),
-        ),
+
+          // --- Persistent Bottom Button ---
+          Padding(
+            padding: EdgeInsets.all(20.w),
+            child: homeworkProvider.isLoading
+                ? const Center(child: CustomLoader())
+                : SizedBox(
+              width: double.infinity,
+              child: gradientButton(
+                text: 'Create Homework',
+                onPressed: _saveHomework,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
+
+  /// Helper to maintain consistent premium styling for inputs
+  Widget _buildInputWrapper({required Widget child}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: AppRadius.radiusM,
+        border: Border.all(color: AppColors.grey5E.withValues(alpha: 0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }}

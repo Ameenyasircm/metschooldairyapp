@@ -27,6 +27,7 @@ import 'features/modules/teacher/attendance/presentation/provider/attendance_pro
 import 'features/modules/teacher/attendance/presentation/provider/attendance_report_view_model.dart';
 import 'features/homework/providers/homework_provider.dart' as new_hw;
 import 'features/modules/teacher/homework/presentation/provider/homework_provider.dart';
+import 'features/modules/teacher/syllabus/presentation/provider/syllabus_provider.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -75,6 +76,7 @@ void main() async {
             AttendanceFirestoreService(),
           ),
         ),
+        ChangeNotifierProvider(create: (_) => SyllabusProvider()),
       ],
       child: const MyApp(),
     ),

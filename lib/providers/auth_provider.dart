@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
+import 'package:met_school/features/auth/presentation/screens/login_screen.dart';
 import 'package:met_school/features/modules/admin/views/admin_home.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:met_school/providers/teacher_provider.dart';
@@ -167,6 +169,8 @@ class AuthProvider with ChangeNotifier {
       await prefs.setString("userName", data['name'] ?? "");
       await prefs.setString("phone", data['phone'] ?? "");
       await prefs.setString("role", data['role'] ?? "");
+      await prefs.setString("email", data['email'] ?? "");
+      await prefs.setString("profilePic", data['profile_pic'] ?? "");
 
       final role = data['role'] ?? "";
 
@@ -513,7 +517,11 @@ class AuthProvider with ChangeNotifier {
 
     /// Navigate to login
     if (context.mounted) {
-      callNextReplacement(AdminLoginScreen(), context);
+      if (kIsWeb) {
+        callNextReplacement(const AdminLoginScreen(), context);
+      } else {
+        pushAndRemoveUntil(LoginScreen(), context);
+      }
     }
   }
 

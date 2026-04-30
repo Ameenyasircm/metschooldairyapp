@@ -115,6 +115,14 @@ class TeacherHomeViewModel extends ChangeNotifier {
         debugPrint("Tapped Leave Requests");
       },
     ),
+    QuickAction(
+      title: 'Syllabus',
+      icon: Icons.menu_book_outlined,
+      color: AppColors.textTeal,
+      onTap: () {
+        debugPrint("Tapped Syllabus");
+      },
+    ),
       ];
 
   void setSelectedIndex(int index) {

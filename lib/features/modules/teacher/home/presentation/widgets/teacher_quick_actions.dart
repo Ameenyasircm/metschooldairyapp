@@ -10,11 +10,13 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:met_school/features/modules/teacher/homework/presentation/screens/homework_list_screen.dart';
+import 'package:met_school/features/modules/teacher/syllabus/presentation/screens/syllabus_list_screen.dart';
 import '../../../../../communication/screens/students_parents_list_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
+import '../../../exams/presentation/screens/exam_coming_soon_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
 import '../../../school_calender/screens/school_calender_mobile_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
@@ -65,6 +67,9 @@ Widget buildQuickActions(BuildContext context) {
                   case 3:
                     NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
                     break;
+                    case 4:
+                    NavigationService.push(context, ExamComingSoonScreen());
+                    break;
                   case 5:
                     NavigationService.push(context, const HomeworkListScreen());
                     break;
@@ -95,6 +100,9 @@ Widget buildQuickActions(BuildContext context) {
                     break;
                     case 11:
                     callNext(const SchoolCalendarMobileScreen(), context);
+                    break;
+                  case 12:
+                    NavigationService.push(context, const SyllabusListScreen());
                     break;
                   default:
                     break;

@@ -52,21 +52,6 @@ Widget buildHeaderT(BuildContext context,String staffName) {
         children: [
           Icon(Icons.notifications_none_outlined, color: AppColors.primary, size: 28.sp),
           AppSpacing.w16,
-          IconButton(
-            onPressed: () async {
-
-              final shouldLogout = await showLogoutDialog(context);
-              if (shouldLogout == true) {
-                final prefs = await SharedPreferences.getInstance();
-                /// Clear saved data
-                await prefs.clear();
-                NavigationService.pushAndRemoveUntil(
-                  context,
-                  LoginScreen(),
-                );
-              }
-            },
-              icon: Icon(Icons.logout, color: AppColors.primary, size: 28.sp)),
         ],
       ),
     ],
