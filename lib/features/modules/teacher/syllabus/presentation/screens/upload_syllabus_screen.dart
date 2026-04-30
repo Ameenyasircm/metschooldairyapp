@@ -11,8 +11,8 @@ import '../../../../../../core/constants/app_radius.dart';
 import '../../../../../../core/constants/app_spacing.dart';
 import '../../../../../../core/utils/loader/customLoader.dart';
 import '../../../../../../core/widgets/buttons/gradient_button.dart';
+import '../../../../../../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../provider/syllabus_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UploadSyllabusScreen extends StatefulWidget {
   const UploadSyllabusScreen({super.key});
@@ -26,9 +26,6 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
   String? _selectedSubject;
   File? _selectedFile;
   String? _fileName;
-  
-  List<Map<String, dynamic>> _subjectsList = [];
-  bool _loadingSubjects = false;
 
   String? _classId;
   String? _className;
@@ -40,7 +37,8 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
   void initState() {
     super.initState();
     _loadTeacherData();
-    _fetchSubjects();
+    // Use provider to fetch subjects
+    Future.microtask(() => context.read<SyllabusProvider>().fetchSubjects());
   }
 
   Future<void> _loadTeacherData() async {
@@ -52,23 +50,6 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
       _divisionName = prefs.getString("divisionName");
       _teacherId = prefs.getString("staffId");
     });
-  }
-
-  Future<void> _fetchSubjects() async {
-    setState(() => _loadingSubjects = true);
-    try {
-      final snapshot = await FirebaseFirestore.instance.collection('subjects').get();
-      setState(() {
-        _subjectsList = snapshot.docs.map((doc) => {
-          "id": doc.id,
-          "name": doc['name']?.toString() ?? 'Unknown',
-        }).toList();
-      });
-    } catch (e) {
-      debugPrint("Error fetching subjects: $e");
-    } finally {
-      setState(() => _loadingSubjects = false);
-    }
   }
 
   Future<void> _pickFile() async {
@@ -84,9 +65,7 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
 
       if (fileSizeInMB > 10) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File size must be less than 10MB')),
-          );
+          SnackbarService().showError('File size must be less than 10MB');
         }
         return;
       }
@@ -100,16 +79,12 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
 
   Future<void> _uploadSyllabus() async {
     if (_selectedSubject == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a subject')),
-      );
+      SnackbarService().showError('Please select a subject');
       return;
     }
 
     if (_selectedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a PDF file')),
-      );
+      SnackbarService().showError('Please select a PDF file');
       return;
     }
 
@@ -125,16 +100,10 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
 
     if (success && mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Syllabus uploaded successfully')),
-      );
+      SnackbarService().showSuccess('Syllabus uploaded successfully');
     } else if (mounted) {
-
       final error = context.read<SyllabusProvider>().errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error ?? 'Upload failed')),
-      );
-      print("mkckjsndcjnsdncu$error");
+      SnackbarService().showError(error ?? 'Upload failed');
     }
   }
 
@@ -177,7 +146,7 @@ class _UploadSyllabusScreenState extends State<UploadSyllabusScreen> {
                   dropdownColor: Colors.white,
                   hint: const Text("Select Subject"),
                   decoration: const InputDecoration(border: InputBorder.none),
-                  items: _subjectsList.map((subject) {
+                  items: syllabusProvider.subjectsList.map((subject) {
                     return DropdownMenuItem<String>(
                       value: subject['name'],
                       child: Text(subject['name'] ?? ''),

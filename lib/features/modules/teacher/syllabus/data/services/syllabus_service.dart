@@ -19,13 +19,12 @@ class SyllabusService {
       CloudinaryResponse response = await _cloudinary.uploadFile(
         CloudinaryFile.fromFile(
           file.path,
-          resourceType: CloudinaryResourceType.Auto,
-          // ഫോൾഡർ തൽക്കാലം ഒഴിവാക്കുന്നു
+          resourceType: CloudinaryResourceType.Raw,
+          folder: 'syllabus',
         ),
       );
-      // ലിങ്ക് ബ്രൗസറിൽ ചെക്ക് ചെയ്യാൻ വേണ്ടി പ്രിന്റ് ചെയ്യുന്നു
       final url = response.secureUrl;
-      debugPrint("New Uploaded URL: $url");
+      debugPrint("Final Uploaded URL (Raw): $url");
       return url;
     } catch (e) {
       throw Exception('Failed to upload to Cloudinary: $e');

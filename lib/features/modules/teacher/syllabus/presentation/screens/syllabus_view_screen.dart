@@ -3,6 +3,8 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_typography.dart';
 
+import '../../../../../../core/utils/snackbarNotification/snackbar_notification.dart';
+
 class SyllabusViewScreen extends StatelessWidget {
   final String url;
   final String title;
@@ -36,15 +38,7 @@ class SyllabusViewScreen extends StatelessWidget {
           String errorMsg = details.description.isNotEmpty ? details.description : details.error;
           if (errorMsg.isEmpty) errorMsg = "Unknown error (check URL)";
           
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load PDF: $errorMsg'),
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(label: 'URL', onPressed: () {
-                debugPrint('PDF URL: $url');
-              }),
-            ),
-          );
+          SnackbarService().showError('Failed to load PDF: $errorMsg');
         },
       ),
     );

@@ -1,20 +1,43 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/syllabus_model.dart';
 import '../../data/services/syllabus_service.dart';
 import 'package:uuid/uuid.dart';
 
 class SyllabusProvider extends ChangeNotifier {
   final SyllabusService _service = SyllabusService();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   
   List<SyllabusModel> _syllabusList = [];
+  List<Map<String, dynamic>> _subjectsList = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   List<SyllabusModel> get syllabusList => _syllabusList;
+  List<Map<String, dynamic>> get subjectsList => _subjectsList;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  // --- Fetch Subjects (Shared logic) ---
+  Future<void> fetchSubjects() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final snapshot = await _db.collection('subjects').get();
+      _subjectsList = snapshot.docs.map((doc) => {
+        "id": doc.id,
+        "name": doc['name']?.toString() ?? 'Unknown',
+      }).toList();
+    } catch (e) {
+      _errorMessage = "Error fetching subjects: $e";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // --- Fetch Syllabus for Class ---
   Future<void> fetchSyllabus({required String classId, required String divisionId}) async {
     _isLoading = true;
     _errorMessage = null;
@@ -30,6 +53,7 @@ class SyllabusProvider extends ChangeNotifier {
     }
   }
 
+  // --- Upload Syllabus Logic ---
   Future<bool> uploadSyllabus({
     required File file,
     required String subject,
@@ -44,10 +68,8 @@ class SyllabusProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Upload to Cloudinary
       final fileUrl = await _service.uploadSyllabusFile(file);
 
-      // 2. Create SyllabusModel
       final syllabus = SyllabusModel(
         id: const Uuid().v4(),
         subject: subject,
@@ -60,12 +82,8 @@ class SyllabusProvider extends ChangeNotifier {
         teacherId: teacherId,
       );
 
-      // 3. Save to Firestore
       await _service.saveSyllabusMetadata(syllabus);
-      
-      // Refresh list if it was for the same class/division
       _syllabusList.insert(0, syllabus);
-      
       return true;
     } catch (e) {
       _errorMessage = 'Upload failed: $e';
