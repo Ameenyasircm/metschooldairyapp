@@ -19,111 +19,85 @@ class TeacherHomeViewModel extends ChangeNotifier {
 
 
   List<QuickAction> get quickActions => [
-        QuickAction(
-          title: 'My Students',
-          icon: Icons.people_outline_rounded,
-          color: AppColors.mint,
-          onTap: () {
-            debugPrint("Tapped Add Students");
-          },
-        ),
-        QuickAction(
-          title: 'Punctuality Record',
-          icon: Icons.edit_note_outlined,
-          color: AppColors.greyGreen,
-          onTap: () {
-            debugPrint("Tapped Add Marks");
-          },
-        ),
-        QuickAction(
-          title: 'Add Attendance',
-          icon: Icons.calendar_month_outlined,
-          color: AppColors.blueish,
-          onTap: () {
-            debugPrint("Tapped Add Attendance");
-          },
-        ),  QuickAction(
-          title: 'Attendance\n Report',
-          icon: Icons.calendar_month_outlined,
-          color: AppColors.textTeal,
-          onTap: () {
-            debugPrint("Tapped Add Attendance");
-          },
-        ),
-        QuickAction(
-          title: 'Add Exam',
-          icon: Icons.assignment_outlined,
-          color: AppColors.reddish,
-          onTap: () {
-            debugPrint("Tapped Add Exam");
-          },
-        ),
-
-        QuickAction(
-          title: 'Homework',
-          icon: Icons.assignment_rounded,
-          color: AppColors.successGreen,
-
-          onTap: () {
-            debugPrint("Tapped Homework");
-          },
-        ),
-        QuickAction(
-          title: 'Time Table',
-          icon: Icons.table_chart_outlined,
-          color: AppColors.blueish,
-          onTap: () {
-            debugPrint("Tapped Time Table");
-          },
-        ),
-      QuickAction(
-        title: 'Parent Communication',
-        icon: Icons.message_outlined,
-        color: AppColors.mint,
-        onTap: () {
-          debugPrint("Tapped Add Exam");
-        },
-      ),
+    QuickAction(
+      title: 'My Students',
+      icon: Icons.group_rounded, // Changed
+      color: AppColors.mint,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Punctuality Record',
+      icon: Icons.timer_outlined, // Changed
+      color: AppColors.greyGreen,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Add Attendance',
+      icon: Icons.how_to_reg_rounded, // Changed
+      color: AppColors.blueish,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Attendance\n Report',
+      icon: Icons.analytics_outlined, // Changed
+      color: AppColors.textTeal,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Add Exam',
+      icon: Icons.quiz_outlined, // Changed
+      color: AppColors.reddish,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Homework',
+      icon: Icons.auto_stories_outlined, // Changed
+      color: AppColors.successGreen,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Time Table',
+      icon: Icons.grid_view_rounded, // Changed
+      color: AppColors.blueish,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'Parent Communication',
+      icon: Icons.forum_outlined, // Changed
+      color: AppColors.mint,
+      onTap: () {},
+    ),
     QuickAction(
       title: 'Rules & Regulations',
-      icon: Icons.rule,
+      icon: Icons.gavel_rounded, // Changed
       color: AppColors.blueish,
-      onTap: () {
-        debugPrint("Tapped Add Exam");
-      },
+      onTap: () {},
     ),
     QuickAction(
       title: 'School Timing',
-      icon: Icons.alarm,
+      icon: Icons.schedule_rounded, // Changed
       color: AppColors.reddish,
-      onTap: () {
-        debugPrint("Tapped Add Exam");
-      },
+      onTap: () {},
     ),
     QuickAction(
       title: 'Leave Requests',
-      icon: Icons.event_note_outlined,
+      icon: Icons.event_busy_rounded, // Changed
       color: AppColors.mint,
-      onTap: () {
-        debugPrint("Tapped Leave Requests");
-      },
-    ),   QuickAction(
-      title: 'School Calender',
-      icon: Icons.calendar_month_sharp,
+      onTap: () {},
+    ),
+    QuickAction(
+      title: 'School Calendar',
+      icon: Icons.calendar_today_rounded, // Changed
       color: AppColors.primaryBlue,
-      onTap: () {
-        debugPrint("Tapped Leave Requests");
-      },
+      onTap: () {},
     ),
     QuickAction(
       title: 'Syllabus',
-      icon: Icons.menu_book_outlined,
+      icon: Icons.import_contacts_rounded, // Changed
       color: AppColors.textTeal,
-      onTap: () {
-        debugPrint("Tapped Syllabus");
-      },
+      onTap: () {},
     ),
-      ];
+  ];
 
   void setSelectedIndex(int index) {
     if (_selectedIndex != index) {

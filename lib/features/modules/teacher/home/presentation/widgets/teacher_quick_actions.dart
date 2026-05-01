@@ -32,13 +32,14 @@ Widget buildQuickActions(BuildContext context) {
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
+        itemCount:actions.length ,
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 10.h),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
-          childAspectRatio: 1.2,
+          crossAxisSpacing: 14.w,
+          mainAxisSpacing: 14.h,
+          childAspectRatio: 1.1,
         ),
-        itemCount: actions.length,
         itemBuilder: (context65, index) {
           return InkWell(
               onTap: () async {
@@ -68,7 +69,7 @@ Widget buildQuickActions(BuildContext context) {
                     NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
                     break;
                     case 4:
-                    NavigationService.push(context, ExamComingSoonScreen());
+                    NavigationService.push(context, ExamComingSoonPage());
                     break;
                   case 5:
                     NavigationService.push(context, const HomeworkListScreen());
