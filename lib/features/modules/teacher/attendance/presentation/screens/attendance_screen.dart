@@ -51,9 +51,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: Text('Attendance - ${widget.divisionName}', style: AppTypography.h6.copyWith(color: AppColors.white)),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        title: Text('Attendance - ${widget.divisionName}', style: AppTypography.h6.copyWith(color: AppColors.primary)),
+        backgroundColor: AppColors.lightBackground,
+        iconTheme: const IconThemeData(color: AppColors.primary),
         elevation: 0,
         actions: [
         Consumer<AttendanceViewModel>(
@@ -79,7 +79,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 if (date != null) vm.setSelectedDate(date);
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 8.h),
                 margin: EdgeInsets.symmetric(horizontal: 6.w,),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.greyGreen),
@@ -87,12 +87,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 16, color: AppColors.white),
+                    const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
                     AppSpacing.hs,
                     Text(
                       DateFormat('dd MMM yyyy').format(vm.selectedDate),
                       style: AppTypography.caption.copyWith(
-                        color: AppColors.white,fontSize: 10.sp
+                        color: AppColors.primary,fontSize: 10.sp
                       ),
                     ),
                   ],

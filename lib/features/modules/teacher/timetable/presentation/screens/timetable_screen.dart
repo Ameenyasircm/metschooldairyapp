@@ -37,9 +37,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         title: Text('Class ${widget.standard}-${widget.division} Timetable',
-            style: AppTypography.h6.copyWith(color: AppColors.white)),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: AppColors.white),
+            style: AppTypography.h6.copyWith(color: AppColors.primary)),
+        backgroundColor: AppColors.lightBackground,
+        iconTheme: const IconThemeData(color: AppColors.primary),
         actions: [
           Consumer<TimetableProvider>(
             builder: (context, provider, child) {
@@ -78,17 +78,17 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       ? const SizedBox(
                           width: 18, 
                           height: 18, 
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
                         )
                       : Icon(
                           provider.isEditing ? Icons.check_circle_outline : Icons.edit_note,
-                          color: AppColors.white,
+                          color: AppColors.primary,
                         ),
                   label: Text(
                     provider.isSaving 
                         ? 'Saving...' 
                         : (provider.isEditing ? 'Save' : 'Edit'),
-                    style: AppTypography.label.copyWith(color: AppColors.white),
+                    style: AppTypography.label.copyWith(color: AppColors.primary,),
                   ),
                 ),
               );

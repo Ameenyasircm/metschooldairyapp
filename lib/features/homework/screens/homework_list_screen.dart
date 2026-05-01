@@ -30,9 +30,11 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.lightBackground,
+         automaticallyImplyActions: false,
+        leading: BackButton(color: AppColors.primary,),
         title: Text('Homework Management',
-            style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600)),
+            style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600,color: AppColors.primary)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.primary),

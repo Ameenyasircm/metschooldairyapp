@@ -26,16 +26,16 @@ class MyStudentsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         toolbarHeight: 80.h,
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.lightBackground,
         automaticallyImplyLeading: false,
         title: Text(
           "My Students",
-          style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600,color: AppColors.primary),
         ),
-        leading: const BackButton(),
+        leading: const BackButton(color: AppColors.primary),
         elevation: 0,
         actions: [
           Padding(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../providers/admin_provider.dart';
 
 class RulesUserScreen extends StatelessWidget {
@@ -11,29 +12,17 @@ class RulesUserScreen extends StatelessWidget {
     final provider = context.watch<AdminProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         elevation: 0,
+        backgroundColor: AppColors.lightBackground,
         leading: InkWell(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          child: Icon(Icons.arrow_back_ios, color: AppColors.primary),
         ),
-        title: const Text(
+        title:  Text(
           "Rules & Regulations",
-          style: TextStyle(color: Colors.white),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.secondary,
-                AppColors.secondary,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+          style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600,color:AppColors.primary),
         ),
       ),
 

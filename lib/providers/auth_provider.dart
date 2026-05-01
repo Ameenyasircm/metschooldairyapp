@@ -159,25 +159,10 @@ class AuthProvider with ChangeNotifier {
 
       final prefs = await SharedPreferences.getInstance();
 
-      /// ✅ SAVE LOGIN SESSION
-      await prefs.setString("password", password);
-      await prefs.setString("staffPhone", phoneNumber);
-      await prefs.setBool("isLoggedIn", true);
-
-      /// Save common data
-      await prefs.setString("userId", doc.id);
-      await prefs.setString("userName", data['name'] ?? "");
-      await prefs.setString("phone", data['phone'] ?? "");
-      await prefs.setString("role", data['role'] ?? "");
-      await prefs.setString("email", data['email'] ?? "");
-      await prefs.setString("profilePic", data['profile_pic'] ?? "");
-
-      final role = data['role'] ?? "";
-
       /// =========================
       /// 🎯 PARENT LOGIN
       /// =========================
-      if (role == "parent") {
+      if (data['role'] == "parent") {
         final academicYear = currentYear?.id;
 
         if (academicYear == null) {
@@ -196,6 +181,21 @@ class AuthProvider with ChangeNotifier {
           return;
         }
 
+
+        /// ✅ SAVE LOGIN SESSION
+        await prefs.setString("password", password);
+        await prefs.setString("staffPhone", phoneNumber);
+        await prefs.setBool("isLoggedIn", true);
+
+        /// Save common data
+        await prefs.setString("userId", doc.id);
+        await prefs.setString("userName", data['name'] ?? "");
+        await prefs.setString("phone", data['phone'] ?? "");
+        await prefs.setString("role", data['role'] ?? "");
+        await prefs.setString("email", data['email'] ?? "");
+        await prefs.setString("profilePic", data['profile_pic'] ?? "");
+
+        final role = data['role'] ?? "";
         /// ✅ Build full student list
         List<Map<String, dynamic>> studentDataList = [];
 

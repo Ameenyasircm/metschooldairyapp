@@ -27,25 +27,12 @@ class PunctualityStudentListScreen extends StatelessWidget {
       /// 🔹 MODERN APP BAR (Like Rules Screen)
       appBar: AppBar(
         elevation: 0,
-        leading: InkWell(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back_ios, color: Colors.white),
-        ),
+        backgroundColor: AppColors.lightBackground,
+        automaticallyImplyActions: false,
+        leading: BackButton(color: AppColors.primary,),
         title: const Text(
           "Punctuality",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary,
-                AppColors.secondary,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
         ),
       ),
 

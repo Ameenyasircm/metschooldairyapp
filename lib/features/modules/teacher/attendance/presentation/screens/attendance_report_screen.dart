@@ -47,9 +47,11 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: Text('Monthly Report - ${widget.divisionName}', style: AppTypography.h6.copyWith(color: AppColors.white)),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        backgroundColor: AppColors.lightBackground,
+        automaticallyImplyActions: false,
+        leading: BackButton(color: AppColors.primary,),
+        title: Text('Monthly Report - ${widget.divisionName}', style: AppTypography.h6.copyWith(color: AppColors.primary)),
+        iconTheme: const IconThemeData(color: AppColors.primary),
       ),
       body: Column(
         children: [

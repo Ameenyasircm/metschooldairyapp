@@ -52,9 +52,9 @@ class _SyllabusListScreenState extends State<SyllabusListScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.lightBackground,
         title: Text('Syllabus Management',
-            style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600)),
+            style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600,color: AppColors.primary,),),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.primary),
@@ -112,7 +112,7 @@ class _SyllabusListScreenState extends State<SyllabusListScreen> {
           AppSpacing.w12,
           Text(
             "${_className ?? 'N/A'} - ${_divisionName ?? 'N/A'}",
-            style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold),
+            style: AppTypography.body2.copyWith(fontWeight: FontWeight.w700),
           ),
         ],
       ),

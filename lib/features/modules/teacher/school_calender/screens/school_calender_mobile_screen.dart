@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -19,10 +20,6 @@ class _SchoolCalendarMobileScreenState
   final CalendarController _calendarController = CalendarController();
   DateTime _focusedMonth =
   DateTime(DateTime.now().year, DateTime.now().month);
-
-  static const Color primary   = Color(0xff00796B);
-  static const Color secondary = Color(0xff006B5F);
-  static const Color bgColor   = Color(0xFFF9FAFB);
 
   @override
   void initState() {
@@ -52,16 +49,16 @@ class _SchoolCalendarMobileScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text(
+        backgroundColor: AppColors.lightBackground,
+        title:Text(
           "School Calendar",
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.w600, color:AppColors.primary),
         ),
-        backgroundColor: primary,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: AppColors.primary),
       ),
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
@@ -69,7 +66,7 @@ class _SchoolCalendarMobileScreenState
             children: [
               // ── Month Navigator ──
               Container(
-                color: primary,
+                color: AppColors.primary,
                 padding: const EdgeInsets.only(
                     left: 16, right: 16, bottom: 16, top: 4),
                 child: Row(
@@ -126,7 +123,7 @@ class _SchoolCalendarMobileScreenState
                         color: Color(0xff00796B),
                       ),
                     ),
-                    todayHighlightColor: primary,
+                    todayHighlightColor: AppColors.primary,
                     // Hide leading/trailing days from other months
                     // showTrailingAndLeadingDates: false,
                     onTap: (details) {
@@ -172,12 +169,12 @@ class _SchoolCalendarMobileScreenState
                           color: !isCurrentMonth
                               ? Colors.grey.shade50
                               : isToday
-                              ? primary.withOpacity(0.08)
+                              ? AppColors.primary.withOpacity(0.08)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isToday
-                                ? primary.withOpacity(0.5)
+                                ? AppColors.primary.withOpacity(0.5)
                                 : Colors.grey.shade200,
                             width: isToday ? 1.5 : 1,
                           ),
@@ -195,8 +192,8 @@ class _SchoolCalendarMobileScreenState
                                 height: 22,
                                 alignment: Alignment.center,
                                 decoration: isToday
-                                    ? const BoxDecoration(
-                                  color: primary,
+                                    ?  BoxDecoration(
+                                  color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 )
                                     : null,
@@ -222,7 +219,7 @@ class _SchoolCalendarMobileScreenState
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 3, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: primary,
+                                  color: AppColors.successGreen,
                                   borderRadius:
                                   BorderRadius.circular(3),
                                 ),
@@ -244,10 +241,10 @@ class _SchoolCalendarMobileScreenState
                                 const EdgeInsets.only(left: 4),
                                 child: Text(
                                   "+${events.length - 2}",
-                                  style: const TextStyle(
+                                  style:  TextStyle(
                                     fontSize: 8,
                                     fontWeight: FontWeight.bold,
-                                    color: secondary,
+                                    color: AppColors.primary,
                                   ),
                                 ),
                               ),
@@ -304,11 +301,11 @@ class _SchoolCalendarMobileScreenState
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: primary.withOpacity(0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.calendar_today,
-                        color: primary, size: 18),
+                        color: AppColors.primary, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -324,10 +321,10 @@ class _SchoolCalendarMobileScreenState
                         ),
                         Text(
                           DateFormat('dd MMMM yyyy').format(date),
-                          style: const TextStyle(
+                          style:  TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: primary,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],
@@ -374,9 +371,9 @@ class _SchoolCalendarMobileScreenState
                         final event = events[i];
                         return Container(
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(0.04),
+                            color: AppColors.primary.withOpacity(0.04),
                             border: Border.all(
-                                color: primary.withOpacity(0.15)),
+                                color: AppColors.primary.withOpacity(0.15)),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: IntrinsicHeight(
@@ -386,7 +383,7 @@ class _SchoolCalendarMobileScreenState
                                 Container(
                                   width: 4,
                                   decoration: BoxDecoration(
-                                    color: primary,
+                                    color: AppColors.primary,
                                     borderRadius: const BorderRadius.horizontal(
                                         left: Radius.circular(10)),
                                   ),

@@ -19,7 +19,7 @@ class SyllabusCard extends StatelessWidget {
       color: AppColors.white,
       margin: EdgeInsets.only(bottom: 12.h),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
-      elevation: 1,
+      elevation: 0,
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         leading: Container(
@@ -30,7 +30,7 @@ class SyllabusCard extends StatelessWidget {
           ),
           child: const Icon(Icons.picture_as_pdf, color: Colors.red),
         ),
-        title: Text(syllabus.subject, style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
+        title: Text(syllabus.subject, style: AppTypography.body2.copyWith(fontWeight: FontWeight.w600)),
         subtitle: Text(
           "Uploaded: ${DateFormat('dd MMM yyyy').format(syllabus.uploadedAt)}",
           style: AppTypography.caption.copyWith(color: AppColors.grey5E),
@@ -38,15 +38,6 @@ class SyllabusCard extends StatelessWidget {
         trailing: Wrap(
           spacing: 8,
           children: [
-            IconButton(
-              icon: const Icon(Icons.open_in_browser, color: AppColors.primary),
-              onPressed: () async {
-                final uri = Uri.parse(syllabus.fileUrl);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,

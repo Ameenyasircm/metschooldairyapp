@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme/app_typography.dart';
 import '../../../providers/admin_provider.dart';
 
 class BellTimingUserScreen extends StatelessWidget {
@@ -9,46 +12,46 @@ class BellTimingUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          leading: InkWell(
-              onTap: (){
-                Navigator.pop(context);
-              },
-              child: Icon(Icons.arrow_back_ios,color: Colors.white,)),
-          title: const Text("School Timing",style: TextStyle(color: Colors.white),),
-          backgroundColor: const Color(0xFF0F766E),
-        ),
-        body: provider.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : provider.regularList.isEmpty
-            ? const Center(child: Text("No timing available"))
-            : Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              _buildHeader(),
-      
-              Expanded(
-                child: ListView.builder(
-                  itemCount: provider.regularList.length,
-                  itemBuilder: (context, index) {
-                    final regular = provider.regularList[index];
-                    final friday = provider.fridayList.length > index
-                        ? provider.fridayList[index]
-                        : null;
-      
-                    return _buildRow(
-                      regular.title,
-                      regular.time,
-                      friday?.time ?? "",
-                    );
-                  },
-                ),
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppBar(
+        leading: InkWell(
+            onTap: (){
+              Navigator.pop(context);
+            },
+            child: Icon(Icons.arrow_back_ios,color: AppColors.primary,)),
+        title: Text("School Timing",
+          style: AppTypography.body1.copyWith(fontWeight: FontWeight.w600,color:AppColors.primary),),
+        backgroundColor: AppColors.lightBackground,
+      ),
+      body: provider.isLoading
+          ? const Center(child: CustomLoader())
+          : provider.regularList.isEmpty
+          ? const Center(child: Text("No timing available"))
+          : Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            _buildHeader(),
+
+            Expanded(
+              child: ListView.builder(
+                itemCount: provider.regularList.length,
+                itemBuilder: (context, index) {
+                  final regular = provider.regularList[index];
+                  final friday = provider.fridayList.length > index
+                      ? provider.fridayList[index]
+                      : null;
+
+                  return _buildRow(
+                    regular.title,
+                    regular.time,
+                    friday?.time ?? "",
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -59,7 +62,7 @@ class BellTimingUserScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color:AppColors.primary,
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Row(
