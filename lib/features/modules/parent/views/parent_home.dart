@@ -25,6 +25,7 @@ import '../notifications/presentation/provider/notification_provider.dart';
 import '../notifications/presentation/screens/parent_notification_screen.dart';
 import '../notifications/presentation/widgets/notification_badge.dart';
 import '../view_time_table/screens/parent_view_time_table.dart';
+import 'image_full_screen_view.dart';
 
 class ParentHomeScreen extends StatefulWidget {
   final String studentId;
@@ -329,14 +330,19 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     mainAxisSpacing: 10,
                   ),
                   itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: Image.asset(
-                        "assets/images/sample.jpg", // 🔥 CHANGE / MAKE LIST
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.image),
+                    return InkWell(onTap: (){
+                      /// we can pass both network and asset images
+                      callNext(FullScreenImageView(imagePath: "assets/images/sample.jpg",isNetwork: false,), context);
+                    },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.asset(
+                          "assets/images/sample.jpg", // 🔥 CHANGE / MAKE LIST
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: Colors.grey.shade300,
+                            child: const Icon(Icons.image),
+                          ),
                         ),
                       ),
                     );
