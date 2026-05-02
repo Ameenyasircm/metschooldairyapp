@@ -6,6 +6,7 @@ class ParentNotificationModel {
   final String body;
   final String? studentId;
   final String? date;
+  final String? remark;
   final bool isSeen;
   final DateTime createdAt;
 
@@ -15,6 +16,7 @@ class ParentNotificationModel {
     required this.body,
     this.studentId,
     this.date,
+    this.remark,
     this.isSeen = false,
     required this.createdAt,
   });
@@ -27,6 +29,7 @@ class ParentNotificationModel {
       body: data['body'] ?? '',
       studentId: data['studentId'],
       date: data['date'],
+      remark: data['remark'],
       isSeen: data['isSeen'] ?? false,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
@@ -38,6 +41,7 @@ class ParentNotificationModel {
       'body': body,
       'studentId': studentId,
       'date': date,
+      'remark': remark,
       'isSeen': isSeen,
       'createdAt': FieldValue.serverTimestamp(),
     };

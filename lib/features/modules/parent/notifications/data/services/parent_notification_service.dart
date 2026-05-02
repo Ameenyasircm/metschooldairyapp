@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:googleapis_auth/auth_io.dart' as auth;
+import 'package:flutter/services.dart' show rootBundle;
 import '../../../../../../core/service/firebase_service.dart';
 import '../models/parent_notification_model.dart';
 import 'dart:convert';
@@ -188,25 +190,49 @@ class ParentNotificationService {
     required String studentName,
     required String studentId,
     required String date,
+    required String remark,
   }) async {
     final title = "Late Attendance Alert";
-    final body = "$studentName was marked late on $date";
+    final body = "$studentName was marked late on $date. Remark: $remark";
 
     try {
-      // 1. Store Notification in Firestore
-      // This allows the Parent App to see it in the notification list
-      await _db
+      // 1. Check if notification already exists for this student and date
+      final existingNotifications = await _db
           .collection('parents')
           .doc(parentId)
           .collection('notifications')
-          .add({
-        'title': title,
-        'body': body,
-        'studentId': studentId,
-        'date': date,
-        'isSeen': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+          .where('studentId', isEqualTo: studentId)
+          .where('date', isEqualTo: date)
+          .where('title', isEqualTo: title)
+          .limit(1)
+          .get();
+
+      if (existingNotifications.docs.isNotEmpty) {
+        // Update existing notification
+        await existingNotifications.docs.first.reference.update({
+          'body': body,
+          'remark': remark,
+          'isSeen': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        debugPrint("Updated existing late notification for student: $studentId");
+      } else {
+        // Create new notification
+        await _db
+            .collection('parents')
+            .doc(parentId)
+            .collection('notifications')
+            .add({
+          'title': title,
+          'body': body,
+          'studentId': studentId,
+          'date': date,
+          'remark': remark,
+          'isSeen': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        debugPrint("Added new late notification for student: $studentId");
+      }
 
       // 2. Fetch Parent's Device Tokens
       final tokensSnapshot = await _db
@@ -220,58 +246,78 @@ class ParentNotificationService {
           .toList();
 
       if (deviceTokens.isNotEmpty) {
-        // 3. Trigger Push Notification
-        // PRODUCTION NOTE: The actual FCM sending should happen via Cloud Functions
-        // or a Backend Server to keep your Server Key secure.
-        // If you have a Cloud Function listening to 'parents/{parentId}/notifications/{id}', 
-        // you don't even need the code below.
-        
+        // 3. Trigger Push Notification using HTTP v1
         await _sendPushToDevices(deviceTokens, title, body);
       }
-      
-      debugPrint("Notification sent to Firestore and ${deviceTokens.length} devices.");
     } catch (e) {
       debugPrint("Error sending late notification: $e");
     }
   }
 
-  /// Direct FCM implementation (Legacy API)
-  /// WARNING: For production, use Cloud Functions to keep your Server Key secure.
+  /// Direct FCM implementation (HTTP v1 API)
   Future<void> _sendPushToDevices(List<String> tokens, String title, String body) async {
-    const String serverKey = 'YOUR_FCM_SERVER_KEY_HERE'; // Replace with your actual Server Key
-    const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
-
     try {
-      final response = await http.post(
-        Uri.parse(fcmUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=$serverKey',
-        },
-        body: jsonEncode({
-          'registration_ids': tokens,
-          'notification': {
-            'title': title,
-            'body': body,
-            'sound': 'default',
-            'badge': '1',
-          },
-          'data': {
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'type': 'late_attendance',
-          },
-          'priority': 'high',
-        }),
-      );
+      // 1. Load Service Account JSON
+      final serviceAccountJson = await rootBundle.loadString('assets/json/service-account.json');
+      final Map<String, dynamic> serviceAccountMap = jsonDecode(serviceAccountJson);
+      final String projectId = serviceAccountMap['project_id'];
+      
+      final accountCredentials = auth.ServiceAccountCredentials.fromJson(serviceAccountJson);
+      final scopes = ['https://www.googleapis.com/auth/cloud-platform'];
 
-      if (response.statusCode == 200) {
-        debugPrint("FCM Push sent successfully to ${tokens.length} devices.");
-      } else {
-        debugPrint("FCM Push failed with status: ${response.statusCode}");
-        debugPrint("Response: ${response.body}");
+      // 2. Get Access Token
+      final authClient = await auth.clientViaServiceAccount(accountCredentials, scopes);
+      final accessToken = authClient.credentials.accessToken.data;
+
+      final String url = 'https://fcm.googleapis.com/v1/projects/$projectId/messages:send';
+
+      // 3. Send to each token (v1 sends to one token at a time)
+      for (String token in tokens) {
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
+          },
+          body: jsonEncode({
+            'message': {
+              'token': token,
+              'notification': {
+                'title': title,
+                'body': body,
+              },
+              'android': {
+                'notification': {
+                  'channel_id': 'high_importance_channel',
+                  'priority': 'HIGH',
+                },
+              },
+              'apns': {
+                'payload': {
+                  'aps': {
+                    'sound': 'default',
+                    'badge': 1,
+                  },
+                },
+              },
+              'data': {
+                'type': 'late_attendance',
+                'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              },
+            }
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          debugPrint("FCM v1 Push sent successfully to token.");
+        } else {
+          debugPrint("FCM v1 Push failed with status: ${response.statusCode}");
+          debugPrint("Response body: ${response.body}");
+        }
       }
+      authClient.close();
     } catch (e) {
-      debugPrint("Error sending direct FCM push: $e");
+      debugPrint("Error sending FCM v1 push: $e");
     }
   }
 }

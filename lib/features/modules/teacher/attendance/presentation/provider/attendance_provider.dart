@@ -138,6 +138,7 @@ class AttendanceProvider extends ChangeNotifier {
             studentName: s.name,
             studentId: s.studentId,
             date: dateStr,
+            remark: s.lateRemark,
           );
         }
       }

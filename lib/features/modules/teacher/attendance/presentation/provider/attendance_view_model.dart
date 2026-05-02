@@ -218,6 +218,7 @@ class AttendanceViewModel extends ChangeNotifier {
              studentName: data.name,
              studentId: data.studentId,
              date: dateStr,
+             remark: data.lateRemark,
            );
         }
       }

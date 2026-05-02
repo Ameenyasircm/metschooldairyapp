@@ -111,12 +111,28 @@ class _ParentNotificationScreenState extends State<ParentNotificationScreen> {
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      notification.body,
-                      style: AppTypography.body2.copyWith(
-                        color: AppColors.textGrey,
-                        height: 1.4,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          notification.body,
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.textGrey,
+                            height: 1.4,
+                          ),
+                        ),
+                        if (notification.remark != null && notification.remark!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              "Remark: ${notification.remark}",
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
