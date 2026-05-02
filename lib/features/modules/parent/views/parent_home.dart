@@ -22,6 +22,7 @@ import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
 import '../attendence/screens/parent_view_attendence_screen.dart';
+import '../fee/screens/parent_view_fee.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
 import '../notifications/presentation/provider/notification_provider.dart';
 import '../notifications/presentation/screens/parent_notification_screen.dart';
@@ -236,7 +237,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     }),
 
                     /// Fees
-                    _menu(Icons.payment, "Fees", () {}),
+                    _menu(Icons.payment, "Fees", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final divisionId = prefs.getString("divisionId") ?? '';
+                      final divisionName = prefs.getString("divisionName") ?? '';
+                      final className = prefs.getString("className") ?? '';
+                      callNext(ParentFeeScreen(studentName: name,studentId:  widget.studentId,divisionName: divisionName,divisionId: divisionId,
+                        academicYearId:widget.academicYearID ,), context);
+                    }),
 
 
                     /// Communication (🔥 ORIGINAL LOGIC)

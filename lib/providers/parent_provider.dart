@@ -9,6 +9,7 @@ class ParentProvider with ChangeNotifier {
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
 
+  String stdID = "";
   String name = "";
   String className = "";
   String parentName = "";
