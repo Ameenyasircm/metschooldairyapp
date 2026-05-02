@@ -247,38 +247,46 @@ class ParentNotificationService {
 
       if (deviceTokens.isNotEmpty) {
         // 3. Trigger Push Notification using HTTP v1
-        await _sendPushToDevices(deviceTokens, title, body);
+        await sendPushToDevices(deviceTokens, title, body);
       }
     } catch (e) {
       debugPrint("Error sending late notification: $e");
     }
   }
 
-  /// Direct FCM implementation (HTTP v1 API)
-  Future<void> _sendPushToDevices(List<String> tokens, String title, String body) async {
-    try {
-      // 1. Load Service Account JSON
-      final serviceAccountJson = await rootBundle.loadString('assets/json/service-account.json');
-      final Map<String, dynamic> serviceAccountMap = jsonDecode(serviceAccountJson);
-      final String projectId = serviceAccountMap['project_id'];
-      
-      final accountCredentials = auth.ServiceAccountCredentials.fromJson(serviceAccountJson);
-      final scopes = ['https://www.googleapis.com/auth/cloud-platform'];
 
-      // 2. Get Access Token
-      final authClient = await auth.clientViaServiceAccount(accountCredentials, scopes);
-      final accessToken = authClient.credentials.accessToken.data;
+  Future<void> sendPushToDevices(List<String> tokens, String title, String body) async {
+    final String projectId = "met-school-codemates";
+
+    // 1. Service Account JSON (Hardcoding is risky, but for testing:)
+    final serviceAccountJson ={
+      "type": "service_account",
+      "project_id": "met-school-codemates",
+      "private_key_id": "451f3c49648993acc71dc8121e2595f12b69d025",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCfMuZSigW5/357\nk8xx2pc1iD1hlMUR3GqtcHmw5WKBGu9zk+wJn9QdSu4rnE+MixcCkP5d2asehzyB\nlbUmbeEH/2a0fSXnd5q3GpO6rVfPz9oU6H4J/g6jGZCg4CXRJ7CsBrE2FUfGgFWK\nblUOAvIn7mJJOH96v1m/qdagW0emSdaknl5FSmMxk+uCl07Xy8MecG1cqYxCC+4H\ne/9uKmVbEDSVXWTulcDETQCXHrSSG28b9yFGxdG3+T/l3k0lY15w5zJ3SBnyBaOi\n2CTWnNJJ4+CjsLpTR88ffqM+LAPqf/Pxup6qV10JFZidinc8bKkRu47yPtDPpiGa\n/ETnBiqrAgMBAAECggEAI9/0ADijNrlpFs8FHMkOFx2m+2Trje1WStRUT/U5H+/i\ncvCsGbUfNySqDEDSulCjtEvZTmvdQGloTKlgY5MSSVuYGOc00fblcgq2rLQgXC+y\nLNEBih3qzX1W1rH8Q6hGi1WMvKvJ+2TzIdlgKGKokDALjQWC0LXrMyJCP+uh90pE\nVSwFYXjB4LwqPW7TlBhK7EK8wgGUkqmXaau7oDlCILPshqREt9Ewmg0sWDPnX5y3\nyY841aJJUXoGiFK27A6FpXtH5/oX/GQge552Clwj193VYRL4NvzYrVg/aN+JJ2Jf\nvjI/u/izFEKLJB2mGPd+9yiFtX7Z8LKBf7yLzqe68QKBgQDTFvqJQ6U/MPzVwr6o\niUqhmLEYG/HU7n5cZJWP1bn6VSX5eFb82p9WRGpipbz6dzLtWSiIPMkgBPJZrCRM\nHSDut3dwa4u4r3Ic3NV261emmYk1v99F1FTTb60CvdyHCj5RSL2WvJb7f5HcWqFE\nsYxikYoighqLCvXnH8o6yC9gGwKBgQDBEa1SVS9QZ2p1YWQhBoJTonndrWWsCaDl\nLIW9m9axPp08tP0gZBUxvAwkj/fL4Yw9HN3cxl1DhMX7jJahHhNYNeFF2/Z8GjG/\nGL9eMYo1j4LwdCDBBLdOrflcdmEDHz1cPR4s1orKniPhCHjrkM2A7n/YhDR48lj7\naBVv9smosQKBgC1F+GYIRCDReOi/4/Rxvbf678Cj/bIVlLRsPkejJ0gxivt+e+mv\nWg0+jzKpKWbuudV+EdtmbhyX8wKYkRBiDvYkE1HhPw5VUrwuAPqIbzwkIfGNPW3U\npHzUrt6vqeSspcD5QPBbcmZubfI83enFyr45SM8t6FN5/lOb1dvVo5ORAoGAb22E\nWsBPTlhhWN2crHLVRO/A5e/tfh0QfzPy/Du07Rb2KNNMRCV/FfUyDOgKW+EQzzSZ\n15GkwhMfMM8zIEn7YC24llkdKQL1MxVVXUe6PK9XIu/i94OBSCegg3zPAL5G67Va\ndQZdlBMxIe+B2nL4KDF+F7g1kJhOQssPlE8alAECgYBi7TJy3jPrgYZC2TVnURYP\n6lrTX3uua/yFDSnfsMXZRBsnRRxzWfCfSccm3uE0zAewXDcORsQEskc+OQ7PqubI\nY/awQldKtxCTw/uC8SWuiw3MGDj/TqiWP9CgQ5NF/txJcVX41Tlk5vxKZ/qaLbLA\n4fs9opbEejm4qlSCyOLMuw==\n-----END PRIVATE KEY-----\n",
+      "client_email": "firebase-adminsdk-fbsvc@met-school-codemates.iam.gserviceaccount.com",
+      "client_id": "116198068989121668624",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40met-school-codemates.iam.gserviceaccount.com",
+      "universe_domain": "googleapis.com"
+    };
+
+    final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+    try {
+      // 2. Get Access Token automatically using googleapis_auth
+      final client = await auth.clientViaServiceAccount(
+        auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
+        scopes,
+      );
 
       final String url = 'https://fcm.googleapis.com/v1/projects/$projectId/messages:send';
 
-      // 3. Send to each token (v1 sends to one token at a time)
       for (String token in tokens) {
-        final response = await http.post(
+        final response = await client.post(
           Uri.parse(url),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $accessToken',
-          },
           body: jsonEncode({
             'message': {
               'token': token,
@@ -286,38 +294,29 @@ class ParentNotificationService {
                 'title': title,
                 'body': body,
               },
+              'data': {
+                'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                'type': 'late_attendance',
+              },
               'android': {
+                'priority': 'high',
                 'notification': {
                   'channel_id': 'high_importance_channel',
-                  'priority': 'HIGH',
                 },
-              },
-              'apns': {
-                'payload': {
-                  'aps': {
-                    'sound': 'default',
-                    'badge': 1,
-                  },
-                },
-              },
-              'data': {
-                'type': 'late_attendance',
-                'click_action': 'FLUTTER_NOTIFICATION_CLICK',
               },
             }
           }),
         );
 
         if (response.statusCode == 200) {
-          debugPrint("FCM v1 Push sent successfully to token.");
+          print("Success: Notification sent to $token");
         } else {
-          debugPrint("FCM v1 Push failed with status: ${response.statusCode}");
-          debugPrint("Response body: ${response.body}");
+          print("Error: ${response.body}");
         }
       }
-      authClient.close();
+
+      client.close(); // Always close the client
     } catch (e) {
-      debugPrint("Error sending FCM v1 push: $e");
+      print("Error getting auth client: $e");
     }
-  }
-}
+  }}
