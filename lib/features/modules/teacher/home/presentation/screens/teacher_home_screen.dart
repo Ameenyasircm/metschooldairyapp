@@ -63,8 +63,8 @@ class TeacherHomeScreen extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withOpacity(0.3),
-                    blurRadius: 25,
-                    offset: const Offset(0, 12),
+                    blurRadius: 3,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
