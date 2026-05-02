@@ -5,6 +5,7 @@ class AppColors {
   /// NEW FIGMA COLORS BELOW
 
   // static const Color primary = Color(0xff00796B);
+  static const Color darkBlue2 = Color(0xff031937);
   static const Color primary = Color(0xff001839);
   static const Color secondary = Color(0xff003366);  // static const Color secondary = Color(0xff006B5F);
   static const Color third = Color(0xff0f5091);  // static const Color secondary = Color(0xff006B5F);

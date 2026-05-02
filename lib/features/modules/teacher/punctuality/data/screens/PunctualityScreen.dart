@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../../core/widgets/buttons/gradient_button.dart';
+import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/app_typography.dart';
 import '../../../students/data/models/tech_student_model.dart';
 import '../models/PunctualityModel.dart';
 import '../../../students/presentation/provider/student_provider.dart';
-import '../../../../../../core/constants/app_spacing.dart';
-import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../../core/theme/app_typography.dart';
 
-// ─── Punctuality code → visual config ────────────────────────────────────────
+// ─── Code → visual config ────────────────────────────────────────────────────
 class _CodeStyle {
   final Color bg;
   final Color text;
@@ -20,19 +18,29 @@ class _CodeStyle {
 
 const Map<String, _CodeStyle> _codeStyles = {
   'AWL': _CodeStyle(
-      bg: Color(0xFFFFECEC), text: Color(0xFFD94040), icon: Icons.cancel_outlined),
-  'LT':  _CodeStyle(
-      bg: Color(0xFFFFF3DC), text: Color(0xFFC97B00), icon: Icons.schedule_outlined),
-  'OT':  _CodeStyle(
-      bg: Color(0xFFE8F5E9), text: Color(0xFF2E7D32), icon: Icons.check_circle_outline),
-  'EL':  _CodeStyle(
-      bg: Color(0xFFEDE7F6), text: Color(0xFF5E35B1), icon: Icons.logout_outlined),
+      bg: Color(0xFFFFECEC),
+      text: Color(0xFFD94040),
+      icon: Icons.cancel_outlined),
+  'LT': _CodeStyle(
+      bg: Color(0xFFFFF3DC),
+      text: Color(0xFFC97B00),
+      icon: Icons.schedule_outlined),
+  'OT': _CodeStyle(
+      bg: Color(0xFFE8F5E9),
+      text: Color(0xFF2E7D32),
+      icon: Icons.check_circle_outline),
+  'EL': _CodeStyle(
+      bg: Color(0xFFEDE7F6),
+      text: Color(0xFF5E35B1),
+      icon: Icons.logout_outlined),
 };
 
 _CodeStyle _styleFor(String code) =>
     _codeStyles[code] ??
         const _CodeStyle(
-            bg: Color(0xFFEEF2FF), text: Color(0xFF3949AB), icon: Icons.circle_outlined);
+            bg: Color(0xFFEEF2FF),
+            text: Color(0xFF3949AB),
+            icon: Icons.circle_outlined);
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 class StudentPunctualityScreen extends StatefulWidget {
@@ -53,7 +61,7 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+        vsync: this, duration: const Duration(milliseconds: 500));
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
 
@@ -70,7 +78,6 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
     super.dispose();
   }
 
-  // ── helpers ────────────────────────────────────────────────────────────────
   String get _initials {
     final parts = widget.student.name.trim().split(' ');
     if (parts.length >= 2) {
@@ -79,172 +86,76 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
     return widget.student.name.substring(0, 2).toUpperCase();
   }
 
-  // ── build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<StudentProvider>();
-    final records  = provider.records;
+    final records = provider.records;
 
     final totalAWL = records.where((r) => r.code == 'AWL').length;
-    final totalLT  = records.where((r) => r.code == 'LT').length;
-    final totalOT  = records.where((r) => r.code == 'OT').length;
+    final totalLT = records.where((r) => r.code == 'LT').length;
+    final totalOT = records.where((r) => r.code == 'OT').length;
+    final totalEL = records.where((r) => r.code == 'EL').length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: FadeTransition(
         opacity: _fadeAnim,
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
-            // ── Rich header ─────────────────────────────────────────────────
-            SliverAppBar(
-              expandedHeight: 220.h,
-              pinned: true,
-              elevation: 0,
-              backgroundColor: AppColors.primary,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+            // ── Compact Header ───────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _CompactHeader(
+                initials: _initials,
+                student: widget.student,
+                totalRecords: records.length,
+                totalAWL: totalAWL,
+                totalLT: totalLT,
+                totalOT: totalOT,
+                totalEL: totalEL,
+                onBack: () => Navigator.pop(context),
               ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
+            ),
+
+            // ── Section label ────────────────────────────────────────────────
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 8.h),
+              sliver: SliverToBoxAdapter(
+                child: Row(
                   children: [
-                    // Gradient backdrop
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
-                        ),
+                    Text(
+                      "Records",
+                      style: TextStyle(
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.3,
                       ),
                     ),
-
-                    // Decorative circles
-                    Positioned(
-                      top: -30.h,
-                      right: -40.w,
-                      child: _DecorCircle(size: 180.w, opacity: 0.08),
-                    ),
-                    Positioned(
-                      bottom: 30.h,
-                      left: -20.w,
-                      child: _DecorCircle(size: 120.w, opacity: 0.06),
-                    ),
-
-                    // Content
-                    SafeArea(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 20.h),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                // Avatar
-                                Container(
-                                  width: 52.w,
-                                  height: 52.w,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.4),
-                                        width: 2),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    _initials,
-                                    style: AppTypography.body1.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18.sp,
-                                    ),
-                                  ),
-                                ),
-
-                                SizedBox(width: 14.w),
-
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.student.name,
-                                        style: AppTypography.h4.copyWith(
-                                            color: Colors.white),
-                                      ),
-                                      SizedBox(height: 2.h),
-                                      Text(
-                                        "Punctuality Records",
-                                        style: AppTypography.caption.copyWith(
-                                          color:
-                                          Colors.white.withValues(alpha: 0.75),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            SizedBox(height: 20.h),
-
-                            // ── Quick stats ───────────────────────────────
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _StatChip(
-                                        label: 'Total',
-                                        count: records.length,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    Expanded(
-                                      child: _StatChip(
-                                        label: 'Absent',
-                                        count: totalAWL,
-                                        color: const Color(0xFFFF8A80),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10.h),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _StatChip(
-                                        label: 'Late',
-                                        count: totalLT,
-                                        color: const Color(0xFFFFD180),
-                                      ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    Expanded(
-                                      child: _StatChip(
-                                        label: 'On time',
-                                        count: totalOT,
-                                        color: const Color(0xFFB9F6CA),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                    SizedBox(width: 8.w),
+                    if (records.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text(
+                          "${records.length}",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
             ),
 
-            // ── Record list ──────────────────────────────────────────────────
+            // ── Record list / Empty state ─────────────────────────────────────
             if (records.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
@@ -252,13 +163,11 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
               )
             else
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 100.h),
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
-                        (context, index) => _RecordCard(
-                      record: records[index],
-                      index: index,
-                    ),
+                        (context, index) =>
+                        _RecordCard(record: records[index], index: index),
                     childCount: records.length,
                   ),
                 ),
@@ -267,21 +176,23 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
         ),
       ),
 
-      // ── FAB ─────────────────────────────────────────────────────────────────
+      // ── FAB ──────────────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
+        elevation: 4,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
           "Add Record",
-          style: AppTypography.caption
-              .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 14.sp),
         ),
         onPressed: _showAddDialog,
       ),
     );
   }
 
-  // ── Dialog ─────────────────────────────────────────────────────────────────
   void _showAddDialog() {
     showModalBottomSheet(
       context: context,
@@ -302,53 +213,239 @@ class _StudentPunctualityScreenState extends State<StudentPunctualityScreen>
   }
 }
 
-// ─── Decorative circle ────────────────────────────────────────────────────────
-class _DecorCircle extends StatelessWidget {
-  final double size;
-  final double opacity;
-  const _DecorCircle({required this.size, required this.opacity});
+// ─── Compact Header ───────────────────────────────────────────────────────────
+class _CompactHeader extends StatelessWidget {
+  final String initials;
+  final EnrollerModel student;
+  final int totalRecords, totalAWL, totalLT, totalOT, totalEL;
+  final VoidCallback onBack;
+
+  const _CompactHeader({
+    required this.initials,
+    required this.student,
+    required this.totalRecords,
+    required this.totalAWL,
+    required this.totalLT,
+    required this.totalOT,
+    required this.totalEL,
+    required this.onBack,
+  });
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.white.withValues(alpha: opacity),
-    ),
-  );
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [AppColors.primary, Color(0xFF002D62)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(36.r),
+          bottomRight: Radius.circular(36.r),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.28),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Nav row ───────────────────────────────────────────────────
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: onBack,
+                    child: Container(
+                      width: 36.w,
+                      height: 36.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.15), width: 1),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 16),
+                    ),
+                  ),
+                  SizedBox(width: 14.w),
+                  Text(
+                    "Punctuality",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // ── Student identity row ───────────────────────────────────────
+              Row(
+                children: [
+                  // Avatar
+                  Container(
+                    width: 46.w,
+                    height: 46.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.3), width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: 12.w),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          student.name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          "ID · ${student.studentId}",
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Total badge
+                  Container(
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.2), width: 1),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          "$totalRecords",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w800),
+                        ),
+                        Text(
+                          "Total",
+                          style: TextStyle(
+                              color: Colors.white60, fontSize: 10.sp),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // ── Stats row (single horizontal scroll) ──────────────────────
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    _StatPill(
+                        label: 'Absent',
+                        count: totalAWL,
+                        color: const Color(0xFFFF8A80)),
+                    SizedBox(width: 8.w),
+                    _StatPill(
+                        label: 'Late',
+                        count: totalLT,
+                        color: const Color(0xFFFFD180)),
+                    SizedBox(width: 8.w),
+                    _StatPill(
+                        label: 'On Time',
+                        count: totalOT,
+                        color: const Color(0xFFB9F6CA)),
+                    SizedBox(width: 8.w),
+                    _StatPill(
+                        label: 'Early Leave',
+                        count: totalEL,
+                        color: const Color(0xFFCE93D8)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-// ─── Stat chip ────────────────────────────────────────────────────────────────
-class _StatChip extends StatelessWidget {
+// ─── Stat pill ────────────────────────────────────────────────────────────────
+class _StatPill extends StatelessWidget {
   final String label;
   final int count;
   final Color color;
-  const _StatChip(
+  const _StatPill(
       {required this.label, required this.count, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 8.w,
-            height: 8.w,
-            decoration:
-            BoxDecoration(shape: BoxShape.circle, color: color),
+            width: 7.w,
+            height: 7.w,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
           ),
-          SizedBox(width: 5.w),
+          SizedBox(width: 6.w),
           Text(
             "$count $label",
-            style: AppTypography.caption.copyWith(
-                color: Colors.white, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -356,7 +453,7 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-// ─── Record card ─────────────────────────────────────────────────────────────
+// ─── Record card ──────────────────────────────────────────────────────────────
 class _RecordCard extends StatelessWidget {
   final dynamic record;
   final int index;
@@ -365,26 +462,26 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = _styleFor(record.code);
-    final date  = record.date as DateTime;
+    final date = record.date as DateTime;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 300 + index * 60),
+      duration: Duration(milliseconds: 280 + index * 50),
       curve: Curves.easeOut,
       builder: (_, value, child) => Transform.translate(
-        offset: Offset(0, 20 * (1 - value)),
+        offset: Offset(0, 16 * (1 - value)),
         child: Opacity(opacity: value, child: child),
       ),
       child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
+        margin: EdgeInsets.only(bottom: 10.h),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -393,7 +490,7 @@ class _RecordCard extends StatelessWidget {
             children: [
               // Color accent bar
               Container(
-                width: 5.w,
+                width: 4.w,
                 decoration: BoxDecoration(
                   color: style.text,
                   borderRadius: BorderRadius.only(
@@ -405,14 +502,14 @@ class _RecordCard extends StatelessWidget {
 
               Expanded(
                 child: Padding(
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 14.w, vertical: 12.h),
                   child: Row(
                     children: [
                       // Badge
                       Container(
-                        width: 44.w,
-                        height: 44.w,
+                        width: 42.w,
+                        height: 42.w,
                         decoration: BoxDecoration(
                           color: style.bg,
                           borderRadius: BorderRadius.circular(12.r),
@@ -420,20 +517,22 @@ class _RecordCard extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(style.icon, color: style.text, size: 16.sp),
+                            Icon(style.icon,
+                                color: style.text, size: 15.sp),
                             SizedBox(height: 2.h),
                             Text(
                               record.code,
-                              style: AppTypography.caption.copyWith(
-                                  color: style.text,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 10.sp),
+                              style: TextStyle(
+                                color: style.text,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 9.sp,
+                              ),
                             ),
                           ],
                         ),
                       ),
 
-                      SizedBox(width: 14.w),
+                      SizedBox(width: 12.w),
 
                       // Details
                       Expanded(
@@ -442,21 +541,35 @@ class _RecordCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              record.remark.isEmpty ? "No remark" : record.remark,
-                              style: AppTypography.body1.copyWith(
-                                  fontWeight: FontWeight.w500),
+                              record.remark.isEmpty
+                                  ? "No remark"
+                                  : record.remark,
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 4.h),
+                            SizedBox(height: 3.h),
                             Text(
-                              "${date.day}/${date.month}/${date.year}",
-                              style: AppTypography.caption.copyWith(
-                                  color: const Color(0xFF9E9E9E)),
+                              "${date.day.toString().padLeft(2, '0')}/"
+                                  "${date.month.toString().padLeft(2, '0')}/"
+                                  "${date.year}",
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: const Color(0xFF9E9E9E),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
                       ),
+
+                      // Right arrow hint
+                      Icon(Icons.chevron_right_rounded,
+                          color: const Color(0xFFCFD8DC), size: 18.sp),
                     ],
                   ),
                 ),
@@ -469,7 +582,7 @@ class _RecordCard extends StatelessWidget {
   }
 }
 
-// ─── Empty state ─────────────────────────────────────────────────────────────
+// ─── Empty state ──────────────────────────────────────────────────────────────
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
@@ -477,26 +590,36 @@ class _EmptyState extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 80.w,
-          height: 80.w,
+          width: 72.w,
+          height: 72.w,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [
+                AppColors.primary.withOpacity(0.12),
+                const Color(0xFF002D62).withOpacity(0.08),
+              ],
+            ),
             shape: BoxShape.circle,
           ),
           child: Icon(Icons.event_note_outlined,
-              size: 36.sp, color: AppColors.primary),
+              size: 30.sp, color: AppColors.primary),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 14.h),
         Text(
           "No Records Yet",
-          style: AppTypography.h4.copyWith(color: const Color(0xFF424242)),
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1A1A2E),
+          ),
         ),
         SizedBox(height: 6.h),
         Text(
-          "Tap the button below to add a punctuality record.",
-          style: AppTypography.caption
-              .copyWith(color: const Color(0xFF9E9E9E)),
-          textAlign: TextAlign.center,
+          "Tap '+ Add Record' to get started.",
+          style: TextStyle(
+              fontSize: 12.sp, color: const Color(0xFF9E9E9E)),
         ),
       ],
     ),
@@ -506,8 +629,8 @@ class _EmptyState extends StatelessWidget {
 // ─── Add Record Bottom Sheet ──────────────────────────────────────────────────
 class _AddRecordSheet extends StatefulWidget {
   final EnrollerModel student;
-  final Future<void> Function(String code, String remark, DateTime date) onSaved;
-
+  final Future<void> Function(String code, String remark, DateTime date)
+  onSaved;
   const _AddRecordSheet({required this.student, required this.onSaved});
 
   @override
@@ -515,10 +638,10 @@ class _AddRecordSheet extends StatefulWidget {
 }
 
 class _AddRecordSheetState extends State<_AddRecordSheet> {
-  String _selectedCode   = PunctualityCodes.codes.keys.first;
+  String _selectedCode = PunctualityCodes.codes.keys.first;
   DateTime _selectedDate = DateTime.now();
-  final _remarkCtrl      = TextEditingController();
-  bool _saving           = false;
+  final _remarkCtrl = TextEditingController();
+  bool _saving = false;
 
   String get _formattedDate =>
       "${_selectedDate.day.toString().padLeft(2, '0')}/"
@@ -555,12 +678,11 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final style     = _styleFor(_selectedCode);
-    final codeLabel = PunctualityCodes.codes[_selectedCode] ?? '';
+    final style = _styleFor(_selectedCode);
 
     return Padding(
-      padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+      EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -584,33 +706,83 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
               ),
             ),
 
-            SizedBox(height: 20.h),
+            SizedBox(height: 18.h),
 
-            Text("New Record",
-                style: AppTypography.h4
-                    .copyWith(fontWeight: FontWeight.w700)),
+            // Header row with selected code preview
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "New Record",
+                        style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
+                            letterSpacing: -0.3),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        widget.student.name,
+                        style: TextStyle(
+                            fontSize: 12.sp,
+                            color: const Color(0xFF9E9E9E),
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+                // Live code badge
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 12.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: style.bg,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                        color: style.text.withOpacity(0.25), width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(style.icon, color: style.text, size: 14.sp),
+                      SizedBox(width: 5.w),
+                      Text(
+                        _selectedCode,
+                        style: TextStyle(
+                          color: style.text,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
 
-            SizedBox(height: 4.h),
+            SizedBox(height: 22.h),
 
-            Text("Fill in the details for ${widget.student.name}",
-                style: AppTypography.caption
-                    .copyWith(color: const Color(0xFF9E9E9E))),
+            // ── Status Code ────────────────────────────────────────────────
+            Text(
+              "Status Code",
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF424242),
+                  letterSpacing: 0.2),
+            ),
 
-            SizedBox(height: 24.h),
-
-            // ── Code selector ──────────────────────────────────────────────
-            Text("Status Code",
-                style: AppTypography.caption.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF424242))),
-
-            SizedBox(height: 8.h),
+            SizedBox(height: 10.h),
 
             Wrap(
               spacing: 8.w,
               runSpacing: 8.h,
               children: PunctualityCodes.codes.keys.map((code) {
-                final s       = _styleFor(code);
+                final s = _styleFor(code);
                 final selected = code == _selectedCode;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedCode = code),
@@ -623,7 +795,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                       borderRadius: BorderRadius.circular(20.r),
                       border: Border.all(
                         color: selected
-                            ? s.text.withValues(alpha: 0.4)
+                            ? s.text.withOpacity(0.4)
                             : Colors.transparent,
                         width: 1.5,
                       ),
@@ -632,19 +804,20 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(s.icon,
-                            size: 14.sp,
+                            size: 13.sp,
                             color: selected
                                 ? s.text
                                 : const Color(0xFF9E9E9E)),
                         SizedBox(width: 5.w),
                         Text(
                           "$code · ${PunctualityCodes.codes[code]}",
-                          style: AppTypography.caption.copyWith(
+                          style: TextStyle(
+                            fontSize: 12.sp,
                             color: selected
                                 ? s.text
                                 : const Color(0xFF9E9E9E),
                             fontWeight: selected
-                                ? FontWeight.w600
+                                ? FontWeight.w700
                                 : FontWeight.w400,
                           ),
                         ),
@@ -655,13 +828,17 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
               }).toList(),
             ),
 
-            SizedBox(height: 20.h),
+            SizedBox(height: 18.h),
 
             // ── Date ──────────────────────────────────────────────────────
-            Text("Date",
-                style: AppTypography.caption.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF424242))),
+            Text(
+              "Date",
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF424242),
+                  letterSpacing: 0.2),
+            ),
 
             SizedBox(height: 8.h),
 
@@ -669,71 +846,86 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
               onTap: _pickDate,
               child: Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: 16.w, vertical: 14.h),
+                    horizontal: 16.w, vertical: 13.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: const Color(0xFFF5F7FA),
                   borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                      color: const Color(0xFFE8ECF0), width: 1),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.calendar_today_outlined,
-                        size: 18.sp, color: AppColors.primary),
+                        size: 17.sp, color: AppColors.primary),
                     SizedBox(width: 12.w),
                     Text(_formattedDate,
-                        style: AppTypography.body1
-                            .copyWith(fontWeight: FontWeight.w500)),
+                        style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0F172A))),
                     const Spacer(),
                     Icon(Icons.chevron_right_rounded,
-                        color: const Color(0xFF9E9E9E), size: 20.sp),
+                        color: const Color(0xFFB0BEC5), size: 18.sp),
                   ],
                 ),
               ),
             ),
 
-            SizedBox(height: 20.h),
+            SizedBox(height: 18.h),
 
             // ── Remark ────────────────────────────────────────────────────
-            Text("Remark",
-                style: AppTypography.caption.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF424242))),
+            Text(
+              "Remark",
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF424242),
+                  letterSpacing: 0.2),
+            ),
 
             SizedBox(height: 8.h),
 
             TextField(
               controller: _remarkCtrl,
               maxLines: 2,
-              style: AppTypography.body1,
+              style: TextStyle(
+                  fontSize: 14.sp, color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: "Optional note about this record…",
-                hintStyle: AppTypography.caption
-                    .copyWith(color: const Color(0xFFBDBDBD)),
+                hintStyle: TextStyle(
+                    fontSize: 13.sp, color: const Color(0xFFBDBDBD)),
                 filled: true,
-                fillColor: const Color(0xFFF5F5F5),
+                fillColor: const Color(0xFFF5F7FA),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
+                  borderSide:
+                  const BorderSide(color: Color(0xFFE8ECF0), width: 1),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide:
+                  const BorderSide(color: Color(0xFFE8ECF0), width: 1),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.4),
+                      color: AppColors.primary.withOpacity(0.4),
                       width: 1.5),
                 ),
                 contentPadding: EdgeInsets.all(14.w),
               ),
             ),
 
-            SizedBox(height: 28.h),
+            SizedBox(height: 24.h),
 
-            // ── Action buttons ────────────────────────────────────────────
+            // ── Actions ───────────────────────────────────────────────────
             Row(
               children: [
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         side: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -741,8 +933,10 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                     ),
                     child: Text(
                       "Cancel",
-                      style: AppTypography.body1.copyWith(
-                          color: const Color(0xFF757575)),
+                      style: TextStyle(
+                          fontSize: 14.sp,
+                          color: const Color(0xFF757575),
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -756,7 +950,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -773,9 +967,10 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                     )
                         : Text(
                       "Save Record",
-                      style: AppTypography.body1.copyWith(
+                      style: TextStyle(
+                          fontSize: 14.sp,
                           color: Colors.white,
-                          fontWeight: FontWeight.w600),
+                          fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),

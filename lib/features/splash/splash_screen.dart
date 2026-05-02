@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/features/modules/admin/views/admin_login_screen.dart';
 import 'package:provider/provider.dart';
@@ -83,29 +84,40 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Image.asset(
-          'assets/images/SchoolLogoNewPng.png',
-          width: kIsWeb?400:250,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return const Icon(
-              Icons.school,
-              size: 100,
-              color: Colors.deepPurple,
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset("assets/images/codematesLogo.png",scale:10),
-          ],
+      backgroundColor: AppColors.darkBlue2,
+      body: SafeArea(
+        child: SizedBox(width:MediaQuery.of(context).size.width,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+
+              // ✅ Main Logo (Perfect Center)
+              Image.asset(
+                'assets/images/whiteLogoMet.png',
+                width: kIsWeb ? 400 : 350,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.school,
+                    size: 150,
+                    color: Colors.deepPurple,
+                  );
+                },
+              ),
+
+              const Spacer(),
+
+              // ✅ Bottom Logo
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Image.asset(
+                  "assets/images/codematesLogo.png",
+                  scale: 12,color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
-}
+  }}
