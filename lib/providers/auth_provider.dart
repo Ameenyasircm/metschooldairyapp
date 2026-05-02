@@ -181,7 +181,6 @@ class AuthProvider with ChangeNotifier {
           return;
         }
 
-
         /// ✅ SAVE LOGIN SESSION
         await prefs.setString("password", password);
         await prefs.setString("staffPhone", phoneNumber);
@@ -195,8 +194,7 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString("email", data['email'] ?? "");
         await prefs.setString("profilePic", data['profile_pic'] ?? "");
 
-        final role = data['role'] ?? "";
-        /// ✅ Build full student list
+        /// ✅ Build full student list (FIXED HERE)
         List<Map<String, dynamic>> studentDataList = [];
 
         for (var e in enrollments.docs) {
@@ -205,7 +203,6 @@ class AuthProvider with ChangeNotifier {
           final studentId = enrollData['student_id'];
           final divisionId = enrollData['division_id'];
 
-          /// 🔥 Fetch teacher from division
           final divisionDoc = await fireStore
               .collection("divisions")
               .doc(divisionId)
@@ -215,11 +212,14 @@ class AuthProvider with ChangeNotifier {
 
           studentDataList.add({
             "studentId": studentId,
-            "academicYearId": academicYear,
+            "academicYearId": enrollData['academic_year_id'] ?? "",
             "teacherName": divisionData['class_teacher_name'] ?? "",
             "teacherId": divisionData['class_teacher_id'] ?? "",
             "studentName": enrollData['student_name'] ?? "",
             "className": enrollData['class_name'] ?? "",
+            "classId": enrollData['class_id'] ?? "",
+            "divisionId": enrollData['division_id'] ?? "",
+            "divisionName": enrollData['division_name'] ?? "",
           });
         }
 
@@ -229,11 +229,20 @@ class AuthProvider with ChangeNotifier {
           studentDataList.map((e) => jsonEncode(e)).toList(),
         );
 
+        /// =========================
         /// ✅ SINGLE STUDENT
+        /// =========================
         if (studentDataList.length == 1) {
           final s = studentDataList.first;
 
           await prefs.setString("selectedStudentData", jsonEncode(s));
+
+          /// ✅ FIXED (FROM ENROLLMENT)
+          await prefs.setString("divisionId", s['divisionId'] ?? "");
+          await prefs.setString("divisionName", s['divisionName'] ?? "");
+          await prefs.setString("classId", s['classId'] ?? "");
+          await prefs.setString("className", s['className'] ?? "");
+          await prefs.setString("academicYearId", s['academicYearId'] ?? "");
 
           if (context.mounted) {
             callNextReplacement(
@@ -248,9 +257,22 @@ class AuthProvider with ChangeNotifier {
           }
         }
 
+        /// =========================
         /// ✅ MULTIPLE STUDENTS
+        /// =========================
         else {
           if (context.mounted) {
+            final s = studentDataList.first;
+
+            await prefs.setString("selectedStudentData", jsonEncode(s));
+
+            /// ✅ FIXED (FROM ENROLLMENT)
+            await prefs.setString("divisionId", s['divisionId'] ?? "");
+            await prefs.setString("divisionName", s['divisionName'] ?? "");
+            await prefs.setString("classId", s['classId'] ?? "");
+            await prefs.setString("className", s['className'] ?? "");
+            await prefs.setString("academicYearId", s['academicYearId'] ?? "");
+
             callNextReplacement(
               ParentStudentSelectionScreen(
                 studentIds: studentDataList,
@@ -262,7 +284,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       /// =========================
-      /// 🎯 TEACHER LOGIN
+      /// 🎯 TEACHER LOGIN (UNCHANGED)
       /// =========================
       else {
         await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
@@ -294,6 +316,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
   Future<String?> currentAcademicYearId() async {
     final query = await fireStore
         .collection('academic_years')

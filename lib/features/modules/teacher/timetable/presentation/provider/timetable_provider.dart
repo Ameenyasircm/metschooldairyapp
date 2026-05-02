@@ -50,19 +50,36 @@ class TimetableProvider extends ChangeNotifier {
   }
 
   /// Fetches timetable for a specific class.
-  Future<void> fetchTimetable(String standard, String division,String academicId) async {
+  Future<void> fetchTimetable(
+      String standard,
+      String division,
+      String academicId,
+      ) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final docId = '${standard}_$division';
-      final doc = await _firestore.collection('timetables').doc(docId).get();
+      print("Fetching timetable for: $standard $division $academicId");
 
-      if (doc.exists) {
-        _timetable = TimetableModel.fromMap(doc.data()!);
+      final querySnapshot = await _firestore
+          .collection('timetables')
+          .where('standard', isEqualTo: standard)
+          .where('division', isEqualTo: division)
+          .where('academic_id', isEqualTo: academicId)
+          .limit(1) // Important: we only need one
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+
+        print("Fetched Doc ID: ${doc.id}");
+
+        _timetable = TimetableModel.fromMap(doc.data());
       } else {
-        _timetable = TimetableModel.empty(standard, division,academicId);
+        print("No timetable found, creating empty...");
+        _timetable = TimetableModel.empty(standard, division, academicId);
       }
+
       _syncControllersWithData();
     } catch (e) {
       debugPrint('Error fetching timetable: $e');
@@ -71,7 +88,6 @@ class TimetableProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
   /// Validates that all 35 periods are filled.
   bool validateTimetable() {
     for (var day in controllers.keys) {

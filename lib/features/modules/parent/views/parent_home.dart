@@ -21,6 +21,7 @@ import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
+import '../view_time_table/screens/parent_view_time_table.dart';
 
 
 class ParentHomeScreen extends StatelessWidget {
@@ -265,6 +266,14 @@ class ParentHomeScreen extends StatelessWidget {
                       final provider = context.read<AdminProvider>();
                       provider.fetchRules();
                       callNext(RulesUserScreen(), context);
+                    }),
+
+                    _menu(Icons.access_time, "Time Table", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final divisionId = prefs.getString("divisionId") ?? '';
+                      final divisionName = prefs.getString("divisionName") ?? '';
+                      final className = prefs.getString("className") ?? '';
+                      callNext(StudentTimetableScreen(academicId: academicYearID,division: divisionName,standard:className ,), context);
                     }),
                   ],
                 ),
