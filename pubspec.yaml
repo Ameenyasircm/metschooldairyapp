@@ -58,6 +58,7 @@ dependencies:
   uuid: ^4.5.1
   http: ^1.2.2
   syncfusion_flutter_pdfviewer: ^33.2.3
+  googleapis_auth: ^2.3.0
 
 
 dev_dependencies:

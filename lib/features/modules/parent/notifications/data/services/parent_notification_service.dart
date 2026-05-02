@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../../../core/service/firebase_service.dart';
 import '../models/parent_notification_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ParentNotificationService {
   final FirebaseFirestore _db = FirebaseService.firestore;
@@ -191,6 +193,8 @@ class ParentNotificationService {
     final body = "$studentName was marked late on $date";
 
     try {
+      // 1. Store Notification in Firestore
+      // This allows the Parent App to see it in the notification list
       await _db
           .collection('parents')
           .doc(parentId)
@@ -203,8 +207,71 @@ class ParentNotificationService {
         'isSeen': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // 2. Fetch Parent's Device Tokens
+      final tokensSnapshot = await _db
+          .collection('parents')
+          .doc(parentId)
+          .collection('tokens')
+          .get();
+
+      List<String> deviceTokens = tokensSnapshot.docs
+          .map((doc) => doc.data()['token'] as String)
+          .toList();
+
+      if (deviceTokens.isNotEmpty) {
+        // 3. Trigger Push Notification
+        // PRODUCTION NOTE: The actual FCM sending should happen via Cloud Functions
+        // or a Backend Server to keep your Server Key secure.
+        // If you have a Cloud Function listening to 'parents/{parentId}/notifications/{id}', 
+        // you don't even need the code below.
+        
+        await _sendPushToDevices(deviceTokens, title, body);
+      }
+      
+      debugPrint("Notification sent to Firestore and ${deviceTokens.length} devices.");
     } catch (e) {
       debugPrint("Error sending late notification: $e");
+    }
+  }
+
+  /// Direct FCM implementation (Legacy API)
+  /// WARNING: For production, use Cloud Functions to keep your Server Key secure.
+  Future<void> _sendPushToDevices(List<String> tokens, String title, String body) async {
+    const String serverKey = 'YOUR_FCM_SERVER_KEY_HERE'; // Replace with your actual Server Key
+    const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
+
+    try {
+      final response = await http.post(
+        Uri.parse(fcmUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'key=$serverKey',
+        },
+        body: jsonEncode({
+          'registration_ids': tokens,
+          'notification': {
+            'title': title,
+            'body': body,
+            'sound': 'default',
+            'badge': '1',
+          },
+          'data': {
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'type': 'late_attendance',
+          },
+          'priority': 'high',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint("FCM Push sent successfully to ${tokens.length} devices.");
+      } else {
+        debugPrint("FCM Push failed with status: ${response.statusCode}");
+        debugPrint("Response: ${response.body}");
+      }
+    } catch (e) {
+      debugPrint("Error sending direct FCM push: $e");
     }
   }
 }
