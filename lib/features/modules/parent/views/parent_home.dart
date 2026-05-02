@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
+import 'package:met_school/providers/parent_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,6 +21,7 @@ import '../../../conversation/screens/conversation_screen.dart';
 import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
+import '../attendence/screens/parent_view_attendence_screen.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
 import '../notifications/presentation/provider/notification_provider.dart';
 import '../notifications/presentation/screens/parent_notification_screen.dart';
@@ -49,6 +51,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      context.read<ParentProvider>().fetchStudent(widget.studentId);
+    });
     _initData();
   }
 
@@ -93,21 +98,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
           )
         ],
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("students")
-            .doc(widget.studentId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+      body:Consumer<ParentProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-          final name = data['name'] ?? "";
-          final className = data['className'] ?? "";
-          final parentName = data['parentGuardian'] ?? "";
-          final classId = data['current_class_id'] ?? "";
+          final name = provider.name;
+          final className = provider.className;
+          final parentName = provider.parentName;
+          final classId = provider.classId;
 
           return SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -225,7 +225,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   children: [
 
                     /// Attendance
-                    _menu(Icons.event, "Attendance", () {}),
+                    _menu(Icons.event, "Attendance", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final divisionId = prefs.getString("divisionId") ?? '';
+                      final divisionName = prefs.getString("divisionName") ?? '';
+                      final className = prefs.getString("className") ?? '';
+                      callNext(ParentViewAttendanceScreen(
+                        divisionId: divisionId,divisionName:divisionName ,
+                      studentId: widget.studentId,studentName: name,), context);
+                    }),
 
                     /// Fees
                     _menu(Icons.payment, "Fees", () {}),

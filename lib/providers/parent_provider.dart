@@ -9,4 +9,37 @@ class ParentProvider with ChangeNotifier {
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
 
+  String name = "";
+  String className = "";
+  String parentName = "";
+  String classId = "";
+
+  bool isLoading = false;
+
+  Future<void> fetchStudent(String studentId) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection("students")
+          .doc(studentId)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() ?? {};
+
+        name = data['name'] ?? "";
+        className = data['className'] ?? "";
+        parentName = data['parentGuardian'] ?? "";
+        classId = data['current_class_id'] ?? "";
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
 }
