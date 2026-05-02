@@ -203,6 +203,8 @@ class _SchoolCalendarMobileScreenState
                               date.month == now.month &&
                               date.year == now.year;
 
+                      final isSunday = date.weekday == DateTime.sunday;
+
                       final events = isCurrentMonth
                           ? provider.getEventsByDate(date)
                           : [];
@@ -215,12 +217,16 @@ class _SchoolCalendarMobileScreenState
                               : isToday
                               ? AppColors.primary
                               .withOpacity(0.12)
+                              : isSunday
+                              ? AppColors.errorRed.withOpacity(0.05)
                               : Colors.white,
                           borderRadius:
                           BorderRadius.circular(10),
                           border: Border.all(
                             color: isToday
-                                ? AppColors.primary
+                                ? AppColors.primary.withOpacity(0.5)
+                                : isSunday
+                                ? AppColors.errorRed.withOpacity(0.3)
                                 : Colors.grey.shade200,
                           ),
                         ),
@@ -232,21 +238,39 @@ class _SchoolCalendarMobileScreenState
 
                             /// Day
                             Padding(
-                              padding:
-                              const EdgeInsets.all(4),
-                              child: Text(
-                                "${date.day}",
-                                style: TextStyle(
-                                  fontWeight:
-                                  FontWeight.bold,
-                                  color: isToday
-                                      ? AppColors.primary
-                                      : Colors.black,
+                              padding: const EdgeInsets.only(
+                                  left: 5, top: 4),
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                alignment: Alignment.center,
+                                decoration: isToday
+                                    ?  BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                )
+                                    : isSunday
+                                    ? BoxDecoration(
+                                  color: AppColors.errorRed.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                )
+                                    : null,
+                                child: Text(
+                                  "${date.day}",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: isToday
+                                        ? Colors.white
+                                        : isSunday
+                                        ? AppColors.errorRed
+                                        : Colors.grey.shade800,
+                                  ),
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 2),
 
-                            /// Events
                             ...events.take(2).map(
                                   (e) => Container(
                                 margin:
@@ -279,13 +303,13 @@ class _SchoolCalendarMobileScreenState
                               ),
                             ),
 
-                            if (events.length > 2)
+                            if (events.length > (isSunday && events.isEmpty ? 1 : 2))
                               Padding(
                                 padding:
                                 const EdgeInsets
                                     .only(left: 4),
                                 child: Text(
-                                  "+${events.length - 2}",
+                                  "+${events.length - (isSunday && events.isEmpty ? 1 : 2)}",
                                   style: TextStyle(
                                       fontSize: 8,
                                       color:
@@ -324,77 +348,173 @@ class _SchoolCalendarMobileScreenState
   }
 
   /// 🔹 EVENTS BOTTOM SHEET
+// ── Events Bottom Sheet (view only) ──
   void _showDateEventsSheet(
-      BuildContext context,
-      DateTime date,
-      AdminProvider provider) {
+      BuildContext context, DateTime date, AdminProvider provider) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (_) {
-        final events = provider.getEventsByDate(date);
-
         return Container(
-          width: MediaQuery.of(context).size.width,
-          padding: const EdgeInsets.all(20),
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.65),
+          padding:
+          const EdgeInsets.only(top: 8, left: 20, right: 20, bottom: 28),
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius:
-            BorderRadius.vertical(top: Radius.circular(30)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
-              /// Handle
+              // Drag handle
               Container(
-                width: 40,
+                width: 36,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
 
-              Text(
-                DateFormat('dd MMM yyyy').format(date),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+              // Header row
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.calendar_today,
+                        color: AppColors.primary, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('EEEE').format(date),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          DateFormat('dd MMMM yyyy').format(date),
+                          style:  TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close, color: Colors.grey.shade400),
+                  ),
+                ],
               ),
 
-              const SizedBox(height: 12),
+              Divider(height: 24, color: Colors.grey.shade200),
 
-              if (events.isEmpty)
-                const Text("No events"),
+              Consumer<AdminProvider>(
+                builder: (ctx, prov, _) {
+                  final events = prov.getEventsByDate(date);
 
-              ...events.map((e) => Container(
-                margin:
-                const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius:
-                  BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.primary
-                          .withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 40,
-                      color: AppColors.primary,
+                  if (events.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Column(
+                        children: [
+                          Icon(Icons.event_busy,
+                              size: 44, color: Colors.grey.shade300),
+                          const SizedBox(height: 12),
+                          Text(
+                            "No events for this day",
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: events.length,
+                      separatorBuilder: (_, __) =>
+                      const SizedBox(height: 10),
+                      itemBuilder: (_, i) {
+                        final event = events[i];
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.04),
+                            border: Border.all(
+                                color: AppColors.primary.withOpacity(0.15)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                // Accent bar
+                                Container(
+                                  width: 4,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: const BorderRadius.horizontal(
+                                        left: Radius.circular(10)),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          event.title,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        if (event.description != null &&
+                                            event.description!
+                                                .isNotEmpty) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            event.description!,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade500,
+                                            ),
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(e.title),
-                    )
-                  ],
-                ),
-              )),
+                  );
+                },
+              ),
             ],
           ),
         );

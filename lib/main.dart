@@ -28,14 +28,25 @@ import 'features/modules/teacher/attendance/presentation/provider/attendance_rep
 import 'features/homework/providers/homework_provider.dart' as new_hw;
 import 'features/modules/teacher/homework/presentation/provider/homework_provider.dart';
 import 'features/modules/teacher/syllabus/presentation/provider/syllabus_provider.dart';
+import 'features/modules/parent/notifications/presentation/provider/notification_provider.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(
     MultiProvider(
       providers: [
@@ -77,6 +88,7 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(create: (_) => SyllabusProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -97,6 +109,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: false,
       designSize: const Size(360, 813),
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         scaffoldMessengerKey: SnackbarService().messengerKey,
         debugShowCheckedModeBanner: false,
         title: 'MET SCHOOL',

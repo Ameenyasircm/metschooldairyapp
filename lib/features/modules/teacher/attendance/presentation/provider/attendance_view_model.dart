@@ -3,10 +3,12 @@ import 'package:intl/intl.dart';
 import '../../data/models/attendance_model.dart';
 import '../../data/service/attendance_firestore_service.dart';
 import '../../../students/data/repository/student_repository.dart';
+import '../../../../parent/notifications/data/services/parent_notification_service.dart';
 
 class AttendanceViewModel extends ChangeNotifier {
   final AttendanceFirestoreService _service;
   final StudentRepository _studentRepo;
+  final ParentNotificationService _notificationService = ParentNotificationService();
 
   AttendanceViewModel(this._service, this._studentRepo);
 
@@ -67,6 +69,7 @@ class AttendanceViewModel extends ChangeNotifier {
           name: e.name,
           rollNo: e.rollNumber,
           parentPhone: e.parentPhone,
+          parentId: e.parentId,
         );
       }
 
@@ -209,8 +212,13 @@ class AttendanceViewModel extends ChangeNotifier {
       
       // Trigger notifications for late students
       for (var data in _attendanceMap.values) {
-        if (data.morning == AttendanceStatus.late) {
-           _sendLateNotification(data.parentPhone, data.name, data.lateRemark);
+        if (data.morning == AttendanceStatus.late && data.parentId.isNotEmpty) {
+           await _notificationService.sendLateAttendanceNotification(
+             parentId: data.parentId,
+             studentName: data.name,
+             studentId: data.studentId,
+             date: dateStr,
+           );
         }
       }
 

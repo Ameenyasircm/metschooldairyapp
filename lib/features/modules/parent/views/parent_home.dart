@@ -21,13 +21,15 @@ import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
+import '../notifications/presentation/provider/notification_provider.dart';
+import '../notifications/presentation/screens/parent_notification_screen.dart';
+import '../notifications/presentation/widgets/notification_badge.dart';
 
-
-class ParentHomeScreen extends StatelessWidget {
+class ParentHomeScreen extends StatefulWidget {
   final String studentId;
   String academicYearID, teacherName, teacherID;
 
-  ParentHomeScreen({
+   ParentHomeScreen({
     super.key,
     required this.studentId,
     required this.academicYearID,
@@ -36,13 +38,35 @@ class ParentHomeScreen extends StatelessWidget {
   });
 
   @override
+  State<ParentHomeScreen> createState() => _ParentHomeScreenState();
+}
+
+class _ParentHomeScreenState extends State<ParentHomeScreen> {
+  String? parentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    final prefs = await SharedPreferences.getInstance();
+    parentId = prefs.getString("userId");
+    if (parentId != null && mounted) {
+      final provider = Provider.of<NotificationProvider>(context, listen: false);
+      provider.updateToken(parentId!);
+      provider.listenToNotifications(parentId!);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
-
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -53,28 +77,31 @@ class ParentHomeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          if (parentId != null)
+            NotificationBadge(
+              icon: Icons.notifications_none_outlined,
+              iconColor: AppColors.primary,
+              onTap: () {
+                callNext(ParentNotificationScreen(parentId: parentId!), context);
+              },
+            ),
           IconButton(
-            icon: Icon(Icons.logout, color: AppColors.primary),
-            onPressed: () async {
-              showLogoutDialog(context);
-            },
+            icon: const Icon(Icons.logout, color: AppColors.primary),
+            onPressed: () => showLogoutDialog(context),
           )
         ],
       ),
-
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection("students")
-            .doc(studentId)
+            .doc(widget.studentId)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final data =
-              snapshot.data!.data() as Map<String, dynamic>? ?? {};
-
+          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
           final name = data['name'] ?? "";
           final className = data['className'] ?? "";
           final parentName = data['parentGuardian'] ?? "";
@@ -213,9 +240,9 @@ class ParentHomeScreen extends StatelessWidget {
                       final conversationId = await context
                           .read<ConversationProvider>()
                           .getOrCreateConversation(
-                        studentId: studentId,
+                        studentId: widget.studentId,
                         parentId: parentId,
-                        teacherId: teacherID,
+                        teacherId: widget.teacherID,
                       );
 
                       callNext(
@@ -237,10 +264,10 @@ class ParentHomeScreen extends StatelessWidget {
                     _menu(Icons.request_page_outlined, "Leaves", () {
                       callNext(
                         ParentLeaveListScreen(
-                          studentId: studentId,
+                          studentId: widget.studentId,
                           studentName: name,
-                          teacherId: teacherID,
-                          academicYearId: academicYearID,
+                          teacherId: widget.teacherID,
+                          academicYearId: widget.academicYearID,
                           classId: classId,
                           className: className,
                         ),
