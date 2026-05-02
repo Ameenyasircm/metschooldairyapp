@@ -41,7 +41,7 @@ class TeacherHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Ultra light slate
+      backgroundColor: AppColors.lightBackground, // Ultra light slate
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [

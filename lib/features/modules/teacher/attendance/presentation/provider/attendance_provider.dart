@@ -6,9 +6,11 @@ import '../../../../../../core/service/firebase_service.dart';
 import '../../../students/data/models/tech_student_model.dart';
 import '../../../students/data/repository/student_repository.dart';
 import '../../data/models/attendance_model.dart';
+import '../../../../parent/notifications/data/services/parent_notification_service.dart';
 
 class AttendanceProvider extends ChangeNotifier {
   final StudentRepository repository;
+  final ParentNotificationService _notificationService = ParentNotificationService();
   AttendanceProvider(this.repository);
 
   List<StudentAttendanceData> _allStudents = [];
@@ -42,6 +44,8 @@ class AttendanceProvider extends ChangeNotifier {
       studentId: e.studentId,
       name: e.name,
       rollNo: e.rollNumber,
+      parentId: e.parentId,
+      parentPhone: e.parentPhone,
     )).toList();
     _applySearch();
   }
@@ -125,6 +129,18 @@ class AttendanceProvider extends ChangeNotifier {
         "lastUpdated": FieldValue.serverTimestamp(),
         "students": studentsData,
       }, SetOptions(merge: true));
+
+      // Trigger Notifications for Late Students
+      for (var s in _allStudents) {
+        if (s.isLate && s.parentId.isNotEmpty) {
+          await _notificationService.sendLateAttendanceNotification(
+            parentId: s.parentId,
+            studentName: s.name,
+            studentId: s.studentId,
+            date: dateStr,
+          );
+        }
+      }
 
       debugPrint("Attendance saved successfully for $dateStr");
     } catch (e) {

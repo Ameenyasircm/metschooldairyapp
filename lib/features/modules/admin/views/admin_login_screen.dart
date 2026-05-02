@@ -155,13 +155,10 @@ class _LoginFormState extends State<_LoginForm> {
 
         /// Password
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             const Text("PASSWORD"),
-            TextButton(
-              onPressed: () {},
-              child:Text("Forgot Password?"),
-            )
+
           ],
         ),
 
