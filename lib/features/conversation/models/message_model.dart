@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MessageModel {
   final String id;
+  final String senderName;
   final String senderId;
   final String senderRole;
   final String title;
@@ -10,6 +11,7 @@ class MessageModel {
 
   MessageModel({
     required this.id,
+    required this.senderName,
     required this.senderId,
     required this.senderRole,
     required this.title,
@@ -22,6 +24,7 @@ class MessageModel {
 
     return MessageModel(
       id: doc.id,
+      senderName: data['senderName'] ?? '',
       senderId: data['senderId'] ?? '',
       senderRole: data['senderRole'] ?? '',
       title: data['title'] ?? '',

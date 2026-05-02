@@ -251,6 +251,7 @@ class AuthProvider with ChangeNotifier {
                 academicYearID: s['academicYearId'],
                 teacherName: s['teacherName'],
                 teacherID: s['teacherId'],
+                parentName: data['name'],
               ),
               context,
             );
@@ -276,6 +277,7 @@ class AuthProvider with ChangeNotifier {
             callNextReplacement(
               ParentStudentSelectionScreen(
                 studentIds: studentDataList,
+                parentName: data['name']??"",
               ),
               context,
             );

@@ -66,10 +66,11 @@ class HomeScreen extends StatelessWidget {
 
                     if (studentDataList.length == 1) {
                       final s = studentDataList.first;
-
+                      String name = prefs.getString("staffName") ?? prefs.getString("userName") ?? "N/A";
                       NavigationService.push(
                         context,
                         ParentHomeScreen(
+                          parentName: name,
                           studentId: s['studentId'],
                           academicYearID: s['academicYearId'],
                           teacherName: s['teacherName'],
@@ -77,10 +78,12 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     } else {
+                      String name = prefs.getString("staffName") ?? prefs.getString("userName") ?? "N/A";
                       NavigationService.push(
                         context,
                         ParentStudentSelectionScreen(
                           studentIds: studentDataList,
+                          parentName: name,
                         ),
                       );
                     }

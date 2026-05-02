@@ -32,7 +32,7 @@ import 'image_full_screen_view.dart';
 
 class ParentHomeScreen extends StatefulWidget {
   final String studentId;
-  String academicYearID, teacherName, teacherID;
+  String academicYearID, teacherName,teacherID,parentName;
 
    ParentHomeScreen({
     super.key,
@@ -40,6 +40,7 @@ class ParentHomeScreen extends StatefulWidget {
     required this.academicYearID,
     required this.teacherName,
     required this.teacherID,
+    required this.parentName,
   });
 
   @override
@@ -263,6 +264,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
                       callNext(
                         MessageScreen(
+                          senderName: parentName,
                           conversationId: conversationId,
                           currentUserId: parentId,
                           role: "parent",

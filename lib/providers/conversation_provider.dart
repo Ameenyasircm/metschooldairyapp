@@ -35,13 +35,16 @@ class ConversationProvider extends ChangeNotifier{
     return doc.id;
   }
 
-  Future<void> sendMessage({
+  Future<void>
+  sendMessage({
     required String conversationId,
     required String senderId,
     required String senderRole,
+    required String senderName, // ✅ ADD THIS
     String title = "",
     required String description,
   }) async {
+    print('sender Name $senderName');
     final ref = FirebaseFirestore.instance
         .collection('conversations')
         .doc(conversationId)
@@ -50,6 +53,7 @@ class ConversationProvider extends ChangeNotifier{
     await ref.add({
       'senderId': senderId,
       'senderRole': senderRole,
+      'senderName': senderName, // ✅ SAVE THIS
       'title': title,
       'description': description,
       'createdAt': Timestamp.now(),
@@ -64,6 +68,7 @@ class ConversationProvider extends ChangeNotifier{
       'lastMessageTime': Timestamp.now(),
     });
   }
+
   Stream<List<MessageModel>> getMessages(String conversationId) {
     return FirebaseFirestore.instance
         .collection('conversations')

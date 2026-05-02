@@ -19,10 +19,12 @@ import '../../../auth/presentation/screens/login_screen.dart';
 
 class ParentStudentSelectionScreen extends StatelessWidget {
   final List studentIds;
+  String parentName;
 
-  const ParentStudentSelectionScreen({
+   ParentStudentSelectionScreen({
     super.key,
     required this.studentIds,
+    required this.parentName,
   });
 
   @override
@@ -79,6 +81,7 @@ class ParentStudentSelectionScreen extends StatelessWidget {
                       academicYearID: student['academicYearId'],
                       teacherName: student['teacherName'],
                       teacherID: student['teacherId'],
+                      parentName: parentName,
                     ),
                     context,
                   );

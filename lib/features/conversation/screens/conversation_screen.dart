@@ -10,11 +10,13 @@ class MessageScreen extends StatefulWidget {
   final String conversationId;
   final String currentUserId;
   final String role;
+  final String senderName;
 
   const MessageScreen({
     required this.conversationId,
     required this.currentUserId,
     required this.role,
+    required this.senderName,
   });
 
   @override
@@ -352,10 +354,12 @@ class _MessageScreenState extends State<MessageScreen> {
               const SizedBox(width: 8),
               _SendButton(onSend: () async {
                 if (_descController.text.trim().isEmpty) return;
+                print('${widget.senderName} sender..');
                 await provider.sendMessage(
                   conversationId: widget.conversationId,
                   senderId: widget.currentUserId,
                   senderRole: widget.role,
+                  senderName: widget.senderName, // 🔥 replace with real parent name
                   title: _titleController.text.trim(),
                   description: _descController.text.trim(),
                 );
