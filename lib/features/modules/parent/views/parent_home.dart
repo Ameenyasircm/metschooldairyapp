@@ -238,8 +238,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     /// Fees
                     _menu(Icons.payment, "Fees", () {}),
 
-                    /// Notices
-                    _menu(Icons.notifications, "Notices", () {}),
 
                     /// Communication (🔥 ORIGINAL LOGIC)
                     _menu(Icons.message_outlined, "Chat", () async {
