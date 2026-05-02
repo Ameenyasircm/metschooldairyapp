@@ -300,7 +300,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                       final divisionId = prefs.getString("divisionId") ?? '';
                       final divisionName = prefs.getString("divisionName") ?? '';
                       final className = prefs.getString("className") ?? '';
-                      callNext(StudentTimetableScreen(academicId: academicYearID,division: divisionName,standard:className ,), context);
+                      callNext(StudentTimetableScreen(academicId: widget.academicYearID,division: divisionName,standard:className ,), context);
                     }),
                   ],
                 ),
