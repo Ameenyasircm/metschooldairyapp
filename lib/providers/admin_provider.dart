@@ -182,7 +182,7 @@ class AdminProvider with ChangeNotifier {
       batch.set(divRef, divisionData);
       batch.update(teacherRef, teacherUpdateData);
       batch.set(logRef, logData);
-      batch.set(userRef, usersData);
+      batch.update(userRef, usersData);
 
       await batch.commit();
 
