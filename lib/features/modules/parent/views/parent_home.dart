@@ -74,6 +74,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
       appBar: AppBar(
+        automaticallyImplyActions: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),

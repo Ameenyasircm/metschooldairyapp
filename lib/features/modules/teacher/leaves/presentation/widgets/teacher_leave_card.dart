@@ -6,6 +6,7 @@ import 'package:met_school/core/constants/app_spacing.dart';
 import 'package:met_school/core/constants/app_padding.dart';
 import 'package:met_school/core/constants/app_radius.dart';
 import 'package:met_school/core/models/leave_request_model.dart';
+import '../../../../../../core/widgets/buttons/action_button.dart';
 import 'reject_leave_dialog.dart';
 
 class TeacherLeaveCard extends StatelessWidget {
@@ -76,11 +77,13 @@ class TeacherLeaveCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => _showRejectDialog(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
+                      foregroundColor: AppColors.errorRed,
                       side: const BorderSide(color: Colors.red),
                       shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
                     ),
-                    child: const Text("Reject"),
+                    child:Text("Reject",style: AppTypography.body2.copyWith(
+                      color: AppColors.errorRed
+                    ),),
                   ),
                 ),
                 AppSpacing.w16,
@@ -88,10 +91,12 @@ class TeacherLeaveCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _showApproveConfirmation(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.successGreen,
                       shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
                     ),
-                    child: const Text("Approve", style: TextStyle(color: Colors.white)),
+                    child: Text("Approve", style: AppTypography.body2.copyWith(
+                        color: AppColors.white
+                    ),),
                   ),
                 ),
               ],
@@ -124,22 +129,35 @@ class TeacherLeaveCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Approve Leave Request"),
-        content: Text("Are you sure you want to approve leave for ${leave.studentName}?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onUpdateStatus('approved');
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text("Approve", style: TextStyle(color: Colors.white)),
-          ),
-        ],
+        backgroundColor: AppColors.white,
+        title:Text("Approve Leave Request",style: AppTypography.body1.copyWith(
+        fontWeight: FontWeight.w600)),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Are you sure you want to approve leave for ${leave.studentName}?",
+              style: AppTypography.body2,),
+            AppSpacing.vl,
+            Row(
+              children: [
+                Expanded(
+                  child: ActionButtonsRow(
+                    text: "Approve",
+                    onCancel: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    onSave: () async {
+                      Navigator.pop(context);
+                      onUpdateStatus('approved');
+                    },
+                  ),
+                ),
+              ],
+            ),
+            AppSpacing.h4,
+          ],
+        ),
       ),
     );
   }

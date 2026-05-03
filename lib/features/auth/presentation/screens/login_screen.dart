@@ -134,8 +134,8 @@ class LoginScreen extends StatelessWidget {
                       builder: (contextss,val,child) {
                         return gradientButton(
                           text: "Login",
-                          isLoading:val.isLoading,
-                          onPressed:val.isLoading
+                          isLoading:val.staffLoginLoading,
+                          onPressed:val.staffLoginLoading
                               ? null
                               : () {
                             if(formKey.currentState!.validate()){

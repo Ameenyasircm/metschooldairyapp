@@ -62,7 +62,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
       onTap: () {},
     ),
     QuickAction(
-      title: 'Parent Communication',
+      title: 'Parent\n Communication',
       icon: Icons.forum_outlined, // Changed
       color: AppColors.mint,
       onTap: () {},

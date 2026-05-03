@@ -50,6 +50,12 @@ class LeaveProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Handles deletion of a leave request
+  Future<void> deleteLeaveRequest(String docId) async {
+    await _repository.deleteLeaveRequest(docId);
+    notifyListeners();
+  }
+
   /// Clears cached streams (useful on logout)
   void clearCache() {
     _studentLeavesCache.clear();

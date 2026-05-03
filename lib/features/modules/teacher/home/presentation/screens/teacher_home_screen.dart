@@ -154,16 +154,16 @@ class TeacherHomeScreen extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(24.w, 10.h, 24.w, 30.h),
+            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
             sliver: Consumer<TeacherHomeViewModel>(
               builder: (context, vm, _) {
                 final actions = vm.quickActions;
                 return SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16.w,
-                    mainAxisSpacing: 16.h,
-                    childAspectRatio: 1.15,
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 9.w,
+                    mainAxisSpacing: 12.h,
+
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {

@@ -104,4 +104,13 @@ class LeaveRepository {
       rethrow;
     }
   }
+
+  Future<void> deleteLeaveRequest(String docId) async {
+    try {
+      await _firestore.collection("leave_requests").doc(docId).delete();
+    } catch (e) {
+      dev.log("Error deleting leave request", error: e, name: 'LeaveRepository');
+      rethrow;
+    }
+  }
 }

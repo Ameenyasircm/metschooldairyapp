@@ -296,6 +296,7 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString("className", data['class_name'] ?? "");
         await prefs.setString("staffId", doc.id);
         await prefs.setString("staffName", data['name'] ?? "");
+        await prefs.setBool("isLoggedIn", true);
 
         final academicYear = await currentAcademicYearId();
         if (academicYear != null) {

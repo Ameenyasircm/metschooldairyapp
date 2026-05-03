@@ -24,13 +24,12 @@ class QuickActionCard extends StatelessWidget {
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       child: Container(
-        padding: AppPadding.pM,
+        padding: AppPadding.pS,
         decoration: BoxDecoration(
           borderRadius: AppRadius.radiusM,
           border: Border.all(color: AppColors.grey5E.withValues(alpha: 0.1)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -42,16 +41,19 @@ class QuickActionCard extends StatelessWidget {
               child: Icon(
                 action.icon,
                 color: AppColors.darkGreen,
-                size: 24.sp,
+                size: 20.sp,
               ),
             ),
-            AppSpacing.vm,
+            AppSpacing.v12,
             Text(
               action.title,
-              style: AppTypography.label.copyWith(
-                color: AppColors.darkGreen,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.primary,
                 fontWeight: FontWeight.w600,
+                fontSize: 12.sp,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

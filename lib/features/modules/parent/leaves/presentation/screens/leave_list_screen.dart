@@ -35,14 +35,12 @@ class ParentLeaveListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: Text("Leave Requests", style: AppTypography.h4.copyWith(color: AppColors.primary)),
+        title: Text("Leave Requests", style: AppTypography.h5.copyWith(color: AppColors.primary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyActions: false,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: BackButton(color: AppColors.primary),
       ),
       body: StreamBuilder<List<LeaveRequestModel>>(
         stream: context.read<LeaveProvider>().getStudentLeavesStream(studentId),
