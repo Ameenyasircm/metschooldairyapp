@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/home/views/home/home_screen.dart';
+import '../../../providers/auth_provider.dart';
 import '../../constants/app_spacing.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -46,17 +48,13 @@ Future<bool?> showLogoutDialog(BuildContext context) {
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.clear();
 
-                      // ❌ REMOVE THESE:
-                      // Navigator.of(context).pop(false);
-                      // Navigator.of(context).pop(true);
+                      final auth = context.read<AuthProvider>();
+                      auth.logoutWithoutNavigation(); // custom method
 
-                      // ✅ REPLACE WITH: clears stack + forces HomeScreen to rebuild fresh
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => HomeScreen()),
-                              (route) => false,
-                        );
-                      }
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => HomeScreen()),
+                            (route) => false,
+                      );
                     },
                   ),
                 ),

@@ -8,6 +8,7 @@ import 'package:met_school/features/home/views/home/widgets/home_grid.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/router/app_navigation.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../modules/parent/views/parent_home.dart';
 import '../../../modules/parent/views/parent_select_child_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
@@ -26,7 +27,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // We use context.watch to rebuild when data changes
     final provider = context.watch<HomeProvider>();
-
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -38,86 +39,80 @@ class HomeScreen extends StatelessWidget {
         actions: [
           const Icon(Icons.search, color: Colors.black),
           const SizedBox(width: 10),
-          FutureBuilder(
-            future: SharedPreferences.getInstance(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox();
+          GestureDetector(
+            onTap: () async {
+              final prefs = await SharedPreferences.getInstance();
+              final role = prefs.getString("role");
 
-              final prefs = snapshot.data!;
-              final isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+              if (!auth.isLoggedIn) {
+                NavigationService.push(context, LoginScreen());
+                return;
+              }
 
-              return GestureDetector(
-                onTap: () async {
-                  final role = prefs.getString("role");
+              /// 🎯 PARENT
+              if (role == "parent") {
+                final studentDataStringList =
+                    prefs.getStringList("studentDataList") ?? [];
 
-                  if (!isLoggedIn) {
-                    NavigationService.push(context, LoginScreen());
-                    return;
-                  }
+                final studentDataList = studentDataStringList
+                    .map((e) => jsonDecode(e) as Map<String, dynamic>)
+                    .toList();
 
-                  /// 🎯 PARENT
-                  if (role == "parent") {
-                    final studentDataStringList =
-                        prefs.getStringList("studentDataList") ?? [];
+                String name = prefs.getString("staffName") ??
+                    prefs.getString("userName") ??
+                    "N/A";
 
-                    final studentDataList = studentDataStringList
-                        .map((e) => jsonDecode(e) as Map<String, dynamic>)
-                        .toList();
+                if (studentDataList.length == 1) {
+                  final s = studentDataList.first;
 
-                    if (studentDataList.length == 1) {
-                      final s = studentDataList.first;
-                      String name = prefs.getString("staffName") ?? prefs.getString("userName") ?? "N/A";
-                      NavigationService.push(
-                        context,
-                        ParentHomeScreen(
-                          parentName: name,
-                          studentId: s['studentId'],
-                          academicYearID: s['academicYearId'],
-                          teacherName: s['teacherName'],
-                          teacherID: s['teacherId'],
-                        ),
-                      );
-                    } else {
-                      String name = prefs.getString("staffName") ?? prefs.getString("userName") ?? "N/A";
-                      NavigationService.push(
-                        context,
-                        ParentStudentSelectionScreen(
-                          studentIds: studentDataList,
-                          parentName: name,
-                        ),
-                      );
-                    }
-                  }
-
-                  /// 🎯 TEACHER
-                  else {
-                    NavigationService.push(
-                      context,
-                      TeacherNavbarScreen(
-                        staffName: prefs.getString("staffName") ?? "",
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  height: 35,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      isLoggedIn ? 'Continue' : 'Login',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                      ),
+                  NavigationService.push(
+                    context,
+                    ParentHomeScreen(
+                      parentName: name,
+                      studentId: s['studentId'],
+                      academicYearID: s['academicYearId'],
+                      teacherName: s['teacherName'],
+                      teacherID: s['teacherId'],
                     ),
+                  );
+                } else {
+                  NavigationService.push(
+                    context,
+                    ParentStudentSelectionScreen(
+                      studentIds: studentDataList,
+                      parentName: name,
+                    ),
+                  );
+                }
+              }
+
+              /// 🎯 TEACHER
+              else {
+                NavigationService.push(
+                  context,
+                  TeacherNavbarScreen(
+                    staffName: prefs.getString("staffName") ?? "",
+                  ),
+                );
+              }
+            },
+            child: Container(
+              height: 35,
+              width: 120,
+              decoration: BoxDecoration(
+                color: primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  auth.isLoggedIn ? 'Continue' : 'Login',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
           // GestureDetector(
           //   onTap: (){

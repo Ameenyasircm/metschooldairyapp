@@ -48,6 +48,7 @@ class AuthProvider with ChangeNotifier {
   AuthProvider(){
     loadCurrentAcademicYear();
     getAppVersion();
+    loadLoginStatus();
     // lockApp();
   }
 
@@ -122,6 +123,15 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  bool _isLoggedIn = false;
+  bool get isLoggedIn => _isLoggedIn;
+
+  Future<void> loadLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+    notifyListeners();
+  }
+
   /// staff login
   bool _isStaffLoginLoading = false;
 
@@ -186,6 +196,9 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString("staffPhone", phoneNumber);
         await prefs.setBool("isLoggedIn", true);
 
+
+        _isLoggedIn = true;
+        notifyListeners();
         /// Save common data
         await prefs.setString("userId", doc.id);
         await prefs.setString("userName", data['name'] ?? "");
@@ -297,6 +310,9 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString("staffId", doc.id);
         await prefs.setString("staffName", data['name'] ?? "");
         await prefs.setBool("isLoggedIn", true);
+
+        _isLoggedIn = true;
+        notifyListeners();
 
         final academicYear = await currentAcademicYearId();
         if (academicYear != null) {
@@ -541,6 +557,10 @@ class AuthProvider with ChangeNotifier {
     /// Clear saved data
     await prefs.clear();
 
+    /// 🔥 UPDATE STATE
+    _isLoggedIn = false;
+    notifyListeners();
+
     /// Navigate to login
     if (context.mounted) {
       if (kIsWeb) {
@@ -550,7 +570,6 @@ class AuthProvider with ChangeNotifier {
       }
     }
   }
-
   AcademicYearModel? currentYear;
 
   Future<void> loadCurrentAcademicYear() async {
@@ -736,6 +755,16 @@ class AuthProvider with ChangeNotifier {
     });
   }
 
+  Future<void> logoutWithoutNavigation() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    /// Clear saved data
+    await prefs.clear();
+
+    /// Update provider state
+    _isLoggedIn = false;
+    notifyListeners();
+  }
 
 
 }
