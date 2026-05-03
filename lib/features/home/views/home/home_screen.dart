@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/router/app_navigation.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
 import '../../../modules/parent/views/parent_home.dart';
 import '../../../modules/parent/views/parent_select_child_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
@@ -67,7 +68,7 @@ class HomeScreen extends StatelessWidget {
 
                   NavigationService.push(
                     context,
-                    ParentHomeScreen(
+                    ParentMainScreen(
                       parentName: name,
                       studentId: s['studentId'],
                       academicYearID: s['academicYearId'],

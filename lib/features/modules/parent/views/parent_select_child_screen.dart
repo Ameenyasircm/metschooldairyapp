@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/features/home/views/home/home_screen.dart';
+import 'package:met_school/features/modules/parent/views/parent_bottom_nav_screen.dart';
 import 'package:met_school/features/modules/parent/views/parent_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,7 +77,7 @@ class ParentStudentSelectionScreen extends StatelessWidget {
 
                 if (context.mounted) {
                   callNext(
-                    ParentHomeScreen(
+                    ParentMainScreen(
                       studentId: student['studentId'],
                       academicYearID: student['academicYearId'],
                       teacherName: student['teacherName'],

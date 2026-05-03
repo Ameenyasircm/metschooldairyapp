@@ -95,10 +95,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 callNext(ParentNotificationScreen(parentId: parentId!), context);
               },
             ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.primary),
-            onPressed: () => showLogoutDialog(context),
-          )
+          // IconButton(
+          //   icon: const Icon(Icons.logout, color: AppColors.primary),
+          //   onPressed: () => showLogoutDialog(context),
+          // )
         ],
       ),
       body:Consumer<ParentProvider>(

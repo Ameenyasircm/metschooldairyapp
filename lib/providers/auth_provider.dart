@@ -21,6 +21,7 @@ import '../features/homework/providers/homework_provider.dart';
 import '../features/modules/admin/views/admin_login_screen.dart';
 
 import '../core/utils/snackbarNotification/snackbar_notification.dart';
+import '../features/modules/parent/views/parent_bottom_nav_screen.dart';
 import '../features/modules/parent/views/parent_home.dart';
 import '../features/modules/parent/views/parent_select_child_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
@@ -259,7 +260,7 @@ class AuthProvider with ChangeNotifier {
 
           if (context.mounted) {
             callNextReplacement(
-              ParentHomeScreen(
+              ParentMainScreen(
                 studentId: s['studentId'],
                 academicYearID: s['academicYearId'],
                 teacherName: s['teacherName'],
