@@ -10,6 +10,7 @@ class ConversationProvider extends ChangeNotifier{
     required String parentId,
     required String teacherId,
   }) async {
+    print('$teacherId ERKFNERJKF $studentId studentID $parentId parentID');
     final query = await FirebaseFirestore.instance
         .collection('conversations')
         .where('studentId', isEqualTo: studentId)
@@ -44,7 +45,7 @@ class ConversationProvider extends ChangeNotifier{
     String title = "",
     required String description,
   }) async {
-    print('sender Name $senderName');
+    print('sender Name $senderName $senderId $conversationId');
     final ref = FirebaseFirestore.instance
         .collection('conversations')
         .doc(conversationId)

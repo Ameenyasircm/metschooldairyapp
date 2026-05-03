@@ -70,6 +70,27 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
+  Widget _buildNameBadge(String name, String role) {
+    final color = _roleColor(role);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Text(
+        name, // ✅ NOW SHOWING NAME
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildRoleBadge(String role) {
     final color = _roleColor(role);
     return Container(
@@ -163,8 +184,12 @@ class _MessageScreenState extends State<MessageScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildRoleBadge(msg.senderRole),
-                        Text(
+                        _buildNameBadge(
+                          msg.senderName.isNotEmpty
+                              ? msg.senderName
+                              : _roleLabel(msg.senderRole),
+                          msg.senderRole,
+                        ),                        Text(
                           _formatTime(msg.createdAt),
                           style: TextStyle(
                             fontSize: 10,

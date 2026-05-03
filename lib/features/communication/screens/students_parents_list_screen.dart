@@ -148,7 +148,7 @@ class _StudentsParentsListScreenState extends State<StudentsParentsListScreen> {
           onTap: () async {
             // Your Original Logic (Retained)
             final prefs = await SharedPreferences.getInstance();
-            final teacherId = prefs.getString("userId") ?? "";
+            final teacherId = prefs.getString("staffId") ?? "";
             final senderName = prefs.getString("staffName") ?? "";
             final conversationId = await context
                 .read<ConversationProvider>()
@@ -157,6 +157,8 @@ class _StudentsParentsListScreenState extends State<StudentsParentsListScreen> {
               parentId: student.parentId,
               teacherId: teacherId,
             );
+
+            print('$teacherId EKJFNKJER ');
 
             callNext(
               MessageScreen(
