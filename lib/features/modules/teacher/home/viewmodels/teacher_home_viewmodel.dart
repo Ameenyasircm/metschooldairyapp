@@ -33,7 +33,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
     ),
     QuickAction(
       title: 'Add Attendance',
-      icon: Icons.how_to_reg_rounded, // Changed
+      icon: Icons.checklist, // Changed
       color: AppColors.blueish,
       onTap: () {},
     ),
@@ -51,7 +51,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
     ),
     QuickAction(
       title: 'Homework',
-      icon: Icons.auto_stories_outlined, // Changed
+      icon: Icons.edit_note_outlined, // Changed
       color: AppColors.successGreen,
       onTap: () {},
     ),
@@ -62,8 +62,8 @@ class TeacherHomeViewModel extends ChangeNotifier {
       onTap: () {},
     ),
     QuickAction(
-      title: 'Parent\n Communication',
-      icon: Icons.forum_outlined, // Changed
+      title: 'Chat',
+      icon: Icons.message, // Changed
       color: AppColors.mint,
       onTap: () {},
     ),
@@ -87,7 +87,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
     ),
     QuickAction(
       title: 'School Calendar',
-      icon: Icons.calendar_today_rounded, // Changed
+      icon: Icons.calendar_month_outlined, // Changed
       color: AppColors.primaryBlue,
       onTap: () {},
     ),

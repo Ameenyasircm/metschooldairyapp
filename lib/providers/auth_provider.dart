@@ -24,6 +24,7 @@ import '../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../features/modules/parent/views/parent_bottom_nav_screen.dart';
 import '../features/modules/parent/views/parent_home.dart';
 import '../features/modules/parent/views/parent_select_child_screen.dart';
+import '../features/modules/teacher/home/presentation/screens/teacher_home_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import '../features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
 import '../features/modules/teacher/timetable/presentation/provider/timetable_provider.dart';
@@ -322,10 +323,7 @@ class AuthProvider with ChangeNotifier {
 
         if (context.mounted) {
           callNextReplacement(
-            TeacherNavbarScreen(
-              staffName: data['name'] ?? "",
-            ),
-            context,
+            TeacherHomeScreen(staffName:data['name'] ?? "",), context,
           );
         }
       }

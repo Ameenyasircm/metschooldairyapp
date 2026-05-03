@@ -20,35 +20,34 @@ class QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.white,
-      borderRadius: AppRadius.radiusM,
+      borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12.r),bottomRight:Radius.circular(12.r),topRight:Radius.circular(12.r)  ),
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       child: Container(
         padding: AppPadding.pS,
         decoration: BoxDecoration(
-          borderRadius: AppRadius.radiusM,
-          border: Border.all(color: AppColors.grey5E.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12.r),bottomRight:Radius.circular(12.r),topRight:Radius.circular(12.r)  ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: AppPadding.pS,
               decoration: BoxDecoration(
-                color: action.color,
                 borderRadius: AppRadius.radiusS,
               ),
               child: Icon(
                 action.icon,
-                color: AppColors.darkGreen,
-                size: 20.sp,
+                color: AppColors.blue90,
+                size: 24.sp,
               ),
             ),
             AppSpacing.v12,
             Text(
               action.title,
               style: AppTypography.caption.copyWith(
-                color: AppColors.primary,
+                color: AppColors.blue90,
                 fontWeight: FontWeight.w600,
                 fontSize: 12.sp,
               ),

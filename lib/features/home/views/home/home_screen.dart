@@ -12,6 +12,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
 import '../../../modules/parent/views/parent_home.dart';
 import '../../../modules/parent/views/parent_select_child_screen.dart';
+import '../../../modules/teacher/home/presentation/screens/teacher_home_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import '../contact_screen/contact_us_screen.dart';
 import '../gallary/gallery_screen.dart';
@@ -91,22 +92,20 @@ class HomeScreen extends StatelessWidget {
               else {
                 NavigationService.push(
                   context,
-                  TeacherNavbarScreen(
-                    staffName: prefs.getString("staffName") ?? "",
+                  TeacherHomeScreen(staffName:prefs.getString("staffName") ?? "",),
+                    );
+                  }
+                },
+                child: Container(
+                  height: 35,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: primary,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                );
-              }
-            },
-            child: Container(
-              height: 35,
-              width: 120,
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(
-                  auth.isLoggedIn ? 'Continue' : 'Login',
+                  child: Center(
+                    child: Text(
+                      auth.isLoggedIn ? 'Continue' : 'Login',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,

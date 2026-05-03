@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/constants/app_assets.dart';
 import 'package:provider/provider.dart';
 import 'package:met_school/core/constants/app_padding.dart';
 import 'package:met_school/core/constants/app_radius.dart';
@@ -18,6 +19,7 @@ import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../exams/presentation/screens/exam_coming_soon_screen.dart';
 import '../../../leaves/presentation/screens/teacher_leave_management_screen.dart';
+import '../../../profile/presentation/screens/teacher_profile_screen.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
 import '../../../school_calender/screens/school_calender_mobile_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
@@ -49,24 +51,11 @@ class TeacherHomeScreen extends StatelessWidget {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: [
-                    AppColors.primary,
-                    const Color(0xFF002D62),
-                  ],
-                ),
+           color: AppColors.white,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(50.r),
+                  bottomRight: Radius.circular(50.r),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
-                    blurRadius: 3,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: SafeArea(
                 bottom: false,
@@ -83,51 +72,24 @@ class TeacherHomeScreen extends StatelessWidget {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.mint.withOpacity(0.5), width: 2),
                                 ),
-                                child: CircleAvatar(
-                                  radius: 22.r,
-                                  backgroundColor: Colors.white10,
-                                  child: Icon(Icons.person_rounded, color: Colors.white, size: 28.sp),
-                                ),
+                                child: Image.asset(AppAssets.metLogo,width:52.w,height: 52.h,),
                               ),
                               SizedBox(width: 12.w),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Welcome back,",
-                                    style: TextStyle(color: Colors.white60, fontSize: 12.sp, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    staffName, // Passing from constructor
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          Text(
+                  'MET Public School\nPayyanad', // Passing from constructor
+                  style: AppTypography.h6.copyWith(
+                    fontWeight: FontWeight.w600
+                  ),
+                ),
                             ],
                           ),
-                          Container(
-                            padding: EdgeInsets.all(10.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(14.r),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
-                            ),
-                            child: Badge(
-                              backgroundColor: AppColors.mint,
-                              smallSize: 8,
-                              child: Icon(Icons.notifications_none_rounded, color: Colors.white, size: 22.sp),
-                            ),
-                          ),
+                          InkWell(
+                            onTap: (){
+                              NavigationService.push(context,TeacherProfileScreen());
+                            }, child: Image.asset(AppAssets.profile, width: 50.w,height: 50.h,)),
                         ],
                       ),
 
@@ -138,23 +100,9 @@ class TeacherHomeScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. QUICK ACTIONS SECTION
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 10.h),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                "Quick Actions",
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-            ),
-          ),
 
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 30.h),
             sliver: Consumer<TeacherHomeViewModel>(
               builder: (context, vm, _) {
                 final actions = vm.quickActions;
