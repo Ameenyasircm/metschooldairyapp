@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/features/modules/parent/views/parent_view_homeworks.dart';
 import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:provider/provider.dart';
@@ -320,6 +321,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                       final className = prefs.getString("className") ?? '';
                       callNext(StudentTimetableScreen(academicId: widget.academicYearID,division: divisionName,standard:className ,), context);
                     }),
+
+                    _menu(Icons.workspaces_outline, "HomeWorks", () {
+                    callNext(ParentHomeworkScreen(), context);
+                    }),
+
                   ],
                 ),
 
