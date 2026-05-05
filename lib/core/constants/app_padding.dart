@@ -22,4 +22,5 @@ class AppPadding {
   static EdgeInsets get phL => EdgeInsets.symmetric(horizontal: l);
   static EdgeInsets get phvS => EdgeInsets.symmetric(horizontal: s,vertical: s);
   static EdgeInsets get phMvS => EdgeInsets.symmetric(horizontal: s,vertical: 5);
+  static EdgeInsets get pt10 => EdgeInsets.only(top: 10.h);
 }

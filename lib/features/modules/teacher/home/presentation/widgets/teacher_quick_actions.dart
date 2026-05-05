@@ -28,90 +28,84 @@ import '../../viewmodels/teacher_home_viewmodel.dart';
 Widget buildQuickActions(BuildContext context) {
   return Consumer<TeacherHomeViewModel>(
     builder: (context4, vm, _) {
-      final actions = vm.quickActions;
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount:actions.length ,
-        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 10.h),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 14.w,
-          mainAxisSpacing: 14.h,
-          childAspectRatio: 1.1,
+      return SliverPadding(
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+        sliver: Consumer<TeacherHomeViewModel>(
+          builder: (context, vm, _) {
+            final actions = vm.quickActions;
+            return SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 9.w,
+                mainAxisSpacing: 12.h,
+
+              ),
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  return InkWell(
+                    onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final divisionId = prefs.getString("divisionId") ?? '';
+                      final divisionName = prefs.getString("divisionName") ?? '';
+                      final academicYearId = prefs.getString("academicYearId") ?? '';
+                      final staffId = prefs.getString("staffId") ?? '';
+                      final staffName = prefs.getString("staffName") ?? '';
+                      final standard = prefs.getString("className") ?? '';
+
+                      switch (index) {
+                        case 0:
+                          break;
+                        case 1:
+                          NavigationService.push(context,
+                              AttendanceScreen(
+                                divisionId: divisionId,
+                                divisionName: divisionName,
+                                academicYearId: academicYearId,
+                                teacherId: staffId,
+                              ));
+                          break;
+                        case 2:
+                          NavigationService.push(context, const HomeworkListScreen());
+                          break;
+                        case 3:
+                          NavigationService.push(context, ExamComingSoonPage());
+                          break;
+                        case 4:
+                          callNext(const TeacherLeaveManagementScreen(), context);
+                          break;
+                        case 5:
+                          NavigationService.push(
+                              context,
+                              TimetableScreen(
+                                academicId: academicYearId,
+                                standard: standard,
+                                division: divisionName,
+                              ));
+                          break;
+                        case 6:
+                          final provider = context.read<StudentProvider>();
+                          provider.fetchMyStudentsInitial();
+                          callNext(StudentsParentsListScreen(), context);
+                        case 7:
+                          callNext(const SchoolCalendarMobileScreen(), context);
+                          break;
+                        case 8:
+                          NavigationService.push(context, const SyllabusListScreen());
+                          break;
+                        default:
+                          break;
+                      }
+                    },
+                    child: QuickActionCard(
+                      action: actions[index],
+                    ),
+                  );
+                },
+                childCount: actions.length,
+              ),
+            );
+          },
         ),
-        itemBuilder: (context65, index) {
-          return InkWell(
-              onTap: () async {
-                final prefs = await SharedPreferences.getInstance();
-                final divisionId = prefs.getString("divisionId")??'';
-                final divisionName = prefs.getString("divisionName")??'';
-                final academicYearId = prefs.getString("academicYearId")??'';
-                final staffId = prefs.getString("staffId")??'';
-                final staffName = prefs.getString("staffName")??'';
-                final standard = prefs.getString("className") ?? '';
-                switch(index){
-                  case 0:
-                    final provider = context.read<StudentProvider>();
-                    provider. searchMyStdQuery = '';
-                    context.read<StudentProvider>().fetchMyStudentsInitial();
-                    NavigationService.push(context, MyStudentsScreen());
-                    break;
-                  case 1:
-                      final provider = context.read<StudentProvider>();
-                      provider.fetchMyStudentsInitial();
-                    callNext(PunctualityStudentListScreen(), context);
-                    break;
-                  case 2:
-                    NavigationService.push(context, AttendanceScreen(divisionId: divisionId, divisionName: divisionName, academicYearId:academicYearId, teacherId: staffId,));
-                    break;
-                  case 3:
-                    NavigationService.push(context, AttendanceReportScreen(divisionId: divisionId, divisionName: divisionName,));
-                    break;
-                    case 4:
-                    NavigationService.push(context, ExamComingSoonPage());
-                    break;
-                  case 5:
-                    NavigationService.push(context, const HomeworkListScreen());
-                    break;
-                  case 6:
-                    NavigationService.push(context,  TimetableScreen(
-                      academicId: academicYearId,
-                      standard: standard,
-                      division: divisionName,
-                    ));
-                  case 7:
-                    final provider = context.read<StudentProvider>();
-                    provider.fetchMyStudentsInitial();
-                    callNext(StudentsParentsListScreen(), context);
-                    break;
-                  case 8:
-                    final provider = context.read<AdminProvider>();
-                    provider.fetchRules();
-                    callNext(RulesUserScreen(), context);
-                    break;
-                  case 9:
-
-                    final provider = context.read<AdminProvider>();
-                    provider.fetchBellTiming();
-                    callNext(BellTimingUserScreen(), context);
-                    break;
-                  case 10:
-                    callNext(const TeacherLeaveManagementScreen(), context);
-                    break;
-                    case 11:
-                    callNext(const SchoolCalendarMobileScreen(), context);
-                    break;
-                  case 12:
-                    NavigationService.push(context, const SyllabusListScreen());
-                    break;
-                  default:
-                    break;
-
-                }
-              },
-              child: QuickActionCard(action: actions[index]));
-        },
       );
     },
   );

@@ -32,20 +32,15 @@ class QuickActionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: AppPadding.pS,
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.radiusS,
-              ),
-              child: Icon(
-                action.icon,
-                color: AppColors.blue90,
-                size: 24.sp,
-              ),
-            ),
+           Image.asset(
+          action.icon,
+          color: AppColors.blue90,
+          width: 24.w,height: 24.h,
+        ),
             AppSpacing.v12,
             Text(
               action.title,
+              textAlign: TextAlign.center,
               style: AppTypography.caption.copyWith(
                 color: AppColors.blue90,
                 fontWeight: FontWeight.w600,
@@ -55,6 +50,58 @@ class QuickActionCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class QuickListActionCard extends StatelessWidget {
+  final QuickAction action;
+
+  const QuickListActionCard({
+    super.key,
+    required this.action,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: AppPadding.pt10,
+      child: Material(
+        color: AppColors.white,
+        borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12.r),
+            bottomRight:Radius.circular(12.r),topRight:Radius.circular(12.r)  ),
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          padding: AppPadding.pS,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12.r),bottomRight:Radius.circular(12.r),topRight:Radius.circular(12.r)  ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Image.asset(
+                action.icon,
+                color: AppColors.blue90,
+                width: 24.w,height: 24.h,
+              ),
+              AppSpacing.w8,
+              Text(
+                action.title,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.blue90,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.sp,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

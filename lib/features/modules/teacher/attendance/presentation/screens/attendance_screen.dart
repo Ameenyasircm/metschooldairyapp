@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/core/theme/app_colors.dart';
@@ -106,7 +107,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       body: Consumer<AttendanceViewModel>(
         builder: (context, vm, child) {
           if (vm.isLoading && vm.attendanceMap.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(child: CustomLoader());
           }
 
           return Column(

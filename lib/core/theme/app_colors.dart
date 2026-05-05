@@ -58,7 +58,7 @@ class AppColors {
 
   // Status Colors (Useful for Fees & Attendance)
   static const Color successGreen = Color(0xFF1E8E3E); // Paid / Present
-  static const Color errorRed = Color(0xFFD93025);     // Pending / Absent
+  static const Color errorRed = Color(0xFFBA1A1A);     // Pending / Absent
   static const Color warningOrange = Color(0xFFF9AB00); // Partially Paid
 
   static const Color silverGrey = Color(0xFFB5B7B9); // Silver / Grey
