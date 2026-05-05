@@ -99,6 +99,28 @@ class TeacherHomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          SliverToBoxAdapter(
+            child: AppSpacing.h12,
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              padding: AppPadding.pS,
+              margin: AppPadding.phL,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: AppRadius.radiusM,
+              ),
+              child: Column(
+                children: [
+                  Text("6th(B)",style:AppTypography.h3,),
+                  AppSpacing.h4,
+                  Text("56 Students",style:AppTypography.body2.copyWith(
+                    color: AppColors.grey4E
+                  ),),
+                ],
+              ),
+            ),
+          ),
           buildQuickActions(context),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(20.w, 0.h, 20.w, 30.h),
@@ -161,28 +183,4 @@ class TeacherHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickStats() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_today_rounded,
-              color: AppColors.mint, size: 18),
-          SizedBox(width: 12.w),
-          Text(
-            "Today: 4 Classes | 2 Exams Scheduled",
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
 }
