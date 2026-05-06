@@ -36,9 +36,23 @@ import '../widgets/attendance_card.dart';
 import '../widgets/grade_overview_card.dart';
 import '../widgets/teacher_quick_actions.dart';
 
-class TeacherHomeScreen extends StatelessWidget {
+class TeacherHomeScreen extends StatefulWidget {
   final String staffName;
   const TeacherHomeScreen({super.key, required this.staffName});
+
+  @override
+  State<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
+}
+
+class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TeacherHomeViewModel>().fetchTeacherDashboardData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,22 +117,26 @@ class TeacherHomeScreen extends StatelessWidget {
             child: AppSpacing.h12,
           ),
           SliverToBoxAdapter(
-            child: Container(
-              padding: AppPadding.pS,
-              margin: AppPadding.phL,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: AppRadius.radiusM,
-              ),
-              child: Column(
-                children: [
-                  Text("6th(B)",style:AppTypography.h3,),
-                  AppSpacing.h4,
-                  Text("56 Students",style:AppTypography.body2.copyWith(
-                    color: AppColors.grey4E
-                  ),),
-                ],
-              ),
+            child: Consumer<TeacherHomeViewModel>(
+              builder: (context, vm, _) {
+                return Container(
+                  padding: AppPadding.pS,
+                  margin: AppPadding.phL,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: AppRadius.radiusM,
+                  ),
+                  child: Column(
+                    children: [
+                      Text("${vm.getStandardText(vm.className)}(${vm.divisionName})",style:AppTypography.h3,),
+                      AppSpacing.h4,
+                      Text("${vm.studentCount} Students",style:AppTypography.body2.copyWith(
+                        color: AppColors.grey4E
+                      ),),
+                    ],
+                  ),
+                );
+              }
             ),
           ),
           buildQuickActions(context),
@@ -135,6 +153,7 @@ class TeacherHomeScreen extends StatelessWidget {
                           final prefs = await SharedPreferences.getInstance();
                           final divisionId = prefs.getString("divisionId") ?? '';
                           final divisionName = prefs.getString("divisionName") ?? '';
+                          if (!context.mounted) return;
                           final provider = context.read<StudentProvider>();
                         switch (index) {
                           case 0:

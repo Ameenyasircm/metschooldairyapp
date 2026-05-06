@@ -1,11 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/core/constants/app_assets.dart';
 import 'package:met_school/core/theme/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/models/quick_action.dart';
 
 class TeacherHomeViewModel extends ChangeNotifier {
   int _selectedIndex = 0;
   int get selectedIndex => _selectedIndex;
+
+  String? _divisionName;
+  String? _className;
+  int _studentCount = 0;
+  bool _isLoading = false;
+
+  String get divisionName => _divisionName ?? '';
+  String get className => _className ?? '';
+  int get studentCount => _studentCount;
+  bool get isLoading => _isLoading;
 
   String get greetingText {
     final hour = DateTime.now().hour;
@@ -15,6 +27,67 @@ class TeacherHomeViewModel extends ChangeNotifier {
       return 'Good Afternoon,';
     } else {
       return 'Good Evening,';
+    }
+  }
+
+  Future<void> fetchTeacherDashboardData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _divisionName = prefs.getString("divisionName");
+      _className = prefs.getString("className");
+      final divisionId = prefs.getString("divisionId");
+
+      if (divisionId != null && divisionId.isNotEmpty) {
+        final countQuery = FirebaseFirestore.instance
+            .collection('enrollments')
+            .where('class_name', isEqualTo: _className)
+            .where('division_id', isEqualTo: divisionId)
+            .count();
+
+        final snapshot = await countQuery.get();
+        _studentCount = snapshot.count ?? 0;
+      }
+    } catch (e) {
+      debugPrint("Error fetching teacher dashboard data: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  String getStandardText(dynamic standard) {
+    if (standard == null) return '';
+    // Handle LKG & UKG first
+    if (standard == "LKG" || standard == "UKG") {
+      return standard;
+    }
+
+    // Convert to int safely
+    int? std;
+    if (standard is int) {
+      std = standard;
+    } else {
+      std = int.tryParse(standard.toString());
+    }
+
+    if (std == null) return standard.toString();
+
+    if (std >= 11 && std <= 13) {
+      return "${std}th";
+    }
+
+    switch (std % 10) {
+      case 1:
+        return "${std}st";
+      case 2:
+        return "${std}nd";
+      case 3:
+        return "${std}rd";
+      default:
+        return "${std}th";
     }
   }
 
