@@ -11,12 +11,8 @@ import '../provider/attendance_view_model.dart';
 
 Widget buildBottomButton(BuildContext context) {
   final vm = context.watch<AttendanceViewModel>();
-  return Container(
-    padding: AppPadding.pM,
-    decoration: BoxDecoration(
-      color: AppColors.white,
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-    ),
+  return Padding(
+    padding: AppPadding.phL,
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
         minimumSize: Size(double.infinity, 50.h),

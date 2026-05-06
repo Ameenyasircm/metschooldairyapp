@@ -98,7 +98,7 @@ class AttendanceViewModel extends ChangeNotifier {
     }
   }
 
-  void markSingleStudent(String studentId, AttendanceStatus status, {String? remark, int? lateDuration, String? absentRemark}) {
+  void markSingleStudent(String studentId, AttendanceStatus status, {String? remark, String? lateDuration, String? absentRemark}) {
     final data = _attendanceMap[studentId];
     if (data != null) {
       if (_selectedSession == AttendanceSession.morning) {
@@ -110,7 +110,7 @@ class AttendanceViewModel extends ChangeNotifier {
         } else {
           data.isLate = false;
           data.lateRemark = '';
-          data.lateDurationMinutes = 0;
+          data.lateDurationMinutes = '';
         }
 
         if (status == AttendanceStatus.absent) {

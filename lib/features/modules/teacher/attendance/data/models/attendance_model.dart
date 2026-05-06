@@ -14,7 +14,7 @@ class StudentAttendanceData {
   AttendanceStatus afternoon;
   bool isLate;
   String lateRemark;
-  int lateDurationMinutes;
+  String lateDurationMinutes;
   String morningAbsentRemark;
   String afternoonAbsentRemark;
 
@@ -28,7 +28,7 @@ class StudentAttendanceData {
     this.afternoon = AttendanceStatus.none,
     this.isLate = false,
     this.lateRemark = '',
-    this.lateDurationMinutes = 0,
+    this.lateDurationMinutes = '',
     this.morningAbsentRemark = '',
     this.afternoonAbsentRemark = '',
   });
@@ -44,7 +44,7 @@ class StudentAttendanceData {
       afternoon: _parseStatus(map['afternoon']),
       isLate: map['isLate'] ?? false,
       lateRemark: map['lateRemark'] ?? '',
-      lateDurationMinutes: map['lateDurationMinutes'] ?? 0,
+      lateDurationMinutes: map['lateDurationMinutes'] ?? '0',
       morningAbsentRemark: map['morningAbsentRemark'] ?? '',
       afternoonAbsentRemark: map['afternoonAbsentRemark'] ?? '',
     );

@@ -74,12 +74,11 @@ class AttendanceRemarkDialogs {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
-                final duration = int.tryParse(durationController.text.trim()) ?? 0;
                 vm.markSingleStudent(
                   studentId, 
                   AttendanceStatus.late, 
                   remark: controller.text.trim(),
-                  lateDuration: duration,
+                  lateDuration: durationController.text.trim(),
                 );
                 Navigator.pop(context);
               }

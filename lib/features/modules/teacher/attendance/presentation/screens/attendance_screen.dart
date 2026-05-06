@@ -142,7 +142,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           );
         },
       ),
-      bottomNavigationBar: buildBottomButton(context),
+      bottomNavigationBar: SafeArea(child: buildBottomButton(context)),
     );
   }
 

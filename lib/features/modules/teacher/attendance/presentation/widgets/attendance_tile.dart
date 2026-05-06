@@ -53,7 +53,7 @@ class AttendanceTile extends StatelessWidget {
                       Padding(
                         padding: EdgeInsets.only(top: 4.h),
                         child: Text(
-                          "Late: ${studentData.lateDurationMinutes} mins - ${studentData.lateRemark}", 
+                          "Late: ${studentData.lateDurationMinutes}- ${studentData.lateRemark}",
                           style: AppTypography.caption.copyWith(color: AppColors.warningOrange)
                         ),
                       ),
