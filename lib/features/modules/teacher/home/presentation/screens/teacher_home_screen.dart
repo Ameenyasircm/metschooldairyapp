@@ -128,7 +128,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                   ),
                   child: Column(
                     children: [
-                      Text("${vm.getStandardText(vm.className)}(${vm.divisionName})",style:AppTypography.h3,),
+                      Text("${vm.getStandardText(vm.className)}(${vm.divisionName})",style:AppTypography.h5,),
                       AppSpacing.h4,
                       Text("${vm.studentCount} Students",style:AppTypography.body2.copyWith(
                         color: AppColors.grey4E
