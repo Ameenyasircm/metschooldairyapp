@@ -245,9 +245,9 @@ class AuthProvider with ChangeNotifier {
         );
 
         /// =========================
-        /// ✅ SINGLE STUDENT
+        /// ✅ PARENT NAVIGATION (REDUCED STEP)
         /// =========================
-        if (studentDataList.length == 1) {
+        if (studentDataList.isNotEmpty) {
           final s = studentDataList.first;
 
           await prefs.setString("selectedStudentData", jsonEncode(s));
@@ -267,32 +267,6 @@ class AuthProvider with ChangeNotifier {
                 teacherName: s['teacherName'],
                 teacherID: s['teacherId'],
                 parentName: data['name'],
-              ),
-              context,
-            );
-          }
-        }
-
-        /// =========================
-        /// ✅ MULTIPLE STUDENTS
-        /// =========================
-        else {
-          if (context.mounted) {
-            final s = studentDataList.first;
-
-            await prefs.setString("selectedStudentData", jsonEncode(s));
-
-            /// ✅ FIXED (FROM ENROLLMENT)
-            await prefs.setString("divisionId", s['divisionId'] ?? "");
-            await prefs.setString("divisionName", s['divisionName'] ?? "");
-            await prefs.setString("classId", s['classId'] ?? "");
-            await prefs.setString("className", s['className'] ?? "");
-            await prefs.setString("academicYearId", s['academicYearId'] ?? "");
-
-            callNextReplacement(
-              ParentStudentSelectionScreen(
-                studentIds: studentDataList,
-                parentName: data['name']??"",
               ),
               context,
             );

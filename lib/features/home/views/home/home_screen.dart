@@ -618,7 +618,7 @@ class _HomeScreenState extends State<HomeScreen> {
           prefs.getString("userName") ??
           "N/A";
 
-      if (studentDataList.length == 1) {
+      if (studentDataList.isNotEmpty) {
         final s = studentDataList.first;
         NavigationService.push(
           context,
@@ -628,14 +628,6 @@ class _HomeScreenState extends State<HomeScreen> {
             academicYearID: s['academicYearId'],
             teacherName: s['teacherName'],
             teacherID: s['teacherId'],
-          ),
-        );
-      } else {
-        NavigationService.push(
-          context,
-          ParentStudentSelectionScreen(
-            studentIds: studentDataList,
-            parentName: name,
           ),
         );
       }
