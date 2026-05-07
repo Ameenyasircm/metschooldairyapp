@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // We use a SizedBox + Stack here so the layout engine knows exactly
     // how much space the hero + the overlapping collage takes up vertically.
     return SizedBox(
-      height: 440, // 350 (Hero image) + 90 (Collage overflow)
+      height: 365, // 350 (Hero image) + 90 (Collage overflow)
       child: Stack(
         children: [
           // 1. Hero Background & Title Card
@@ -176,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Rotated Image Collage ─────────────────────────────────────────────────
   Widget _buildImageCollage() {
     // Increased height to 220 so the dropped right image has plenty of room
-    return SizedBox(
+    return Container(
+      // color: Colors.red,
       height: 220,
       child: Stack(
         alignment: Alignment.topCenter,
@@ -184,28 +185,28 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // 1. Left Image (Back layer)
           Positioned(
-            left: 12,
-            top: 30, // Sits higher than the right image
+            left: 17,
+            top: 15, // Sits higher than the right image
             child: Transform.rotate(
               angle: -14 * (math.pi / 180), // -14 degrees (steeper angle)
               child: _buildCollageCard(
                 imagePath: 'assets/images/img1.png',
-                width: 138, // Landscape
-                height: 105,
+                width: 130, // Landscape
+                height: 90,
               ),
             ),
           ),
 
           // 2. Right Image (Back layer)
           Positioned(
-            right: 8,
-            top: 20, // Pushed significantly lower to match Figma
+            right: 18,
+            top: 15, // Pushed significantly lower to match Figma
             child: Transform.rotate(
               angle: -3 * (math.pi / 180), // rotate left
               child: _buildCollageCard(
                 imagePath: 'assets/images/img3.png',
-                width: 140, // Exact landscape ratio from Figma
-                height: 105,
+                width: 130, // Exact landscape ratio from Figma
+                height: 90,
               ),
             ),
           ),
@@ -216,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             child: _buildCollageCard(
               imagePath: 'assets/images/img2.png',
-              width: 105,
-              height: 140, // Tallest, portrait ratio
+              width: 90,
+              height: 110, // Tallest, portrait ratio
             ),
           ),
         ],
