@@ -95,7 +95,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 icon: Icons.notifications_none_outlined,
                 iconColor: AppColors.primary,
                 onTap: () {
-                  print("kmjbjgbijibntin$parentId");
                   callNext(ParentNotificationScreen(parentId: parentId??''), context);
                 },
               ),
@@ -166,9 +165,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 /// 🎯 STUDENT CARD (UPDATED STYLE)
                 Container(
                   width: double.infinity,
-                  padding: AppPadding.pL,
+                  padding: AppPadding.pM,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    // color: Colors.grey.shade100,
+                    color: Colors.red.shade100,
                     borderRadius: AppRadius.radiusL,
                   ),
                   child: Column(
@@ -190,7 +190,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   ),
                 ),
 
-                AppSpacing.h12,
+                AppSpacing.h6,
 
                 /// 🔴 Fee
                 const Center(
