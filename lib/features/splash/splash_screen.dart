@@ -84,6 +84,14 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton:   Padding(
+        padding: const EdgeInsets.only(bottom: 15),
+        child: Image.asset(
+          "assets/images/codematesLogo.png",
+          scale: 12,color: Colors.white,
+        ),
+      ),
       backgroundColor: AppColors.darkBlue2,
       body: SafeArea(
         child: SizedBox(width:MediaQuery.of(context).size.width,
@@ -108,13 +116,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const Spacer(),
 
               // ✅ Bottom Logo
-              Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Image.asset(
-                  "assets/images/codematesLogo.png",
-                  scale: 12,color: Colors.white,
-                ),
-              ),
+
             ],
           ),
         ),

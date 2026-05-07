@@ -1,5 +1,17 @@
-import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/router/app_navigation.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
+import '../../../modules/parent/views/parent_select_child_screen.dart';
+import '../../../modules/teacher/home/presentation/screens/teacher_home_screen.dart';
+import '../../../../core/utils/navigation/navigation_helper.dart';
+import '../../../../features/auth/presentation/screens/login_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -59,111 +71,187 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Hero / Header ─────────────────────────────────────────────────────────
+// ── Hero / Header ─────────────────────────────────────────────────────────
   Widget _buildHeroBanner() {
-    return Column(
-      children: [
-        // Status-bar safe area
-        Container(
-          color: Colors.white,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/bg.jpg'), // your image path
-              fit: BoxFit.cover,
+    // We use a SizedBox + Stack here so the layout engine knows exactly
+    // how much space the hero + the overlapping collage takes up vertically.
+    return SizedBox(
+      height: 440, // 350 (Hero image) + 90 (Collage overflow)
+      child: Stack(
+        children: [
+          // 1. Hero Background & Title Card
+          Container(
+            height: 350,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/homeMainImage.png'), // your image path
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top,
-            left: 16,
-            right: 16,
-            bottom: 12,
-          ),
-          child: Row(
-            children: [
-              // Logo placeholder
-              Container(
-                width: 52,
-                height: 52,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.school, color: Colors.grey),
-              ),
-              const SizedBox(width: 12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MET PUBLIC SCHOOL',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A237E),
-                      letterSpacing: 0.5,
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(0xFFE5D3D8),
+                      Color(0xFFC7D6E8),
+                      Color(0xFFDFE2E8),
+                      Color(0xFFD3C5D3),
+                    ],
+                    stops: [0.0, 0.25, 0.7, 1.0],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 23.8,
                     ),
-                  ),
-                  Text(
-                    'PAYYANAD',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A237E),
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Hero image collage placeholder
-        SizedBox(
-          height: 200,
-          child: Row(
-            children: [
-              // Left tall image
-              Expanded(
-                flex: 2,
-                child: Container(
-                  margin: const EdgeInsets.only(right: 2),
-                  color: Colors.grey.shade400,
-                  child: const Center(
-                    child: Icon(Icons.image, size: 40, color: Colors.white54),
-                  ),
+                  ],
                 ),
-              ),
-              // Right 2x2 grid
-              Expanded(
-                flex: 3,
-                child: Column(
+                child: Row(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _greyImageBox(margin: const EdgeInsets.only(bottom: 2, right: 2)),
-                          _greyImageBox(margin: const EdgeInsets.only(bottom: 2)),
-                        ],
+                    const CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white,
+                      backgroundImage: AssetImage(
+                        "assets/images/metSchoolPng.png",
                       ),
                     ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          _greyImageBox(margin: const EdgeInsets.only(right: 2)),
-                          _greyImageBox(),
-                        ],
-                      ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'MET PUBLIC SCHOOL',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'PAYYANAD',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+
+          // 2. The Overlapping Rotated Collage
+          Positioned(
+            top: 250, // Pushes it down so it overlaps the bottom edge of the 350px hero image
+            left: 0,
+            right: 0,
+            child: _buildImageCollage(),
+          ),
+        ],
+      ),
     );
   }
 
+  // ── Rotated Image Collage ─────────────────────────────────────────────────
+  Widget _buildImageCollage() {
+    // Increased height to 220 so the dropped right image has plenty of room
+    return SizedBox(
+      height: 220,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          // 1. Left Image (Back layer)
+          Positioned(
+            left: 12,
+            top: 30, // Sits higher than the right image
+            child: Transform.rotate(
+              angle: -14 * (math.pi / 180), // -14 degrees (steeper angle)
+              child: _buildCollageCard(
+                imagePath: 'assets/images/img1.png',
+                width: 138, // Landscape
+                height: 105,
+              ),
+            ),
+          ),
+
+          // 2. Right Image (Back layer)
+          Positioned(
+            right: 8,
+            top: 20, // Pushed significantly lower to match Figma
+            child: Transform.rotate(
+              angle: -3 * (math.pi / 180), // rotate left
+              child: _buildCollageCard(
+                imagePath: 'assets/images/img3.png',
+                width: 140, // Exact landscape ratio from Figma
+                height: 105,
+              ),
+            ),
+          ),
+
+          // 3. Center Image (Front layer!)
+          // Placed LAST in the children list so it renders ON TOP of the others
+          Positioned(
+            top: 0,
+            child: _buildCollageCard(
+              imagePath: 'assets/images/img2.png',
+              width: 105,
+              height: 140, // Tallest, portrait ratio
+            ),
+          ),
+        ],
+      ),
+    );
+  }  Widget _buildCollageCard({
+    required String imagePath,
+    required double width,
+    required double height,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(imagePath),
+          fit: BoxFit.cover,
+        ),
+        color: Colors.grey.shade300, // Placeholder color before image loads
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      // Remove this child Center icon once you uncomment the DecorationImage above
+      // child: const Center(
+      //   child: Icon(Icons.image, size: 32, color: Colors.white70),
+      // ),
+    );
+  }
   Widget _greyImageBox({EdgeInsets margin = EdgeInsets.zero}) {
     return Expanded(
       child: Container(
@@ -177,7 +265,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Top Students ──────────────────────────────────────────────────────────
+
+// --- Updated: Parent list widget with unique rotation logic ---
   Widget _buildTopStudents() {
+    // A list of student image assets (using generic names for this example)
+    final List<String> studentImages = [
+      'assets/images/std1.png',
+      'assets/images/std2.png',
+      'assets/images/std3.png',
+      'assets/images/std4.png',
+      // Add more as needed
+    ];
+
+    // Placeholder list to match your original itemCount of 5
+    // for this example, we'll just cycle the 4 images.
+    final List<String> cyclicalImages = List.generate(
+      5, // original item count
+          (index) => studentImages[index % studentImages.length],
+    );
+
+    final math.Random random = math.Random();
+
     return Column(
       children: [
         // Trophy icon
@@ -195,38 +303,62 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Horizontal avatar list
         SizedBox(
-          height: 90,
+          height: 110, // Increased list height to fit the larger, angled frames
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: 5,
+            itemCount: cyclicalImages.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) => _buildStudentAvatar(),
+            itemBuilder: (context, index) {
+              // Generate a random angle for each avatar
+              // between -8 degrees and +8 degrees for a subtle, varied tilt.
+              final double degrees = (random.nextDouble() * 16) - 8;
+              final double radians = degrees * (math.pi / 180);
+
+              return Transform.rotate(
+                angle: radians,
+                child: _buildStudentAvatar(cyclicalImages[index]),
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStudentAvatar() {
-    return Container(
-      width: 78,
-      height: 78,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: const Color(0xFFFFB300),
-          width: 3,
-          strokeAlign: BorderSide.strokeAlignOutside,
-        ),
-        color: Colors.grey.shade300,
-      ),
-      child: const Center(
-        child: Icon(Icons.person, size: 36, color: Colors.grey),
+  // --- Updated: Avatar definition with larger sizes and organic layering ---
+  Widget _buildStudentAvatar(String studentImagePath) {
+    return SizedBox(
+      width: 110, // Increased overall width
+      height: 110, // Increased overall height
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 1. The Student Image (Bottom Layer)
+          ClipOval(
+            // Round the inner image organically to fit behind the frame
+            child: Image.asset(
+              studentImagePath,
+              width: 90, // Keep the student image slightly smaller than the frame
+              height: 90,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  Container(color: Colors.grey.shade300), // Placeholder if asset fails
+            ),
+          ),
+
+          // 2. The Yellow Border Asset (Top Layer)
+          Image.asset(
+            // Changed generic border asset name to a more descriptive specific asset file
+            'assets/images/yellowBorder.png',
+            width: 105,
+            height: 105,
+            fit: BoxFit.contain,
+          ),
+        ],
       ),
     );
   }
-
   // ── Events ────────────────────────────────────────────────────────────────
   Widget _buildEvents() {
     return Padding(
@@ -298,46 +430,76 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Photo Grid ────────────────────────────────────────────────────────────
+// ── Photo Grid ────────────────────────────────────────────────────────────
   Widget _buildPhotoGrid() {
+    // Replace these with your actual image paths
+    final List<String> imagePaths = [
+      'assets/images/gallary1.png',
+      'assets/images/gallary2.png',
+      'assets/images/gallary3.png',
+      'assets/images/gallary4.png',
+      'assets/images/gallary5.png',
+
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
+      child: StaggeredGrid.count(
+        crossAxisCount: 6, // 6 columns total
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
         children: [
-          // Row 1 – two wide cards
-          Row(
-            children: [
-              _photoCard(flex: 1, height: 130),
-              const SizedBox(width: 8),
-              _photoCard(flex: 1, height: 130),
-            ],
+          // Row 1: 2 items (takes 3 columns each)
+          StaggeredGridTile.extent(
+            crossAxisCellCount: 3,
+            mainAxisExtent: 130, // height
+            child: _photoCard(imagePaths[0]),
           ),
-          const SizedBox(height: 8),
-          // Row 2 – three equal cards
-          Row(
-            children: [
-              _photoCard(flex: 1, height: 100),
-              const SizedBox(width: 8),
-              _photoCard(flex: 1, height: 100),
-              const SizedBox(width: 8),
-              _photoCard(flex: 1, height: 100),
-            ],
+          StaggeredGridTile.extent(
+            crossAxisCellCount: 3,
+            mainAxisExtent: 130,
+            child: _photoCard(imagePaths[1]),
+          ),
+
+          // Row 2: 3 items (takes 2 columns each)
+          StaggeredGridTile.extent(
+            crossAxisCellCount: 2,
+            mainAxisExtent: 100, // height
+            child: _photoCard(imagePaths[2]),
+          ),
+          StaggeredGridTile.extent(
+            crossAxisCellCount: 2,
+            mainAxisExtent: 100,
+            child: _photoCard(imagePaths[3]),
+          ),
+          StaggeredGridTile.extent(
+            crossAxisCellCount: 2,
+            mainAxisExtent: 100,
+            child: _photoCard(imagePaths[4]),
           ),
         ],
       ),
     );
   }
 
-  Widget _photoCard({required int flex, required double height}) {
-    return Expanded(
-      flex: flex,
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Center(
-          child: Icon(Icons.image, size: 32, color: Colors.white54),
+  Widget _photoCard(String imagePath) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      // ClipRRect ensures the image stays inside the rounded corners
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+          // Optional: Add an error builder in case the asset is missing during testing
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Icon(Icons.image, size: 32, color: Colors.white54),
+            );
+          },
         ),
       ),
     );
@@ -435,7 +597,62 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Login Button ──────────────────────────────────────────────────────────
+// ── Auth tap handler (copied from old HomeScreen) ─────────────────────────
+  Future<void> _handleAuthTap() async {
+    final auth = context.read<AuthProvider>();
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString("role");
+
+    if (!auth.isLoggedIn) {
+      NavigationService.push(context, LoginScreen());
+      return;
+    }
+
+    if (role == "parent") {
+      final studentDataList = (prefs.getStringList("studentDataList") ?? [])
+          .map((e) => jsonDecode(e) as Map<String, dynamic>)
+          .toList();
+
+      final name = prefs.getString("staffName") ??
+          prefs.getString("userName") ??
+          "N/A";
+
+      if (studentDataList.length == 1) {
+        final s = studentDataList.first;
+        NavigationService.push(
+          context,
+          ParentMainScreen(
+            parentName: name,
+            studentId: s['studentId'],
+            academicYearID: s['academicYearId'],
+            teacherName: s['teacherName'],
+            teacherID: s['teacherId'],
+          ),
+        );
+      } else {
+        NavigationService.push(
+          context,
+          ParentStudentSelectionScreen(
+            studentIds: studentDataList,
+            parentName: name,
+          ),
+        );
+      }
+    } else {
+      NavigationService.push(
+        context,
+        TeacherHomeScreen(
+          staffName: prefs.getString("staffName") ?? "",
+        ),
+      );
+    }
+  }
+
+// ── Login / Continue Button ───────────────────────────────────────────────
   Widget _buildLoginButton() {
+    // Watch AuthProvider so the button label reacts to login state changes
+    final isLoggedIn = context.watch<AuthProvider>().isLoggedIn;
+
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(
@@ -456,22 +673,27 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             borderRadius: BorderRadius.circular(30),
           ),
-          child: ElevatedButton(
-            onPressed: () {},
+          child: ElevatedButton.icon(
+            onPressed: _handleAuthTap,
+            icon: Icon(
+              isLoggedIn ? Icons.dashboard_rounded : Icons.login_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            label: Text(
+              isLoggedIn ? 'Continue' : 'Login',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: const Text(
-              'Login',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 0.5,
               ),
             ),
           ),
