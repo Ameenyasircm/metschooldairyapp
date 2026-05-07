@@ -29,13 +29,18 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
+  // Theme Colors
+  final Color primaryBlue = const Color(0xFF031937);
+  final Color secondaryBlue = const Color(0xFF003865);
+  final Color bgColor = const Color(0xFFF8FAFC);
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  // --- BATCH ENROLLMENT ---
+  // --- LOGIC PRESERVED ---
   Future<void> _bulkEnroll(List<String> selectedIds, List<Map<String, dynamic>> studentDetails) async {
     final firestore = FirebaseFirestore.instance;
     final batch = firestore.batch();
@@ -43,15 +48,12 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF0F766E))),
+      builder: (context) => Center(child: CircularProgressIndicator(color: primaryBlue)),
     );
 
     try {
       for (var student in studentDetails) {
-
         final String sId = student['id'];
-        print(sId);
-
         final existing = await firestore
             .collection('enrollments')
             .where('student_id', isEqualTo: sId)
@@ -93,8 +95,8 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
 
       await batch.commit();
       if (mounted) {
-        Navigator.pop(context); // Close progress loader
-        Navigator.pop(context); // Close modal
+        Navigator.pop(context);
+        Navigator.pop(context);
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Enrollment completed successfully!"), backgroundColor: Colors.green),
@@ -107,14 +109,13 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     }
   }
 
-  // --- AUTO ASSIGN ROLL NUMBERS ---
   Future<void> autoAssignRollNumbers(String divisionId, String academicYearId) async {
     final firestore = FirebaseFirestore.instance;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF0F766E))),
+      builder: (context) => Center(child: CircularProgressIndicator(color: primaryBlue)),
     );
 
     try {
@@ -124,72 +125,49 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
           .get();
 
       List<Map<String, dynamic>> enrollmentList = [];
-
       for (var doc in querySnapshot.docs) {
         var studentDoc = await firestore.collection('students').doc(doc['student_id']).get();
-        String name = (studentDoc.data())?['name'] ?? "ZZZ";
-
-        enrollmentList.add({
-          'ref': doc.reference,
-          'name': name.toLowerCase(),
-        });
+        String name = (studentDoc.data() as Map<String, dynamic>?)?['name'] ?? "ZZZ";
+        enrollmentList.add({'ref': doc.reference, 'name': name.toLowerCase()});
       }
 
-      // Sort Alphabetically
       enrollmentList.sort((a, b) => a['name'].compareTo(b['name']));
 
       final batch = firestore.batch();
       for (int i = 0; i < enrollmentList.length; i++) {
-        batch.update(enrollmentList[i]['ref'], {
-          // CHANGED: Removed .padLeft(2, '0') to keep format as 1, 2, 3...
-          'roll_number': (i + 1),
-        });
+        batch.update(enrollmentList[i]['ref'], {'roll_number': (i + 1)});
       }
 
       await batch.commit();
-      if (mounted) Navigator.pop(context); // Close loader
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) Navigator.pop(context);
-      debugPrint("Sort Error: $e");
     }
   }
 
-  Future<bool?> _showConfirmDialog() {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Assign Roll Numbers?"),
-        content: const Text("This will sort all enrolled students alphabetically and assign roll numbers (01, 02, etc.)."),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Assign", style: TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- MODAL SELECTOR ---
   void _showEnrollmentSelector() {
     List<String> selectedStudentIds = [];
     List<Map<String, dynamic>> selectedDetails = [];
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return StatefulBuilder(builder: (context, setModalState) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.8,
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: StatefulBuilder(builder: (context, setModalState) {
+            return Column(
               children: [
-                const Text("Select Students", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const Divider(height: 30),
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                const SizedBox(height: 20),
+                const Text("Enroll Students", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
@@ -200,7 +178,7 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                       final students = snapshot.data!.docs;
-                      if (students.isEmpty) return const Center(child: Text("No students available for enrollment."));
+                      if (students.isEmpty) return const Center(child: Text("All students are enrolled."));
 
                       return ListView.builder(
                         itemCount: students.length,
@@ -210,8 +188,8 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
                           final isSelected = selectedStudentIds.contains(sId);
 
                           return CheckboxListTile(
-                            activeColor: const Color(0xFF0F766E),
-                            title: Text(s['name'] ?? "Unknown"),
+                            activeColor: secondaryBlue,
+                            title: Text(s['name'] ?? "Unknown", style: const TextStyle(fontWeight: FontWeight.w600)),
                             subtitle: Text("ADM: ${s['admissionId']}"),
                             value: isSelected,
                             onChanged: (bool? value) {
@@ -234,61 +212,61 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 55,
                   child: ElevatedButton(
                     onPressed: selectedStudentIds.isEmpty ? null : () => _bulkEnroll(selectedStudentIds, selectedDetails),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F766E)),
-                    child: const Text("Enroll Selected", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryBlue,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: const Text("Enroll Selected", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 )
               ],
-            ),
-          );
-        });
+            );
+          }),
+        );
       },
     );
   }
 
+  // --- UI BUILDING ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Color(0xFF1E293B)),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: primaryBlue),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Division ${widget.divisionName}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-            Text("Class: ${widget.className}", style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            Text("Division ${widget.divisionName}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryBlue)),
+            Text("Class: ${widget.className}", style: TextStyle(fontSize: 12, color: primaryBlue.withOpacity(0.6))),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: "Assign Roll Numbers",
-            icon: const Icon(Icons.sort_by_alpha, color: Color(0xFF0F766E)),
+            tooltip: "Auto-Assign Roll Numbers",
+            icon: Icon(Icons.sort_by_alpha_rounded, color: primaryBlue),
             onPressed: () async {
               bool? confirm = await _showConfirmDialog();
               if (confirm == true) {
                 await autoAssignRollNumbers(widget.divisionId, widget.academicYearId);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Roll numbers assigned alphabetically!"))
-                  );
-                }
               }
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
         ],
       ),
       body: Column(
         children: [
-          _buildHeaderSection(),
+          _buildActionHeader(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -309,7 +287,7 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
                 if (docs.isEmpty) return _emptyState();
 
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final enrollmentData = docs[index].data() as Map<String, dynamic>;
@@ -324,10 +302,13 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildActionHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -335,26 +316,32 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
               controller: _searchController,
               onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
               decoration: InputDecoration(
-                hintText: "Search ADM No...",
-                prefixIcon: const Icon(Icons.search, size: 20),
+                hintText: "Search Admission No...",
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                fillColor: bgColor,
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
               ),
             ),
           ),
           const SizedBox(width: 12),
           InkWell(
             onTap: _showEnrollmentSelector,
+            borderRadius: BorderRadius.circular(15),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(color: const Color(0xFF0F766E), borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              decoration: BoxDecoration(
+                color: secondaryBlue,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [BoxShadow(color: secondaryBlue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
               child: const Row(
                 children: [
-                  Icon(Icons.group_add_rounded, color: Colors.white, size: 18),
+                  Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 18),
                   SizedBox(width: 8),
-                  Text("Enroll", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text("Enroll", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -368,35 +355,38 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance.collection('students').doc(enrollData['student_id']).get(),
       builder: (context, studentSnap) {
-        String studentName = "Loading...";
-        if (studentSnap.hasData && studentSnap.data!.exists) {
-          studentName = (studentSnap.data!.data() as Map<String, dynamic>)['name'] ?? "No Name";
-        }
+        String studentName = studentSnap.hasData && studentSnap.data!.exists
+            ? (studentSnap.data!.data() as Map<String, dynamic>)['name'] ?? "No Name"
+            : "Loading...";
 
         return Container(
-          margin: const EdgeInsets.only(top: 12),
+          margin: const EdgeInsets.only(top: 15),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))],
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            leading: CircleAvatar(
-              backgroundColor: const Color(0xFFF1F5F9),
-              // The number will now show as 1, 2, 3 instead of 01, 02, 03
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: secondaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
               child: Text(
-                  enrollData['roll_number'].toString() ?? "-",
-                  style: const TextStyle(
-                      color: Color(0xFF0F766E),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14 // Slightly larger font for single digits
-                  )
+                enrollData['roll_number']?.toString() ?? "-",
+                style: TextStyle(color: secondaryBlue, fontWeight: FontWeight.w900, fontSize: 18),
               ),
             ),
-            title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            subtitle: Text("ADM: ${enrollData['enrollment_id']}", style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-            trailing: const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
+            title: Text(studentName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryBlue)),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text("ADM: ${enrollData['enrollment_id']}", style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
           ),
         );
       },
@@ -408,9 +398,27 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.group_off_rounded, size: 60, color: Colors.grey.shade300),
+          Icon(Icons.folder_open_rounded, size: 80, color: Colors.grey.shade200),
           const SizedBox(height: 16),
-          const Text("No students enrolled in this division.", style: TextStyle(color: Color(0xFF64748B))),
+          Text("No students found", style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showConfirmDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Assign Roll Numbers?", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text("This will sort all enrolled students alphabetically and assign sequence numbers (1, 2, 3...)."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("Assign", style: TextStyle(color: secondaryBlue, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
