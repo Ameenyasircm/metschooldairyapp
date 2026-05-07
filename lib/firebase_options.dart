@@ -47,6 +47,7 @@ class DefaultFirebaseOptions {
     projectId: 'met-school-codemates',
     authDomain: 'met-school-codemates.firebaseapp.com',
     storageBucket: 'met-school-codemates.firebasestorage.app',
+    databaseURL: 'https://met-school-codemates.firebaseio.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '882491380012',
     projectId: 'met-school-codemates',
     storageBucket: 'met-school-codemates.firebasestorage.app',
+    databaseURL: 'https://met-school-codemates.firebaseio.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -82,5 +84,6 @@ class DefaultFirebaseOptions {
     projectId: 'met-school-codemates',
     authDomain: 'met-school-codemates.firebaseapp.com',
     storageBucket: 'met-school-codemates.firebasestorage.app',
+    databaseURL: 'https://met-school-codemates.firebaseio.com',
   );
 }
