@@ -278,6 +278,7 @@ class AuthProvider with ChangeNotifier {
       /// 🎯 TEACHER LOGIN (UNCHANGED)
       /// =========================
       else {
+        await prefs.setString("phone", data['phone'] ?? "");
         await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
         await prefs.setString("divisionId", data['division_id'] ?? "");
         await prefs.setString("divisionName", data['division_name'] ?? "");
