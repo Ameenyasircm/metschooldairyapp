@@ -324,7 +324,7 @@ class ParentNotificationService {
 
 Future<void> sendPushToDevices(List<String> tokens, String title, String body) async {
   try {
-    final String response = await rootBundle.loadString('assets/service-account.json');
+    final String response = await rootBundle.loadString('assets/account.json');
     final data = await json.decode(response);
 
     final credentials = auth.ServiceAccountCredentials.fromJson(data);
