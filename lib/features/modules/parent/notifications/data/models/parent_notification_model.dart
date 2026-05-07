@@ -31,7 +31,9 @@ class ParentNotificationModel {
       date: data['date'],
       remark: data['remark'],
       isSeen: data['isSeen'] ?? false,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
     );
   }
 

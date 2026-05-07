@@ -74,7 +74,7 @@ class QuickListActionCard extends StatelessWidget {
         elevation: 0,
         clipBehavior: Clip.antiAlias,
         child: Container(
-          padding: AppPadding.pS,
+          padding: AppPadding.pM,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12.r),bottomRight:Radius.circular(12.r),topRight:Radius.circular(12.r)  ),
