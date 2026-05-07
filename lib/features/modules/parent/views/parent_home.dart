@@ -62,7 +62,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
   Future<void> _initData() async {
     final prefs = await SharedPreferences.getInstance();
-    parentId = prefs.getString("userId");
+    parentId = prefs.getString("userId")??'';
     if (parentId != null && mounted) {
       final provider = Provider.of<NotificationProvider>(context, listen: false);
       provider.updateToken(parentId!);
@@ -89,12 +89,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
         elevation: 0,
         actions: [
           if (parentId != null)
-            NotificationBadge(
-              icon: Icons.notifications_none_outlined,
-              iconColor: AppColors.primary,
-              onTap: () {
-                callNext(ParentNotificationScreen(parentId: parentId!), context);
-              },
+            Padding(
+              padding: AppPadding.pS,
+              child: NotificationBadge(
+                icon: Icons.notifications_none_outlined,
+                iconColor: AppColors.primary,
+                onTap: () {
+                  print("kmjbjgbijibntin$parentId");
+                  callNext(ParentNotificationScreen(parentId: parentId??''), context);
+                },
+              ),
             ),
           // IconButton(
           //   icon: const Icon(Icons.logout, color: AppColors.primary),
