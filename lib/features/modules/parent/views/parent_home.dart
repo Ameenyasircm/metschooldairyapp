@@ -234,9 +234,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                       final divisionId = prefs.getString("divisionId") ?? '';
                       final divisionName = prefs.getString("divisionName") ?? '';
                       final className = prefs.getString("className") ?? '';
+                      final classId = prefs.getString("classId") ?? '';
                       callNext(ParentViewAttendanceScreen(
                         divisionId: divisionId,divisionName:divisionName ,
-                      studentId: widget.studentId,studentName: name,), context);
+                      studentId: widget.studentId,studentName: name, classId:classId,), context);
                     }),
 
                     /// Fees

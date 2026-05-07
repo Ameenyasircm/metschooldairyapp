@@ -51,6 +51,7 @@ Widget buildQuickActions(BuildContext context) {
                       final staffId = prefs.getString("staffId") ?? '';
                       final staffName = prefs.getString("staffName") ?? '';
                       final standard = prefs.getString("className") ?? '';
+                      final classId = prefs.getString("classId") ?? '';
 
                       switch (index) {
                         case 0:
@@ -61,8 +62,7 @@ Widget buildQuickActions(BuildContext context) {
                                 divisionId: divisionId,
                                 divisionName: divisionName,
                                 academicYearId: academicYearId,
-                                teacherId: staffId,
-                              ));
+                                teacherId: staffId, classId: classId,));
                           break;
                         case 2:
                           NavigationService.push(context, const HomeworkListScreen());
