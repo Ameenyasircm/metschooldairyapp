@@ -1,219 +1,474 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:met_school/core/utils/navigation/navigation_helper.dart';
-import 'package:met_school/features/about/about_us_screen.dart';
-import 'package:met_school/features/auth/presentation/screens/login_screen.dart';
-import 'package:met_school/features/home/views/home/widgets/home_grid.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/router/app_navigation.dart';
-import '../../../../providers/auth_provider.dart';
-import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
-import '../../../modules/parent/views/parent_home.dart';
-import '../../../modules/parent/views/parent_select_child_screen.dart';
-import '../../../modules/teacher/home/presentation/screens/teacher_home_screen.dart';
-import '../../../modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
-import '../contact_screen/contact_us_screen.dart';
-import '../gallary/gallery_screen.dart';
-import 'home_provider.dart';
-import 'widgets/carousel.dart';
-import 'widgets/home_widgets.dart';
 
-class HomeScreen extends StatelessWidget {
-  static const Color primary = Color(0xff00796B);
-
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // ── Sample data ──────────────────────────────────────────────────────────
+  final List<Map<String, String>> _events = [
+    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
+    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
+    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
+  ];
+
+  // ── Build ─────────────────────────────────────────────────────────────────
+  @override
   Widget build(BuildContext context) {
-    // We use context.watch to rebuild when data changes
-    final provider = context.watch<HomeProvider>();
-    final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        title: const Text("Met School Payyanad",
-            style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
-        actions: [
-          const Icon(Icons.search, color: Colors.black),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: () async {
-              final prefs = await SharedPreferences.getInstance();
-              final role = prefs.getString("role");
+      body: Stack(
+        children: [
+          // ── Scrollable content ──────────────────────────────────────────
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeroBanner(),
+                const SizedBox(height: 24),
+                _buildTopStudents(),
+                const SizedBox(height: 24),
+                _buildEvents(),
+                const SizedBox(height: 24),
+                _buildPhotoGrid(),
+                const SizedBox(height: 24),
+                _buildAboutSection(),
+                const SizedBox(height: 24),
+                _buildContactRow(),
+                const SizedBox(height: 24),
+                _buildSocialIcons(),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
 
-              if (!auth.isLoggedIn) {
-                NavigationService.push(context, LoginScreen());
-                return;
-              }
+          // ── Sticky login button ─────────────────────────────────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildLoginButton(),
+          ),
+        ],
+      ),
+    );
+  }
 
-              /// 🎯 PARENT
-              if (role == "parent") {
-                final studentDataStringList =
-                    prefs.getStringList("studentDataList") ?? [];
-
-                final studentDataList = studentDataStringList
-                    .map((e) => jsonDecode(e) as Map<String, dynamic>)
-                    .toList();
-
-                String name = prefs.getString("staffName") ??
-                    prefs.getString("userName") ??
-                    "N/A";
-
-                if (studentDataList.length == 1) {
-                  final s = studentDataList.first;
-
-                  NavigationService.push(
-                    context,
-                    ParentMainScreen(
-                      parentName: name,
-                      studentId: s['studentId'],
-                      academicYearID: s['academicYearId'],
-                      teacherName: s['teacherName'],
-                      teacherID: s['teacherId'],
+  // ── Hero / Header ─────────────────────────────────────────────────────────
+  Widget _buildHeroBanner() {
+    return Column(
+      children: [
+        // Status-bar safe area
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top,
+            left: 16,
+            right: 16,
+            bottom: 12,
+          ),
+          child: Row(
+            children: [
+              // Logo placeholder
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.school, color: Colors.grey),
+              ),
+              const SizedBox(width: 12),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'MET PUBLIC SCHOOL',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A237E),
+                      letterSpacing: 0.5,
                     ),
-                  );
-                } else {
-                  NavigationService.push(
-                    context,
-                    ParentStudentSelectionScreen(
-                      studentIds: studentDataList,
-                      parentName: name,
-                    ),
-                  );
-                }
-              }
-
-              /// 🎯 TEACHER
-              else {
-                NavigationService.push(
-                  context,
-                  TeacherHomeScreen(staffName:prefs.getString("staffName") ?? "",),
-                    );
-                  }
-                },
-                child: Container(
-                  height: 35,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Center(
-                    child: Text(
-                      auth.isLoggedIn ? 'Continue' : 'Login',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                  Text(
+                    'PAYYANAD',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A237E),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // Hero image collage placeholder
+        SizedBox(
+          height: 200,
+          child: Row(
+            children: [
+              // Left tall image
+              Expanded(
+                flex: 2,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 2),
+                  color: Colors.grey.shade400,
+                  child: const Center(
+                    child: Icon(Icons.image, size: 40, color: Colors.white54),
                   ),
                 ),
+              ),
+              // Right 2x2 grid
+              Expanded(
+                flex: 3,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _greyImageBox(margin: const EdgeInsets.only(bottom: 2, right: 2)),
+                          _greyImageBox(margin: const EdgeInsets.only(bottom: 2)),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _greyImageBox(margin: const EdgeInsets.only(right: 2)),
+                          _greyImageBox(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _greyImageBox({EdgeInsets margin = EdgeInsets.zero}) {
+    return Expanded(
+      child: Container(
+        margin: margin,
+        color: Colors.grey.shade300,
+        child: const Center(
+          child: Icon(Icons.image, size: 24, color: Colors.white54),
+        ),
+      ),
+    );
+  }
+
+  // ── Top Students ──────────────────────────────────────────────────────────
+  Widget _buildTopStudents() {
+    return Column(
+      children: [
+        // Trophy icon
+        const Text('🏆', style: TextStyle(fontSize: 32)),
+        const SizedBox(height: 6),
+        const Text(
+          'Top Students',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Horizontal avatar list
+        SizedBox(
+          height: 90,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: 5,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) => _buildStudentAvatar(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStudentAvatar() {
+    return Container(
+      width: 78,
+      height: 78,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFFFFB300),
+          width: 3,
+          strokeAlign: BorderSide.strokeAlignOutside,
+        ),
+        color: Colors.grey.shade300,
+      ),
+      child: const Center(
+        child: Icon(Icons.person, size: 36, color: Colors.grey),
+      ),
+    );
+  }
+
+  // ── Events ────────────────────────────────────────────────────────────────
+  Widget _buildEvents() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Events',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...List.generate(_events.length, (i) => _buildEventTile(_events[i])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventTile(Map<String, String> event) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              // Event icon placeholder
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🎉', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event['title']!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    event['date']!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Divider(color: Colors.grey.shade200, height: 1),
+      ],
+    );
+  }
+
+  // ── Photo Grid ────────────────────────────────────────────────────────────
+  Widget _buildPhotoGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          // Row 1 – two wide cards
+          Row(
+            children: [
+              _photoCard(flex: 1, height: 130),
+              const SizedBox(width: 8),
+              _photoCard(flex: 1, height: 130),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Row 2 – three equal cards
+          Row(
+            children: [
+              _photoCard(flex: 1, height: 100),
+              const SizedBox(width: 8),
+              _photoCard(flex: 1, height: 100),
+              const SizedBox(width: 8),
+              _photoCard(flex: 1, height: 100),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _photoCard({required int flex, required double height}) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Center(
+          child: Icon(Icons.image, size: 32, color: Colors.white54),
+        ),
+      ),
+    );
+  }
+
+  // ── About Section ─────────────────────────────────────────────────────────
+  Widget _buildAboutSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'About Our School',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Lorem ipsum dolor sit amet consectetur. At et viverra orci senectus velit '
+                'tristique odio sem. Tempus ipsum massa est a eu nibh urna aenean quis. Odio '
+                'nibh pharetra sapien in feugiat. Et porttitor eu elementum non eget amet. '
+                'Porta in ut nibh integer turpis aliquam feugiat. Proin neque tellus orci '
+                'velit eget placerat ut viverra facilisis. Id amet ac in est non. Et eget '
+                'pellentesque pharetra pretium auctor tempor eros.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () {},
+            child: const Text(
+              'Read More',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.blue,
+                decoration: TextDecoration.underline,
               ),
             ),
           ),
-          // GestureDetector(
-          //   onTap: (){
-          //     // NavigationService.push(context,LoginScreen());
-          //     NavigationService.push(context,TeacherNavbarScreen(staffName: '',));
-          //   },
-          //   child: const CircleAvatar(
-          //       backgroundColor: primary,
-          //       radius: 18,
-          //       child: Icon(Icons.person, color: Colors.white, size: 18)
-          //   ),
-          // ),
-          const SizedBox(width: 15),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  // ── Contact Row ───────────────────────────────────────────────────────────
+  Widget _buildContactRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () {},
+        child: Row(
           children: [
-            // Top Achievers Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Top Achievers",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(
-                    provider.activeGroupTitle,
-                    style: const TextStyle(color: primary, fontSize: 12, fontWeight: FontWeight.bold)
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Your auto-scrolling widget
-            const WinnerCarousel(),
-
-            const SizedBox(height: 25),
-
-            // Quick Actions Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                QuickActionIcon(icon: Icons.info_outline, label: "ABOUT US",onTap: (){
-                  callNext(AboutUsScreen(), context);
-                },),
-                 QuickActionIcon(icon: Icons.photo_library_outlined, label: "GALLERY",onTap: (){
-                   callNext(AcademicGalleryScreen(), context);
-                 },),
-                 QuickActionIcon(icon: Icons.alternate_email, label: "CONTACT",onTap: (){
-                   callNext(ContactUsScreen(), context);
-                 },),
-                 QuickActionIcon(icon: Icons.payments_outlined, label: "FEE PAY",onTap: (){},),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            // Admission Banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Admission Open",
-                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text("Secure your child's future at the atelier of excellence.",
-                      style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: (){},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: primary,
-                      shape: const StadiumBorder(),
-                    ),
-                    child: const Text("Apply Now →"),
-                  )
-                ],
+            const Icon(Icons.phone_outlined, size: 22, color: Colors.black87),
+            const SizedBox(width: 8),
+            const Text(
+              'Contact Us',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
               ),
             ),
-
-            const SizedBox(height: 25),
-            SchoolHighlights(),
-            const SizedBox(height: 25),
-
-            const Text("Upcoming Events",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-
-            // ✅ THE FIX: Map from 'events', not 'winners'
-            ...provider.sampleEvents.map((e) => EventCard(event: e)).toList(),
-
-            const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ── Social Icons ──────────────────────────────────────────────────────────
+  Widget _buildSocialIcons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _socialIcon(Icons.camera_alt_outlined, Colors.pink),
+        const SizedBox(width: 24),
+        _socialIcon(Icons.facebook, const Color(0xFF1877F2)),
+        const SizedBox(width: 24),
+        _socialIcon(Icons.play_circle_fill, Colors.red),
+      ],
+    );
+  }
+
+  Widget _socialIcon(IconData icon, Color color) {
+    return GestureDetector(
+      onTap: () {},
+      child: Icon(icon, size: 30, color: color),
+    );
+  }
+
+  // ── Login Button ──────────────────────────────────────────────────────────
+  Widget _buildLoginButton() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(
+        24,
+        12,
+        24,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1565C0), Color(0xFF9C27B0)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: const Text(
+              'Login',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
         ),
       ),
     );
