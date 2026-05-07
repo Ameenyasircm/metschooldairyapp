@@ -65,6 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
         // Status-bar safe area
         Container(
           color: Colors.white,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg.jpg'), // your image path
+              fit: BoxFit.cover,
+            ),
+          ),
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top,
             left: 16,
