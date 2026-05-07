@@ -41,10 +41,9 @@ class QuickActionCard extends StatelessWidget {
             Text(
               action.title,
               textAlign: TextAlign.center,
-              style: AppTypography.caption.copyWith(
+              style: AppTypography.body2.copyWith(
                 color: AppColors.blue90,
                 fontWeight: FontWeight.w600,
-                fontSize: 12.sp,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -92,10 +91,9 @@ class QuickListActionCard extends StatelessWidget {
               AppSpacing.w8,
               Text(
                 action.title,
-                style: AppTypography.caption.copyWith(
+                style: AppTypography.body2.copyWith(
                   color: AppColors.blue90,
                   fontWeight: FontWeight.w600,
-                  fontSize: 12.sp,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

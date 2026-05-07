@@ -37,8 +37,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   Future<void> _loadStaffData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      name = prefs.getString("staffName") ?? prefs.getString("userName") ?? "N/A";
-      phone = prefs.getString("staffPhone") ?? prefs.getString("phone") ?? "N/A";
+      name = prefs.getString("staffName")?? "N/A";
+      phone = prefs.getString("phone")??"N/A";
       email = prefs.getString("email") ?? "Not Available";
       role = prefs.getString("role") ?? "Teacher";
     });
