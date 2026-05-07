@@ -7,21 +7,22 @@ class AttendanceFirestoreService {
   final String _collection = 'attendance';
 
   Future<void> saveAttendance(DailyAttendanceModel attendance) async {
-    final docId = "${attendance.date}_${attendance.divisionId}";
+    final docId = "${attendance.date}_${attendance.classId}_${attendance.divisionId}";
     await _db.collection(_collection).doc(docId).set(attendance.toMap(), SetOptions(merge: true));
   }
 
-  Future<DailyAttendanceModel?> fetchAttendanceByDate(String date, String divisionId) async {
-    final docId = "${date}_$divisionId";
+  Future<DailyAttendanceModel?> fetchAttendanceByDate(String date, String classId,String divisionId) async {
+    final docId = "${date}_${classId}_$divisionId";
     final doc = await _db.collection(_collection).doc(docId).get();
     if (doc.exists) {
       return DailyAttendanceModel.fromFirestore(doc);
     }
     return null;
   }
-  Future<List<DailyAttendanceModel>> fetchMonthlyAttendance(String divisionId, String monthYear) async {
+  Future<List<DailyAttendanceModel>> fetchMonthlyAttendance(String classId,String divisionId, String monthYear) async {
     // monthYear format: "yyyy-MM"
     final snapshot = await _db.collection(_collection)
+        .where('classId', isEqualTo: classId)
         .where('divisionId', isEqualTo: divisionId)
         .where('date', isGreaterThanOrEqualTo: "$monthYear-01")
         .where('date', isLessThanOrEqualTo: "$monthYear-31")

@@ -17,6 +17,7 @@ import '../widgets/attendance_remark_dialogs.dart';
 import '../widgets/bottom_button.dart';
 
 class AttendanceScreen extends StatefulWidget {
+  final String classId;
   final String divisionId;
   final String divisionName;
   final String academicYearId;
@@ -24,6 +25,7 @@ class AttendanceScreen extends StatefulWidget {
 
   const AttendanceScreen({
     super.key,
+    required this.classId,
     required this.divisionId,
     required this.divisionName,
     required this.academicYearId,
@@ -40,6 +42,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AttendanceViewModel>().init(
+            widget.classId,
             widget.divisionId,
             widget.academicYearId,
             widget.teacherId,

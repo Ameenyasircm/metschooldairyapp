@@ -13,11 +13,13 @@ import '../provider/attendance_report_view_model.dart';
 import '../../data/models/attendance_model.dart';
 
 class AttendanceReportScreen extends StatefulWidget {
+  final String classId;
   final String divisionId;
   final String divisionName;
 
   const AttendanceReportScreen({
     super.key,
+    required this.classId,
     required this.divisionId,
     required this.divisionName,
   });
@@ -39,7 +41,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   void _loadReport() {
     final monthYear = DateFormat('yyyy-MM').format(_selectedMonth);
-    context.read<AttendanceReportViewModel>().loadMonthlyReport(widget.divisionId, monthYear);
+    context.read<AttendanceReportViewModel>().loadMonthlyReport(widget.classId,widget.divisionId, monthYear);
   }
 
   @override
