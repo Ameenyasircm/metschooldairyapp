@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../providers/admin_provider.dart';
 
@@ -14,7 +15,11 @@ class AddStaffScreen extends StatefulWidget {
 
 class _AddStaffScreenState extends State<AddStaffScreen> {
   final _formKey = GlobalKey<FormState>();
-  static const Color primaryTeal = Color(0xff00796B);
+
+  // Theme Colors - Updated as per request
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
+  static const Color bgColor = Color(0xFFF8FAFC);
 
   @override
   void initState() {
@@ -31,99 +36,99 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     final prov = context.watch<AdminProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
-      appBar: _buildThemedAppBar(),
+      backgroundColor: bgColor,
+      appBar: _buildModernAppBar(),
       bottomNavigationBar: _buildThemedFooter(prov),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// --- COLUMN 1: IDENTITY ---
-                Expanded(
-                  flex: 3,
-                  child: _buildPanel(
-                    title: "Identity",
-                    icon: Icons.person_pin_rounded,
-                    children: [
-                      _item("Full Name", _field(prov.nameCtrl, "Enter name", Icons.badge_outlined)),
-                      const SizedBox(height: 12),
-                      _item("Phone Number", _field(prov.phoneCtrl, "Contact Number", Icons.phone_android, isNumber: true)),
-                      const SizedBox(height: 12),
-
-                      // Grouped: Date of Birth and Gender
-                      Row(
+            padding: const EdgeInsets.all(32.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1400),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// --- COLUMN 1: IDENTITY ---
+                    Expanded(
+                      flex: 3,
+                      child: _buildPanel(
+                        title: "Identity",
+                        subtitle: "Basic personal identifiers",
+                        icon: Icons.person_pin_rounded,
                         children: [
-                          Expanded(child: _item("Date of Birth", _dobPicker(context, prov))),
-                          const SizedBox(width: 12),
-                          Expanded(child: _item("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v))),
+                          _item("Full Name", _field(prov.nameCtrl, "Enter full name", Icons.badge_outlined)),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(child: _item("Phone Number", _field(prov.phoneCtrl, "Contact Number", Icons.phone_android, isNumber: true))),
+                              const SizedBox(width: 12),
+                              Expanded(child: _item("Gender", _dropdown(['Male', 'Female', 'Other'], prov.selectedGender, (v) => prov.selectedGender = v))),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _item("Date of Birth", _dobPicker(context, prov)),
+                          const SizedBox(height: 16),
+                          _item("Address", _field(prov.addressCtrl, "Full residential address", Icons.map_outlined, maxLines: 2)),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                    ),
 
-                      _item("Address", _field(prov.addressCtrl, "Residential Address", Icons.map_outlined, maxLines: 2)),
-                    ],
-                  ),
-                ),
+                    const SizedBox(width: 24),
 
-                const SizedBox(width: 20),
-
-                /// --- COLUMN 2: PROFESSIONAL & SYSTEM ---
-                Expanded(
-                  flex: 4,
-                  child: _buildPanel(
-                    title: "Professional & System Access",
-                    icon: Icons.admin_panel_settings_rounded,
-                    children: [
-                      _item("Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
-                      const SizedBox(height: 12),
-
-                      // Grouped: Qualification & Experience
-                      Row(
+                    /// --- COLUMN 2: PROFESSIONAL ---
+                    Expanded(
+                      flex: 4,
+                      child: _buildPanel(
+                        title: "Professional & System",
+                        subtitle: "Role assignment and credentials",
+                        icon: Icons.admin_panel_settings_rounded,
                         children: [
-                          Expanded(child: _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v))),
-                          const SizedBox(width: 12),
-                          Expanded(child: _item("Experience (Yrs)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true))),
+                          _item("System Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(child: _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v))),
+                              const SizedBox(width: 12),
+                              Expanded(child: _item("Experience (Yrs)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true))),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(child: _item("Joining Date", _dateButton(context, prov))),
+                              const SizedBox(width: 12),
+                              Expanded(child: _item("Portal Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true))),
+                            ],
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                    ),
 
-                      _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
-                      const SizedBox(height: 12),
+                    const SizedBox(width: 24),
 
-                      // Grouped: Joining Date & Password
-                      Row(
+                    /// --- COLUMN 3: ACADEMIC ---
+                    Expanded(
+                      flex: 3,
+                      child: prov.selectedRole == 'teacher'
+                          ? _buildPanel(
+                        title: "Academic Mapping",
+                        subtitle: "Subject assignments",
+                        icon: Icons.school_rounded,
                         children: [
-                          Expanded(child: _item("Joining Date", _dateButton(context, prov))),
-                          const SizedBox(width: 12),
-                          Expanded(child: _item("System Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true))),
+                          _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
+                          const SizedBox(height: 16),
+                          _item("Subjects Assignment", _buildSubjectGrid(prov)),
                         ],
-                      ),
-                    ],
-                  ),
+                      )
+                          : _buildPlaceholder(),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(width: 20),
-
-                /// --- COLUMN 3: ACADEMIC MAPPING ---
-                Expanded(
-                  flex: 3,
-                  child: prov.selectedRole == 'teacher'
-                      ? _buildPanel(
-                    title: "Academic Assignments",
-                    icon: Icons.school_rounded,
-                    children: [
-                      _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
-                      const SizedBox(height: 12),
-                      _item("Subjects Assignment", _buildSubjectGrid(prov)),
-                    ],
-                  )
-                      : _buildPlaceholder(),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -131,39 +136,49 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     );
   }
 
-  PreferredSizeWidget _buildThemedAppBar() {
+  PreferredSizeWidget _buildModernAppBar() {
     return AppBar(
-      backgroundColor: primaryTeal,
-      elevation: 4,
-      leading: const BackButton(color: Colors.white),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: BackButton(color: primaryBlue.withOpacity(0.7)),
+      shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(widget.docId == null ? "Staff Enrollment" : "Update Profile",
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(" ${widget.userName}", style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10)),
+              style: const TextStyle(color: primaryBlue, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text("Acting Admin: ${widget.userName}", style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
         ],
       ),
     );
   }
 
-  Widget _buildPanel({required String title, required IconData icon, required List<Widget> children}) {
+  Widget _buildPanel({required String title, required String subtitle, required IconData icon, required List<Widget> children}) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(icon, size: 20, color: primaryTeal),
-            const SizedBox(width: 10),
-            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-          ]),
-          const Divider(height: 30, color: Color(0xFFF1F5F9)),
+          Row(
+            children: [
+              Icon(icon, size: 22, color: secondaryBlue),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryBlue)),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                ],
+              ),
+            ],
+          ),
+          const Divider(height: 40, color: Color(0xFFF1F5F9)),
           ...children,
         ],
       ),
@@ -174,22 +189,21 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5)),
-        const SizedBox(height: 6),
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5)),
+        const SizedBox(height: 8),
         child,
       ],
     );
   }
 
-  Widget _field(TextEditingController c, String h, IconData i, {bool isNumber = false, bool isPassword = false, bool isReadOnly = false, int maxLines = 1}) {
+  Widget _field(TextEditingController c, String h, IconData i, {bool isNumber = false, bool isPassword = false, int maxLines = 1}) {
     return TextFormField(
       controller: c,
       obscureText: isPassword,
-      readOnly: isReadOnly,
       maxLines: maxLines,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
-      validator: (v) => (v == null || v.isEmpty) ? "Field Required" : null,
+      style: const TextStyle(fontSize: 14, color: primaryBlue),
+      validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
       decoration: _deco(h, i),
     );
   }
@@ -197,30 +211,38 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Widget _dropdown(List<String> items, String? value, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
       onChanged: (v) {
         onChanged(v);
         context.read<AdminProvider>().notifyListeners();
       },
-      decoration: _deco("Select Option", Icons.keyboard_arrow_down_rounded),
+      decoration: _deco("Select ", Icons.keyboard_arrow_down_rounded),
     );
   }
 
   Widget _dateButton(BuildContext context, AdminProvider prov) => InkWell(
     onTap: () async {
-      final d = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), builder: (context, child) => Theme(data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)), child: child!));
+      final d = await showDatePicker(
+        context: context,
+        firstDate: DateTime(2000),
+        lastDate: DateTime.now(),
+        builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: secondaryBlue)),
+          child: child!,
+        ),
+      );
       if (d != null) {
         prov.joiningDate = d;
         prov.notifyListeners();
       }
     },
     child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
       child: Row(children: [
-        const Icon(Icons.calendar_month, size: 16, color: primaryTeal),
+        const Icon(Icons.calendar_month, size: 18, color: secondaryBlue),
         const SizedBox(width: 10),
-        Text(prov.joiningDate == null ? "Select Date" : prov.joiningDate.toString().split(' ')[0], style: const TextStyle(fontSize: 13)),
+        Text(prov.joiningDate == null ? "Select Date" : DateFormat('dd-MM-yyyy').format(prov.joiningDate!), style: const TextStyle(fontSize: 14)),
       ]),
     ),
   );
@@ -228,36 +250,34 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Widget _dobPicker(BuildContext context, AdminProvider prov) => InkWell(
     onTap: () async {
       final d = await showDatePicker(
-          context: context,
-          initialDate: DateTime(1995, 1, 1),
-          firstDate: DateTime(1950),
-          lastDate: DateTime.now(),
-          builder: (context, child) => Theme(
-              data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: primaryTeal)),
-              child: child!
-          )
+        context: context,
+        initialDate: DateTime(1995, 1, 1),
+        firstDate: DateTime(1950),
+        lastDate: DateTime.now(),
+        builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: secondaryBlue)),
+          child: child!,
+        ),
       );
       if (d != null) {
         prov.dob = d;
         DateTime now = DateTime.now();
         int age = now.year - d.year;
-        if (now.month < d.month || (now.month == d.month && now.day < d.day)) {
-          age--;
-        }
+        if (now.month < d.month || (now.month == d.month && now.day < d.day)) age--;
         prov.ageCtrl.text = age.toString();
         prov.notifyListeners();
       }
     },
     child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
       child: Row(children: [
-        const Icon(Icons.cake_outlined, size: 16, color: primaryTeal),
+        const Icon(Icons.cake_outlined, size: 18, color: secondaryBlue),
         const SizedBox(width: 10),
-        Text(prov.dob == null ? "Birthday" : prov.dob.toString().split(' ')[0], style: const TextStyle(fontSize: 13)),
+        Text(prov.dob == null ? "Birthday" : DateFormat('dd-MM-yyyy').format(prov.dob!), style: const TextStyle(fontSize: 14)),
         const Spacer(),
         if(prov.dob != null)
-          Text("Age: ${prov.ageCtrl.text}", style: const TextStyle(fontSize: 12, color: primaryTeal, fontWeight: FontWeight.bold)),
+          Text("${prov.ageCtrl.text} Yrs", style: const TextStyle(fontSize: 12, color: secondaryBlue, fontWeight: FontWeight.bold)),
       ]),
     ),
   );
@@ -265,23 +285,19 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Widget _buildSubjectGrid(AdminProvider prov) {
     return Container(
       height: 220,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE2E8F0))
-      ),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
       child: SingleChildScrollView(
         child: Wrap(
-          spacing: 6,
-          runSpacing: 0,
+          spacing: 8,
+          runSpacing: 4,
           children: prov.subjectsList.map((subject) {
             final String subId = subject['id'].toString();
             final String subName = subject['name'].toString();
             final isSelected = prov.selectedSubjects.any((item) => item['id'] == subId);
 
             return FilterChip(
-              label: Text(subName, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+              label: Text(subName, style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : primaryBlue)),
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {
@@ -291,9 +307,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 }
                 prov.notifyListeners();
               },
-              selectedColor: primaryTeal,
+              selectedColor: secondaryBlue,
               checkmarkColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             );
           }).toList(),
         ),
@@ -301,42 +317,55 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     );
   }
 
-  InputDecoration _deco(String hint, IconData icon) => InputDecoration(
-    prefixIcon: Icon(icon, size: 16, color: primaryTeal.withOpacity(0.5)),
+  InputDecoration _deco(String hint, IconData? icon) => InputDecoration(
+    prefixIcon: icon != null ? Icon(icon, size: 18, color: secondaryBlue.withOpacity(0.5)) : null,
     hintText: hint,
     isDense: true,
     filled: true,
-    fillColor: const Color(0xFFF8FAFC),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: primaryTeal, width: 1.5)),
+    fillColor: bgColor,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: secondaryBlue, width: 1.5)),
   );
 
   Widget _buildPlaceholder() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(color: const Color(0xFFE2E8F0).withOpacity(0.3), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid)),
-      child: const Center(child: Text("Teacher-specific fields will activate here.", textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey, fontSize: 11, fontWeight: FontWeight.w500))),
+      decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid)
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.lock_outline, color: Colors.grey.shade300, size: 40),
+          const SizedBox(height: 16),
+          const Text("Academic Mapping Restricted", textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+          const Text("Please select 'Teacher' role to assign subjects.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11)),
+        ],
+      ),
     );
   }
 
   Widget _buildThemedFooter(AdminProvider prov) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      decoration: BoxDecoration(color: Colors.white, border: const Border(top: BorderSide(color: Color(0xFFE2E8F0)))),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           OutlinedButton(
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFFCBD5E1)),
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
-            child: const Text("Discard", style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text("Discard Changes", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           ElevatedButton(
             onPressed: () async {
               if (_formKey.currentState!.validate() && prov.joiningDate != null) {
@@ -345,12 +374,12 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryTeal,
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: primaryBlue,
+              padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
-            child: Text(widget.docId == null ? "Complete Registration" : "Save Records", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(widget.docId == null ? "Enroll Staff Member" : "Save Profile Changes", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
