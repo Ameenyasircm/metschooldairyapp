@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/features/modules/admin/rules_timing/screens/school_gallery_screen.dart';
@@ -17,7 +16,11 @@ import 'academic_year_management.dart';
 import 'list_all_students_screen.dart';
 
 class AdminHome extends StatelessWidget {
-  final String userid, userName, phone; // Marked final for best practice
+  final String userid, userName, phone;
+
+  // New Theme Colors
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
 
   const AdminHome({
     super.key,
@@ -28,14 +31,12 @@ class AdminHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Optimization: Listen only to index changes to prevent unnecessary rebuilds
     final currentIndex = context.select((AdminProvider p) => p.currentIndex);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: const Color(0xFFF1F5F9), // Slate background for a modern feel
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        // ValueKey ensures the switcher recognizes the change between screens
         child: KeyedSubtree(
           key: ValueKey(currentIndex),
           child: _buildBody(context, currentIndex),
@@ -44,89 +45,69 @@ class AdminHome extends StatelessWidget {
     );
   }
 
-  /// 🔹 Content Switcher (Retains all your existing screens)
   Widget _buildBody(BuildContext context, int index) {
     switch (index) {
       case 1:
         return StaffManagementPage(userName: userName, userId: userid);
       case 3:
-        return  SchoolGalleryScreen();
+        return SchoolGalleryScreen();
       case 2:
-        return  AcademicYearScreen(userName: userName, userId:userid,);
+        return AcademicYearScreen(userName: userName, userId: userid);
       case 4:
         return StudentListScreen();
       case 5:
         return ParentMasterDirectory();
-        case 6:
+      case 6:
         return AdminCalendarWebScreen();
       case 7:
         return BellTimingAdminScreen();
-        case 8:
+      case 8:
         return RulesAdminScreen();
       case 9:
         return ParentInstructionsAdminScreen();
       default:
-
         return _buildDashboardGrid(context);
     }
   }
 
-  /// 🔹 Optimized Dashboard Grid
   Widget _buildDashboardGrid(BuildContext context) {
     return Column(
       children: [
         _buildTopHeader(context),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
-
-                // Using MaxCrossAxisExtent for automatic responsiveness
+                const Text(
+                  "System Modules",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: primaryBlue,
+                  ),
+                ),
+                const SizedBox(height: 25),
                 GridView(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 400, // Cards will wrap automatically based on width
-                    crossAxisSpacing: 35,
-                    mainAxisSpacing: 35,
-                    childAspectRatio: 2.0, // Matches your desired card proportion
+                    maxCrossAxisExtent: 350,
+                    crossAxisSpacing: 25,
+                    mainAxisSpacing: 25,
+                    childAspectRatio: 1.8,
                   ),
                   children: [
-                    _buildModuleCard(context, 1, "Staff Management", "Manage Teachers & Roles", Icons.badge_outlined, const Color(0xFF0F766E)),
-                    _buildModuleCard(context, 2, "Academic Year", "Manage Academic Years", Icons.calendar_today_outlined, Colors.purple),
-                    _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.orange),
-
-                    _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, Colors.teal),
-                    _buildModuleCard(context, 5, "Parent Management", "Manage Parent Data", Icons.school_outlined, Colors.teal),
-                    _buildModuleCard(context, 6, "School Calender", "Manage Parent Data", Icons.calendar_month, Colors.lightBlue),
-                    _buildModuleCard(
-                      context,
-                      7,
-                      "Bell Timing",
-                      "Manage School Timing",
-                      Icons.access_time,
-                      Colors.indigo,
-                    ),
-                    _buildModuleCard(
-                      context,
-                      8,
-                      "Rules & Regulations",
-                      "Manage School Rules",
-                      Icons.rule,
-                      Colors.redAccent,
-                    ),
-                    _buildModuleCard(
-                      context,
-                      9,
-                      "Parent Instructions",
-                      "Parent Instructions",
-                      Icons.rule,
-                      Colors.green,
-                    ),
-
+                    _buildModuleCard(context, 1, "Staff Management", "Manage Teachers & Roles", Icons.badge_outlined, primaryBlue),
+                    _buildModuleCard(context, 2, "Academic Year", "Manage Academic Years", Icons.calendar_today_outlined, Colors.indigo),
+                    _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.blueGrey),
+                    _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, secondaryBlue),
+                    _buildModuleCard(context, 5, "Parent Management", "Manage Parent Data", Icons.people_alt_outlined, secondaryBlue),
+                    _buildModuleCard(context, 6, "School Calendar", "Events & Holidays", Icons.calendar_month, Colors.deepPurple),
+                    _buildModuleCard(context, 7, "Bell Timing", "Schedule & Slots", Icons.access_time_filled, Colors.blue),
+                    _buildModuleCard(context, 8, "Rules & Regulations", "Policies & Conduct", Icons.gavel_rounded, Colors.blueGrey),
+                    _buildModuleCard(context, 9, "Parent Instructions", "Guidelines for Parents", Icons.info_outline_rounded, primaryBlue),
                   ],
                 ),
               ],
@@ -137,17 +118,17 @@ class AdminHome extends StatelessWidget {
     );
   }
 
-  /// 🔹 Top Header (Your existing design, cleaned up)
   Widget _buildTopHeader(BuildContext context) {
     return Container(
-      height: 160,
+      height: 140,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 40),
       decoration: const BoxDecoration(
+        color: primaryBlue,
         gradient: LinearGradient(
-          colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [primaryBlue, secondaryBlue],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
       ),
       child: Row(
@@ -157,30 +138,40 @@ class AdminHome extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Admin Dashboard",
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+              Row(
+                children: [
+                  Image.asset('assets/images/metTextLogo.png', height: 90, errorBuilder: (c, e, s) => const SizedBox()),
+                  const SizedBox(width: 15),
+                ],
+              ),
               const SizedBox(height: 8),
-              const Text("Manage your system efficiently", style: TextStyle(color: Colors.white70)),
+
             ],
           ),
           Row(
             children: [
+              // User Info Badge
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 32),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_circle_outlined, color: Colors.white70, size: 20),
+                    const SizedBox(width: 10),
+                    Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
               const SizedBox(width: 20),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF0F766E),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () => _showLogoutDialog(context),  // ← changed
-                icon: const Icon(Icons.logout, size: 18),
-                label: const Text("Logout"),
+              // Logout Button
+              IconButton(
+                onPressed: () => _showLogoutDialog(context),
+                icon: const Icon(Icons.logout_rounded, color: Colors.white70),
+                tooltip: "Logout",
               ),
             ],
           ),
@@ -189,54 +180,53 @@ class AdminHome extends StatelessWidget {
     );
   }
 
-  /// 🔹 Optimized Module Card
-  Widget _buildModuleCard(BuildContext context, int index, String title, String subtitle, IconData icon, Color color) {
+  Widget _buildModuleCard(BuildContext context, int index, String title, String subtitle, IconData icon, Color accentColor) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => context.read<AdminProvider>().setIndex(index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(20), // Slightly reduced padding to save space
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.1)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 8))
+              BoxShadow(color: primaryBlue.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // 👈 Ensures column only takes needed space
             children: [
-              CircleAvatar(
-                radius: 20, // Slightly smaller icon
-                backgroundColor: color.withOpacity(0.1),
-                child: Icon(icon, color: color, size: 22),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: accentColor, size: 24),
               ),
               const Spacer(),
-
-              /// 🔹 FIX: Wrap text in Flexible or use maxLines to prevent overflow
               Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryBlue),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis, // 👈 Prevents the 23px overflow
+                overflow: TextOverflow.ellipsis,
               ),
-
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  Text("Open Module", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
-                  const SizedBox(width: 5),
-                  Icon(Icons.arrow_forward, size: 14, color: color),
+                  Text("Manage", style: TextStyle(color: accentColor, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5)),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 10, color: accentColor),
                 ],
               )
             ],
@@ -245,42 +235,34 @@ class AdminHome extends StatelessWidget {
       ),
     );
   }
+
+  // --- Logic Methods (Kept Exactly as original) ---
+
   Future<void> initializeClasses() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final batch = firestore.batch();
-
-    // Define the ordered list
-    final List<String> classNames = [
-      "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
-    ];
+    final List<String> classNames = ["LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
     for (int i = 0; i < classNames.length; i++) {
       String name = classNames[i];
-
-      // Create a clean document ID (e.g., 'lkg', 'class1', 'class10')
-      String docId = name.toLowerCase().contains('kg')
-          ? name.toLowerCase()
-          : "class$name";
-
+      String docId = name.toLowerCase().contains('kg') ? name.toLowerCase() : "class$name";
       DocumentReference docRef = firestore.collection("classes").doc(docId);
-
       batch.set(docRef, {
         "id": docId,
-        "name": name.contains(RegExp(r'[0-9]')) && !name.contains("KG")
-            ? "CLASS $name" // Format numbers as "CLASS 1"
-            : name,         // Keep LKG/UKG as is
-        "index": i + 1,     // The critical field for ordering
+        "name": name.contains(RegExp(r'[0-9]')) && !name.contains("KG") ? "CLASS $name" : name,
+        "index": i + 1,
         "updatedAt": FieldValue.serverTimestamp(),
       });
     }
 
     try {
       await batch.commit();
-      print("✅ All classes initialized with correct sort order.");
+      debugPrint("✅ Classes initialized.");
     } catch (e) {
-      print("❌ Error initializing classes: $e");
+      debugPrint("❌ Error: $e");
     }
   }
+
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -293,89 +275,35 @@ class AdminHome extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── Icon ──
               Container(
                 width: 64,
                 height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.logout_rounded,
-                    color: Colors.red.shade400, size: 30),
+                decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle),
+                child: Icon(Icons.logout_rounded, color: Colors.red.shade400, size: 30),
               ),
-
               const SizedBox(height: 20),
-
-              // ── Title ──
-              const Text(
-                "Logout",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-
+              const Text("Logout", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-
-              // ── Subtitle ──
-              Text(
-                "Are you sure you want to logout\nfrom your admin account?",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                  height: 1.5,
-                ),
-              ),
-
+              const Text("Are you sure you want to logout\nfrom your admin account?", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5)),
               const SizedBox(height: 28),
-
-              // ── Buttons ──
               Row(
                 children: [
-                  // Cancel
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey.shade700,
-                        side: BorderSide(color: Colors.grey.shade300),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Cancel",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      child: const Text("Cancel"),
                     ),
                   ),
-
                   const SizedBox(width: 12),
-
-                  // Logout
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
                         context.read<AuthProvider>().logout(context);
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade400,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Yes, Logout",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                      child: const Text("Yes, Logout"),
                     ),
                   ),
                 ],
