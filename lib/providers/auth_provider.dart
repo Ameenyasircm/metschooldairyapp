@@ -572,7 +572,6 @@ class AuthProvider with ChangeNotifier {
   AcademicYearModel? currentYear;
 
   Future<void> loadCurrentAcademicYear() async {
-
     currentYear = await fetchCurrentAcademicYear();
 
     notifyListeners();
@@ -585,7 +584,6 @@ class AuthProvider with ChangeNotifier {
           .where('is_current', isEqualTo: true)
           .limit(1)
           .get();
-
       if (snapshot.docs.isNotEmpty) {
         return AcademicYearModel.fromMap(snapshot.docs.first.data());
       } else {
