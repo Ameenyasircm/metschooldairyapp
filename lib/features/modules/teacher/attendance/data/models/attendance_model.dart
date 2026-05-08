@@ -78,6 +78,7 @@ class StudentAttendanceData {
 
 class DailyAttendanceModel {
   final String date;
+  final String classId;
   final String divisionId;
   final String academicYearId;
   final String markedById;
@@ -86,6 +87,7 @@ class DailyAttendanceModel {
 
   DailyAttendanceModel({
     required this.date,
+    required this.classId,
     required this.divisionId,
     required this.academicYearId,
     required this.markedById,
@@ -99,6 +101,7 @@ class DailyAttendanceModel {
     
     return DailyAttendanceModel(
       date: data['date'] ?? '',
+      classId: data['classId'] ?? '',
       divisionId: data['divisionId'] ?? '',
       academicYearId: data['academicYearId'] ?? '',
       markedById: data['markedById'] ?? '',
@@ -110,6 +113,7 @@ class DailyAttendanceModel {
   Map<String, dynamic> toMap() {
     return {
       'date': date,
+      'classId': classId,
       'divisionId': divisionId,
       'academicYearId': academicYearId,
       'markedById': markedById,

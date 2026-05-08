@@ -404,164 +404,166 @@ class _MessageScreenState extends State<MessageScreen> {
   Widget build(BuildContext context) {
     final provider = context.read<ConversationProvider>();
 
-    return Scaffold(
-      backgroundColor: _softBg,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: _primaryBlue,
-        foregroundColor: Colors.white,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: _softBg,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: _primaryBlue,
+          foregroundColor: Colors.white,
+          titleSpacing: 0,
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.school_rounded,
+                    size: 18, color: Colors.white),
               ),
-              child: const Icon(Icons.school_rounded,
-                  size: 18, color: Colors.white),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'School Communication',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'School Communication',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    'Logged in as ${_roleLabel(widget.role)}',
+                    style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                Text(
-                  'Logged in as ${_roleLabel(widget.role)}',
-                  style: const TextStyle(
-                      fontSize: 10.5,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w400),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF4ADE80),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Text('Active',
+                        style:
+                        TextStyle(fontSize: 11, color: Colors.white)),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Container(
+      
+        body: Column(
+          children: [
+            // ── Conversation context banner
+            Container(
+              width: double.infinity,
+              color: const Color(0xFFEBF2FF),
               padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF4ADE80),
+                  const Icon(Icons.info_outline_rounded,
+                      size: 14, color: _accentBlue),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'This is a confidential channel between the teacher and parent.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueGrey.shade700,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  const Text('Active',
-                      style:
-                      TextStyle(fontSize: 11, color: Colors.white)),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-
-      body: Column(
-        children: [
-          // ── Conversation context banner
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFEBF2FF),
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline_rounded,
-                    size: 14, color: _accentBlue),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'This is a confidential channel between the teacher and parent.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.blueGrey.shade700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Messages
-          Expanded(
-            child: StreamBuilder<List<MessageModel>>(
-              stream: provider.getMessages(widget.conversationId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _accentBlue),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.mark_chat_unread_outlined,
-                            size: 40, color: Colors.grey.shade300),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No messages yet',
-                          style: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Start the conversation below.',
-                          style: TextStyle(
-                              color: Colors.grey.shade400, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final messages = snapshot.data!;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
-                    _scrollController.jumpTo(
-                        _scrollController.position.maxScrollExtent);
+      
+            // ── Messages
+            Expanded(
+              child: StreamBuilder<List<MessageModel>>(
+                stream: provider.getMessages(widget.conversationId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: _accentBlue),
+                    );
                   }
-                });
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
-                    final isMe = msg.senderId == widget.currentUserId;
-                    return _buildMessageCard(msg, isMe, index);
-                  },
-                );
-              },
+      
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.mark_chat_unread_outlined,
+                              size: 40, color: Colors.grey.shade300),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No messages yet',
+                            style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Start the conversation below.',
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+      
+                  final messages = snapshot.data!;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.jumpTo(
+                          _scrollController.position.maxScrollExtent);
+                    }
+                  });
+      
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isMe = msg.senderId == widget.currentUserId;
+                      return _buildMessageCard(msg, isMe, index);
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-
-          _buildInputArea(provider),
-        ],
+      
+            _buildInputArea(provider),
+          ],
+        ),
       ),
     );
   }

@@ -24,11 +24,13 @@ class AttendanceViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  String? _classId;
   String? _divisionId;
   String? _academicYearId;
   String? _teacherId;
 
-  void init(String divisionId, String academicYearId, String teacherId) {
+  void init(String classId, String divisionId, String academicYearId, String teacherId) {
+    _classId = classId;
     _divisionId = divisionId;
     _academicYearId = academicYearId;
     _teacherId = teacherId;
@@ -49,6 +51,7 @@ class AttendanceViewModel extends ChangeNotifier {
 
   Future<void> loadAttendance() async {
     if (_divisionId == null) return;
+    if (_classId == null) return;
     _isLoading = true;
     notifyListeners();
 
@@ -56,9 +59,9 @@ class AttendanceViewModel extends ChangeNotifier {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       
       // Always fetch current enrollments to ensure new students are included
-      final enrollments = await _studentRepo.getEnrollmentsByDivision(_divisionId!);
+      final enrollments = await _studentRepo.getEnrollmentsByDivision(_classId!,_divisionId!);
       
-      final existingAttendance = await _service.fetchAttendanceByDate(dateStr, _divisionId!);
+      final existingAttendance = await _service.fetchAttendanceByDate(dateStr,_classId!, _divisionId!);
 
       Map<String, StudentAttendanceData> newAttendanceMap = {};
 
@@ -205,7 +208,7 @@ class AttendanceViewModel extends ChangeNotifier {
         academicYearId: _academicYearId!,
         markedById: _teacherId!,
         lastUpdated: DateTime.now(),
-        students: _attendanceMap,
+        students: _attendanceMap, classId: _classId!,
       );
 
       await _service.saveAttendance(model);

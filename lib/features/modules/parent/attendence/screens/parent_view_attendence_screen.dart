@@ -15,6 +15,7 @@ import '../../../teacher/attendance/presentation/screens/student_attendance_hist
 class ParentViewAttendanceScreen extends StatefulWidget {
   final String studentId;
   final String studentName;
+  final String classId;
   final String divisionId;
   final String divisionName;
 
@@ -22,6 +23,7 @@ class ParentViewAttendanceScreen extends StatefulWidget {
     super.key,
     required this.studentId,
     required this.studentName,
+    required this.classId,
     required this.divisionId,
     required this.divisionName,
   });
@@ -50,9 +52,7 @@ class _ParentViewAttendanceScreenState extends State<ParentViewAttendanceScreen>
 
   void _loadReport() {
     final monthYear = DateFormat('yyyy-MM').format(_selectedMonth);
-    context
-        .read<AttendanceReportViewModel>()
-        .loadMonthlyReport(widget.divisionId, monthYear);
+    context.read<AttendanceReportViewModel>().loadMonthlyReport(widget.classId,widget.divisionId, monthYear);
   }
 
   @override

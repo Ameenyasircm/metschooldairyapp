@@ -153,6 +153,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                           final prefs = await SharedPreferences.getInstance();
                           final divisionId = prefs.getString("divisionId") ?? '';
                           final divisionName = prefs.getString("divisionName") ?? '';
+                          final classId = prefs.getString("classId") ?? '';
                           if (!context.mounted) return;
                           final provider = context.read<StudentProvider>();
                         switch (index) {
@@ -163,7 +164,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                             break;
                             case 1:
                               NavigationService.push(
-                                  context, AttendanceReportScreen(divisionId: divisionId,divisionName: divisionName,));
+                                  context, AttendanceReportScreen(classId: classId,divisionId: divisionId,divisionName: divisionName,));
                             break;
                             case 2:
                               provider.searchMyStdQuery = '';

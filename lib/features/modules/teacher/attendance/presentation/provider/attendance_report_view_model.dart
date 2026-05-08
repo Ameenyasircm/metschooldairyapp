@@ -19,12 +19,12 @@ class AttendanceReportViewModel extends ChangeNotifier {
   List<DailyAttendanceModel> _studentHistory = [];
   List<DailyAttendanceModel> get studentHistory => _studentHistory;
 
-  Future<void> loadMonthlyReport(String divisionId, String monthYear) async {
+  Future<void> loadMonthlyReport(String classId,String divisionId, String monthYear) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _monthlyData = await _service.fetchMonthlyAttendance(divisionId, monthYear);
+      _monthlyData = await _service.fetchMonthlyAttendance(classId,divisionId, monthYear);
       _aggregateMonthlyStats();
     } catch (e) {
       debugPrint("Error loading monthly report: $e");

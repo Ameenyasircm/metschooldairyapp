@@ -133,11 +133,13 @@ class StudentProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final staffId = prefs.getString("staffId");
     final classId = prefs.getString("classId");
+    final divisionId = prefs.getString("divisionId");
 
     final result = await repository.getStudents(
       lastDoc: myLastDoc,
       isMyStudents: true,
       classId: classId,
+      divisionId: divisionId,
     );
 
     if (result.docs.isEmpty) {
@@ -514,10 +516,12 @@ class StudentProvider extends ChangeNotifier {
   Future<void> fetchStudentsWithParentPage() async {
     final prefs = await SharedPreferences.getInstance();
     final classId = prefs.getString("classId");
+    final divisionId = prefs.getString("divisionId");
     final result = await repository.getStudents(
       lastDoc: myStudentsWithParentLastDoc,
       isMyStudents: true,
       classId: classId,
+      divisionId: divisionId,
     );
 
     if (result.docs.isEmpty) {

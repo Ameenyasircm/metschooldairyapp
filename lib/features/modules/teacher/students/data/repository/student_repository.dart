@@ -13,6 +13,7 @@ class StudentRepository {
     int limit = 10,
     bool isMyStudents = false,
     String? classId,
+    String? divisionId,
   }) async {
     return await firestore.fetchCollection(
       collectionPath: isMyStudents ? 'enrollments' : 'students',
@@ -24,6 +25,9 @@ class StudentRepository {
         if (isMyStudents) {
           if (classId != null) {
             q = q.where('class_id', isEqualTo: classId);
+          }
+          if (divisionId != null) {
+            q = q.where('division_id', isEqualTo: divisionId);
           }
         } else {
           if (classId != null) {
@@ -37,11 +41,11 @@ class StudentRepository {
     );
   }
 
-  Future<List<EnrollerModel>> getEnrollmentsByDivision(String divisionId) async {
+  Future<List<EnrollerModel>> getEnrollmentsByDivision(String classId,String divisionId) async {
     final snapshot = await firestore.fetchCollection(
       collectionPath: 'enrollments',
       limit: 100,
-      queryBuilder: (query) => query.where('division_id', isEqualTo: divisionId).orderBy('roll_number'),
+      queryBuilder: (query) => query.where('class_id', isEqualTo: classId).where('division_id', isEqualTo: divisionId).orderBy('roll_number'),
     );
     return snapshot.docs.map((doc) => EnrollerModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
   }

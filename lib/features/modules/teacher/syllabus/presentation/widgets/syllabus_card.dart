@@ -10,7 +10,6 @@ import '../screens/syllabus_view_screen.dart';
 
 class SyllabusCard extends StatelessWidget {
   final SyllabusModel syllabus;
-
   const SyllabusCard({super.key, required this.syllabus});
 
   @override

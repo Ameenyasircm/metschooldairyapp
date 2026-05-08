@@ -50,8 +50,9 @@ class _ParentMainScreenState extends State<ParentMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: screens[currentIndex],
-
+backgroundColor: AppColors.white,
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.white,
         currentIndex: currentIndex,
         onTap: (index) {
           setState(() => currentIndex = index);

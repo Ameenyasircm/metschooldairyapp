@@ -245,9 +245,9 @@ class AuthProvider with ChangeNotifier {
         );
 
         /// =========================
-        /// ✅ SINGLE STUDENT
+        /// ✅ PARENT NAVIGATION (REDUCED STEP)
         /// =========================
-        if (studentDataList.length == 1) {
+        if (studentDataList.isNotEmpty) {
           final s = studentDataList.first;
 
           await prefs.setString("selectedStudentData", jsonEncode(s));
@@ -272,38 +272,13 @@ class AuthProvider with ChangeNotifier {
             );
           }
         }
-
-        /// =========================
-        /// ✅ MULTIPLE STUDENTS
-        /// =========================
-        else {
-          if (context.mounted) {
-            final s = studentDataList.first;
-
-            await prefs.setString("selectedStudentData", jsonEncode(s));
-
-            /// ✅ FIXED (FROM ENROLLMENT)
-            await prefs.setString("divisionId", s['divisionId'] ?? "");
-            await prefs.setString("divisionName", s['divisionName'] ?? "");
-            await prefs.setString("classId", s['classId'] ?? "");
-            await prefs.setString("className", s['className'] ?? "");
-            await prefs.setString("academicYearId", s['academicYearId'] ?? "");
-
-            callNextReplacement(
-              ParentStudentSelectionScreen(
-                studentIds: studentDataList,
-                parentName: data['name']??"",
-              ),
-              context,
-            );
-          }
-        }
       }
 
       /// =========================
       /// 🎯 TEACHER LOGIN (UNCHANGED)
       /// =========================
       else {
+        await prefs.setString("phone", data['phone'] ?? "");
         await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
         await prefs.setString("divisionId", data['division_id'] ?? "");
         await prefs.setString("divisionName", data['division_name'] ?? "");
@@ -572,7 +547,6 @@ class AuthProvider with ChangeNotifier {
   AcademicYearModel? currentYear;
 
   Future<void> loadCurrentAcademicYear() async {
-
     currentYear = await fetchCurrentAcademicYear();
 
     notifyListeners();
@@ -585,7 +559,6 @@ class AuthProvider with ChangeNotifier {
           .where('is_current', isEqualTo: true)
           .limit(1)
           .get();
-
       if (snapshot.docs.isNotEmpty) {
         return AcademicYearModel.fromMap(snapshot.docs.first.data());
       } else {

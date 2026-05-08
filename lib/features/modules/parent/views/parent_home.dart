@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:met_school/core/constants/app_assets.dart';
 import 'package:met_school/features/modules/parent/views/parent_view_homeworks.dart';
 import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
 import 'package:met_school/providers/parent_provider.dart';
@@ -14,10 +15,8 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
-import '../../../../core/widgets/dialogs/logout_alert.dart';
 import '../../../../providers/admin_provider.dart';
 import '../../../../providers/conversation_provider.dart';
-import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../conversation/screens/conversation_screen.dart';
 import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
@@ -27,15 +26,17 @@ import '../fee/screens/parent_view_fee.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
 import '../notifications/presentation/provider/notification_provider.dart';
 import '../notifications/presentation/screens/parent_notification_screen.dart';
-import '../notifications/presentation/widgets/notification_badge.dart';
 import '../view_time_table/screens/parent_view_time_table.dart';
 import 'image_full_screen_view.dart';
 
 class ParentHomeScreen extends StatefulWidget {
   final String studentId;
-  String academicYearID, teacherName,teacherID,parentName;
+  final String academicYearID;
+  final String teacherName;
+  final String teacherID;
+  final String parentName;
 
-   ParentHomeScreen({
+  const ParentHomeScreen({
     super.key,
     required this.studentId,
     required this.academicYearID,
@@ -50,19 +51,42 @@ class ParentHomeScreen extends StatefulWidget {
 
 class _ParentHomeScreenState extends State<ParentHomeScreen> {
   String? parentId;
+  List<Map<String, dynamic>> students = [];
+  String? currentStudentId;
+  String? currentAcademicYearId;
+  String? currentTeacherId;
+  String? currentTeacherName;
 
   @override
   void initState() {
     super.initState();
+    currentStudentId = widget.studentId;
+    currentAcademicYearId = widget.academicYearID;
+    currentTeacherId = widget.teacherID;
+    currentTeacherName = widget.teacherName;
+
     Future.microtask(() {
-      context.read<ParentProvider>().fetchStudent(widget.studentId);
+      context.read<ParentProvider>().fetchStudent(currentStudentId!);
+      _initData();
+      _loadStudents();
     });
-    _initData();
+  }
+
+  Future<void> _loadStudents() async {
+    final prefs = await SharedPreferences.getInstance();
+    final studentsJson = prefs.getStringList("studentDataList") ?? [];
+    if (mounted) {
+      setState(() {
+        students = studentsJson
+            .map((e) => jsonDecode(e) as Map<String, dynamic>)
+            .toList();
+      });
+    }
   }
 
   Future<void> _initData() async {
     final prefs = await SharedPreferences.getInstance();
-    parentId = prefs.getString("userId");
+    parentId = prefs.getString("userId") ?? '';
     if (parentId != null && mounted) {
       final provider = Provider.of<NotificationProvider>(context, listen: false);
       provider.updateToken(parentId!);
@@ -70,39 +94,32 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     }
   }
 
+  void _switchStudent(Map<String, dynamic> student) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("selectedStudentData", jsonEncode(student));
+    await prefs.setString("divisionId", student['divisionId'] ?? "");
+    await prefs.setString("divisionName", student['divisionName'] ?? "");
+    await prefs.setString("classId", student['classId'] ?? "");
+    await prefs.setString("className", student['className'] ?? "");
+    await prefs.setString("academicYearId", student['academicYearId'] ?? "");
+
+    setState(() {
+      currentStudentId = student['studentId'];
+      currentAcademicYearId = student['academicYearId'];
+      currentTeacherId = student['teacherId'];
+      currentTeacherName = student['teacherName'];
+    });
+
+    if (mounted) {
+      context.read<ParentProvider>().fetchStudent(currentStudentId!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
-      appBar: AppBar(
-        automaticallyImplyActions: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "Parent Dashboard",
-          style: AppTypography.h4.copyWith(color: AppColors.primary),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          if (parentId != null)
-            NotificationBadge(
-              icon: Icons.notifications_none_outlined,
-              iconColor: AppColors.primary,
-              onTap: () {
-                callNext(ParentNotificationScreen(parentId: parentId!), context);
-              },
-            ),
-          // IconButton(
-          //   icon: const Icon(Icons.logout, color: AppColors.primary),
-          //   onPressed: () => showLogoutDialog(context),
-          // )
-        ],
-      ),
-      body:Consumer<ParentProvider>(
+      body: Consumer<ParentProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -118,70 +135,124 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: MediaQuery.of(context).padding.top + 10.h),
 
-                AppSpacing.h16,
-
-                /// 🔹 HEADER (NEW UI)
+                /// 🔹 HEADER
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.grey.shade200,
-                      child: Image.asset(
-                        "assets/images/metSchoolPng.png",
-                        errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.school),
-                      ),
+                    Image.asset(
+                      "assets/images/metSchoolPng.png",
+                      height: 40.h,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.school, size: 40),
                     ),
-                    const SizedBox(width: 12),
-                    const Expanded(
+                    SizedBox(width: 12.w),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("MET PUBLIC SCHOOL",
-                              style: TextStyle(
+                              style: AppTypography.h4.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16)),
-                          Text("PAYYANAD"),
+                                  fontSize: 16.sp)),
+                          Text("PAYYANAD", style: AppTypography.body2.copyWith(color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey.shade200,
+                    InkWell(
+                      onTap: () {
+                        // Action for grid view or notifications
+                        callNext(ParentNotificationScreen(parentId: parentId ?? ''), context);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(Icons.grid_view_rounded, color: Colors.grey.shade700, size: 24.sp),
                       ),
-                      child: const Icon(Icons.grid_view),
                     )
                   ],
                 ),
 
-                AppSpacing.h20,
+                AppSpacing.h24,
 
-                /// 🎯 STUDENT CARD (UPDATED STYLE)
+                /// 🎯 STUDENT CARD (WITH SWITCHER)
                 Container(
                   width: double.infinity,
-                  padding: AppPadding.pL,
+                  padding: AppPadding.pM,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Colors.white,
                     borderRadius: AppRadius.radiusL,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 40,
-                        // backgroundImage:
-                        // AssetImage("assets/images/student.png"),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Main Student Avatar
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                )
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 40.r,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: AssetImage(AppAssets.profile),
+                            ),
+                          ),
+
+                          if (students.length > 1)
+                            ...students
+                                .where((s) => s['studentId'] != currentStudentId)
+                                .map((s) => Padding(
+                                      padding: EdgeInsets.only(left: 12.w),
+                                      child: InkWell(
+                                        onTap: () => _switchStudent(s),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.white, width: 2),
+                                          ),
+                                          child: CircleAvatar(
+                                            radius: 20.r,
+                                            backgroundColor: Colors.grey.shade200,
+                                            backgroundImage: AssetImage(AppAssets.profile),
+                                          ),
+                                        ),
+                                      ),
+                                    )),
+                        ],
                       ),
                       AppSpacing.h12,
                       Text(
                         name,
-                        style: AppTypography.h4.copyWith(
-                            fontWeight: FontWeight.bold),
+                        style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold),
                       ),
                       AppSpacing.h4,
-                      Text("$className  •  Roll No: 15"),
+                      Text("$className  •  Roll No: 15",
+                          style: AppTypography.body2.copyWith(color: Colors.grey.shade600)),
                     ],
                   ),
                 ),
@@ -192,8 +263,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 const Center(
                   child: Text(
                     "Fee Overdue ₹4,500",
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                   ),
                 ),
 
@@ -202,92 +272,86 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 /// 🟢 Status
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xffE3E8F1),
-                    borderRadius: BorderRadius.circular(14),
+                    color: const Color(0xffEAF2FF),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: const Text(
-                    "● Present",
-                    style: TextStyle(
-                        color: Colors.green, fontWeight: FontWeight.bold),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Today's Status", style: AppTypography.body2.copyWith(color: Colors.grey.shade600)),
+                      AppSpacing.h4,
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          const Text(
+                            "Present",
+                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
 
                 AppSpacing.h20,
 
-                /// 🔥 IMPORTANT:
-                /// USING YOUR ORIGINAL BUTTONS (UNCHANGED)
+                /// Grid Menu
                 GridView(
                   shrinkWrap: true,
+                  padding: EdgeInsets.zero,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
+                    childAspectRatio: 1.1,
                   ),
                   children: [
-
                     /// Attendance
-                    _menu(Icons.event, "Attendance", () async {
+                    _menu(Icons.assignment_turned_in_outlined, "Attendance", () async {
                       final prefs = await SharedPreferences.getInstance();
                       final divisionId = prefs.getString("divisionId") ?? '';
                       final divisionName = prefs.getString("divisionName") ?? '';
-                      final className = prefs.getString("className") ?? '';
-                      callNext(ParentViewAttendanceScreen(
-                        divisionId: divisionId,divisionName:divisionName ,
-                      studentId: widget.studentId,studentName: name,), context);
-                    }),
-
-                    /// Fees
-                    _menu(Icons.payment, "Fees", () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      final divisionId = prefs.getString("divisionId") ?? '';
-                      final divisionName = prefs.getString("divisionName") ?? '';
-                      final className = prefs.getString("className") ?? '';
-                      callNext(ParentFeeScreen(studentName: name,studentId:  widget.studentId,divisionName: divisionName,divisionId: divisionId,
-                        academicYearId:widget.academicYearID ,), context);
-                    }),
-
-
-                    /// Communication (🔥 ORIGINAL LOGIC)
-                    _menu(Icons.message_outlined, "Chat", () async {
-                      final prefs = await SharedPreferences.getInstance();
-
-                      final parentId = prefs.getString("userId") ?? "";
-
-                      final conversationId = await context
-                          .read<ConversationProvider>()
-                          .getOrCreateConversation(
-                        studentId: widget.studentId,
-                        parentId: parentId,
-                        teacherId: widget.teacherID,
-                      );
-
+                      final classId = prefs.getString("classId") ?? '';
                       callNext(
-                        MessageScreen(
-                          senderName: parentName,
-                          conversationId: conversationId,
-                          currentUserId: parentId,
-                          role: "parent",
-                        ),
-                        context,
-                      );
+                          ParentViewAttendanceScreen(
+                            divisionId: divisionId,
+                            divisionName: divisionName,
+                            studentId: currentStudentId!,
+                            studentName: name,
+                            classId: classId,
+                          ),
+                          context);
+                    }),
+
+                    /// Notice
+                    _menu(Icons.notifications_active_outlined, "Notice", () {
+                      callNext(ParentNotificationScreen(parentId: parentId ?? ''), context);
                     }),
 
                     /// Calendar
-                    _menu(Icons.calendar_month, "Calendar", () {
+                    _menu(Icons.calendar_month_outlined, "Calendar", () {
                       callNext(SchoolCalendarMobileScreen(), context);
                     }),
 
                     /// Leaves
-                    _menu(Icons.request_page_outlined, "Leaves", () {
+                    _menu(Icons.person_remove_outlined, "Leaves", () {
                       callNext(
                         ParentLeaveListScreen(
-                          studentId: widget.studentId,
+                          studentId: currentStudentId!,
                           studentName: name,
-                          teacherId: widget.teacherID,
-                          academicYearId: widget.academicYearID,
+                          teacherId: currentTeacherId ?? '',
+                          academicYearId: currentAcademicYearId ?? '',
                           classId: classId,
                           className: className,
                         ),
@@ -295,8 +359,53 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                       );
                     }),
 
-                    /// Parent Instructions
-                    _menu(Icons.info, "Instructions", () {
+                    /// Communication
+                    _menu(Icons.chat_bubble_outline, "Chat", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final pId = prefs.getString("userId") ?? "";
+
+                      final conversationId = await context.read<ConversationProvider>().getOrCreateConversation(
+                            studentId: currentStudentId!,
+                            parentId: pId,
+                            teacherId: currentTeacherId ?? '',
+                          );
+
+                      callNext(
+                        MessageScreen(
+                          senderName: parentName,
+                          conversationId: conversationId,
+                          currentUserId: pId,
+                          role: "parent",
+                        ),
+                        context,
+                      );
+                    }),
+
+                    /// Fees
+                    _menu(Icons.payments_outlined, "Fees", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final divisionId = prefs.getString("divisionId") ?? '';
+                      final divisionName = prefs.getString("divisionName") ?? '';
+                      callNext(
+                          ParentFeeScreen(
+                            studentName: name,
+                            studentId: currentStudentId!,
+                            divisionName: divisionName,
+                            divisionId: divisionId,
+                            academicYearId: currentAcademicYearId ?? '',
+                          ),
+                          context);
+                    }),
+
+                    /// Rules
+                    _menu(Icons.gavel_outlined, "Rules & Regulations", () {
+                      final provider = context.read<AdminProvider>();
+                      provider.fetchRules();
+                      callNext(RulesUserScreen(), context);
+                    }),
+
+                    /// Instructions
+                    _menu(Icons.info_outline, "Instructions", () {
                       callNext(ParentInstructionsScreen(), context);
                     }),
 
@@ -307,31 +416,28 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                       callNext(BellTimingUserScreen(), context);
                     }),
 
-                    /// Rules
-                    _menu(Icons.gavel, "Rules", () {
-                      final provider = context.read<AdminProvider>();
-                      provider.fetchRules();
-                      callNext(RulesUserScreen(), context);
-                    }),
-
-                    _menu(Icons.access_time, "Time Table", () async {
+                    /// Time Table
+                    _menu(Icons.table_chart_outlined, "Time Table", () async {
                       final prefs = await SharedPreferences.getInstance();
-                      final divisionId = prefs.getString("divisionId") ?? '';
                       final divisionName = prefs.getString("divisionName") ?? '';
                       final className = prefs.getString("className") ?? '';
-                      callNext(StudentTimetableScreen(academicId: widget.academicYearID,division: divisionName,standard:className ,), context);
+                      callNext(
+                          StudentTimetableScreen(
+                            academicId: currentAcademicYearId ?? '',
+                            division: divisionName,
+                            standard: className,
+                          ),
+                          context);
                     }),
 
+                    /// HomeWorks
                     _menu(Icons.workspaces_outline, "HomeWorks", () {
-                    callNext(ParentHomeworkScreen(), context);
+                      callNext(ParentHomeworkScreen(), context);
                     }),
-
                   ],
                 ),
 
                 AppSpacing.h24,
-                const SizedBox(height: 25),
-
                 const Center(
                   child: Text(
                     "School Album",
@@ -345,22 +451,23 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 const SizedBox(height: 15),
                 GridView.builder(
                   shrinkWrap: true,
+                  padding: EdgeInsets.zero,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 6, // you can make dynamic later
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  itemCount: 6,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10.w,
+                    mainAxisSpacing: 10.h,
                   ),
                   itemBuilder: (context, index) {
-                    return InkWell(onTap: (){
-                      /// we can pass both network and asset images
-                      callNext(FullScreenImageView(imagePath: "assets/images/sample.jpg",isNetwork: false,), context);
-                    },
+                    return InkWell(
+                      onTap: () {
+                        callNext(FullScreenImageView(imagePath: "assets/images/sample.jpg", isNetwork: false), context);
+                      },
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         child: Image.asset(
-                          "assets/images/sample.jpg", // 🔥 CHANGE / MAKE LIST
+                          "assets/images/sample.jpg",
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             color: Colors.grey.shade300,
@@ -376,32 +483,18 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
-                    /// Instagram
                     InkWell(
-                      onTap: () {
-                        // open instagram
-                      },
+                      onTap: () {},
                       child: const Icon(Icons.camera_alt, color: Colors.pink),
                     ),
-
                     const SizedBox(width: 20),
-
-                    /// Facebook
                     InkWell(
-                      onTap: () {
-                        // open facebook
-                      },
+                      onTap: () {},
                       child: const Icon(Icons.facebook, color: Colors.blue),
                     ),
-
                     const SizedBox(width: 20),
-
-                    /// YouTube
                     InkWell(
-                      onTap: () {
-                        // open youtube
-                      },
+                      onTap: () {},
                       child: const Icon(Icons.play_circle, color: Colors.red),
                     ),
                   ],
@@ -422,52 +515,29 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 28, color: Colors.blueGrey),
-            const SizedBox(height: 8),
-            Text(title, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// ✅ ORIGINAL METHOD (UNCHANGED)
-  Widget _buildCard(IconData icon, String title,
-      {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: AppRadius.radiusL,
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        padding: AppPadding.pM,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 28.sp, color: AppColors.primary),
-            AppSpacing.h12,
+            Icon(icon, size: 26.sp, color: const Color(0xff4A5568)),
+            SizedBox(height: 8.h),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: AppTypography.body1.copyWith(
+              style: AppTypography.body2.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.darkGreen,
+                color: const Color(0xff4A5568),
+                fontSize: 11.sp,
               ),
-            )
+            ),
           ],
         ),
       ),
