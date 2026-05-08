@@ -18,6 +18,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
   final TextEditingController searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<DocumentSnapshot> filteredList = [];
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
+  static const Color neutralBg = Color(0xFFF8FAFC);
 
   @override
   void initState() {
@@ -143,7 +146,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
           const Spacer(),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: primaryBlue,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
