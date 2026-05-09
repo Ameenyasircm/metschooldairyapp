@@ -136,7 +136,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
         children: [
           IconButton(
             onPressed: () => context.read<AdminProvider>().setIndex(0),
-            icon: const Icon(Icons.grid_view_rounded, color: Color(0xFF64748B)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: primaryBlue),
+            splashRadius: 22,
+            tooltip: 'Back',
           ),
           const SizedBox(width: 10),
           const Text(

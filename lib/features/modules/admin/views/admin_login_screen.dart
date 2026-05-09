@@ -51,7 +51,7 @@ class AdminLoginScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(60),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // MUCH BIGGER LOGO
                             Image.asset(
