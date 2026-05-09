@@ -23,6 +23,7 @@ class AppDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      dropdownColor: AppColors.white,
       value: value,
       validator: validator ?? (v) {
         if (v == null) {
@@ -33,6 +34,7 @@ class AppDropdown extends StatelessWidget {
       style: AppTypography.body1,
       decoration: InputDecoration(
         labelText: label,
+        suffixIcon: Icon(Icons.arrow_drop_down_circle_outlined),
         labelStyle: AppTypography.body1.copyWith(color: AppColors.grey5E),
         filled: true,
         fillColor: Colors.white,
@@ -54,7 +56,7 @@ class AppDropdown extends StatelessWidget {
           .map(
             (e) => DropdownMenuItem(
           value: e,
-          child: Text(e),
+          child: Text(e, style: AppTypography.body2,),
         ),
       )
           .toList(),

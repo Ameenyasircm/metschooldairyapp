@@ -1,18 +1,33 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/core/theme/app_padding.dart';
 import 'package:met_school/core/theme/app_radius.dart';
 import 'package:met_school/core/theme/app_spacing.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
-import 'package:met_school/core/widgets/inputs/app_dropdown.dart';
-import 'package:met_school/core/widgets/inputs/app_textfield.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:met_school/core/widgets/buttons/gradient_button.dart';
-import '../widgets/enrollment_review_tile.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../../../core/utils/snackbarNotification/snackbar_notification.dart';
+import '../../../../../../providers/academic_provider.dart';
+import '../provider/student_provider.dart';
+import '../widgets/personal_info_step.dart';
+import '../widgets/family_info_step.dart';
+import '../widgets/address_info_step.dart';
+import '../widgets/academic_info_step.dart';
+import '../widgets/review_details_step.dart';
 
 class AddStudentForTeacherScreen extends StatefulWidget {
-  const AddStudentForTeacherScreen({super.key});
+  final Map<String, dynamic>? initialData;
+  const AddStudentForTeacherScreen({super.key, this.initialData});
 
   @override
   State<AddStudentForTeacherScreen> createState() =>
@@ -24,14 +39,60 @@ class _AddStudentForTeacherScreenState
   final PageController _pageController = PageController();
 
   final _formKeys = List.generate(
-    5,
+    4,
     (_) => GlobalKey<FormState>(),
   );
 
   int currentStep = 0;
+  bool _isLoading = false;
+  File? _selectedImage;
+  String? _photoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  void _initializeData() {
+    if (widget.initialData != null) {
+      final data = widget.initialData!;
+      nameCtrl.text = data['name'] ?? '';
+      ageCtrl.text = data['age']?.toString() ?? '';
+      aadhaarCtrl.text = data['aadhar'] ?? '';
+      parentCtrl.text = data['parentGuardian'] ?? '';
+      motherCtrl.text = data['motherName'] ?? '';
+      phoneCtrl.text = data['phone'] ?? '';
+      whatsappCtrl.text = data['whatsapp'] ?? '';
+      placeCtrl.text = data['place'] ?? '';
+      addressCtrl.text = data['address'] ?? '';
+      previousSchoolCtrl.text = data['prevSchool'] ?? '';
+      identificationCtrl.text = data['identificationMark'] ?? '';
+
+      gender = data['gender'];
+      religion = data['religion'];
+      cast = data['cast'];
+      relation = data['relation'];
+      occupation = data['fatherProfession'];
+
+      if (data['dob'] != null) {
+        if (data['dob'] is Timestamp) {
+          dob = (data['dob'] as Timestamp).toDate();
+        } else if (data['dob'] is DateTime) {
+          dob = data['dob'];
+        }
+      }
+
+      whatsappSame =
+          phoneCtrl.text == whatsappCtrl.text && phoneCtrl.text.isNotEmpty;
+
+      _photoUrl = data['photoUrl'];
+    }
+  }
 
   // Controllers
 
+  final admissionCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final ageCtrl = TextEditingController();
   final aadhaarCtrl = TextEditingController();
@@ -53,10 +114,10 @@ class _AddStudentForTeacherScreenState
 
   String? gender;
   String? religion;
+  String? cast;
   String? relation;
   String? occupation;
   String? medium;
-  String? selectedClass;
 
   final occupations = [
     "Farmer",
@@ -71,24 +132,79 @@ class _AddStudentForTeacherScreenState
     "Other"
   ];
 
-  final classes = [
-    "LKG",
-    "UKG",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10"
-  ];
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        _cropImage(image.path);
+      }
+    } catch (e) {
+      debugPrint("Pick Image Error: $e");
+      SnackbarService().showError("Failed to pick image");
+    }
+  }
+
+  Future<void> _cropImage(String path) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: path,
+
+        uiSettings: [
+          AndroidUiSettings(
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPresetCustom(),
+            ],
+            toolbarTitle: 'Crop Image',
+            toolbarColor: AppColors.primary,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        setState(() {
+          _selectedImage = File(croppedFile.path);
+        });
+      }
+    } catch (e) {
+      debugPrint("Crop Image Error: $e");
+      SnackbarService().showError("Failed to crop image");
+    }
+  }
+
+  Future<String?> _uploadToCloudinary(File file) async {
+    try {
+      final cloudinary = CloudinaryPublic('dt9qsvvp2', 'METSCHOOL', cache: false);
+      CloudinaryResponse response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          file.path,
+          resourceType: CloudinaryResourceType.Image,
+          folder: 'students',
+        ),
+      );
+      return response.secureUrl;
+    } catch (e) {
+      debugPrint("Cloudinary Upload Error: $e");
+      return null;
+    }
+  }
 
   void nextStep() {
     if (_formKeys[currentStep].currentState!.validate()) {
-      if (currentStep < 4) {
+      if (currentStep < 3) {
         setState(() {
           currentStep++;
         });
@@ -116,12 +232,201 @@ class _AddStudentForTeacherScreenState
     }
   }
 
-  void saveStudent() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Student Saved Successfully"),
-      ),
-    );
+  void saveStudent() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final prefs = await SharedPreferences.getInstance();
+      final provider = context.read<AcademicProvider>();
+
+      // Upload image if selected
+      if (_selectedImage != null) {
+        String? uploadedUrl = await _uploadToCloudinary(_selectedImage!);
+        if (uploadedUrl == null) {
+          throw Exception("Failed to upload photo. Please try again.");
+        }
+        _photoUrl = uploadedUrl;
+      }
+
+      // Safely extract SharedPreferences data
+      final String divisionId = prefs.getString("divisionId") ?? '';
+      final String divisionName = prefs.getString("divisionName") ?? '';
+      final String academicYearId = prefs.getString("academicYearId") ?? '';
+      final String staffId = prefs.getString("staffId") ?? '';
+      final String staffName = prefs.getString("staffName") ?? '';
+      final String? classId = prefs.getString("classId");
+      final String className = prefs.getString("className") ?? '';
+
+      if (classId == null || classId.isEmpty) {
+        throw Exception(
+            "Class selection is missing. Please re-select the class.");
+      }
+
+      // Form Data
+      String parentPhone = phoneCtrl.text.trim();
+      String parentName = parentCtrl.text.trim();
+      String studentName = nameCtrl.text.trim();
+
+      // 2. Handle IDs
+      String docId = widget.initialData?['id'] ??
+          firestore.collection("students").doc().id;
+      String? parentUid;
+
+      // Determine Admission ID
+      String finalAdmissionId = widget.initialData?['admissionId'] ?? "";
+      if (widget.initialData == null) {
+        finalAdmissionId = await provider.generateAdmissionId(classId);
+      }
+
+      final batch = firestore.batch();
+
+      // 3. Parent Logic (Determine parentUid BEFORE writing student/enrollment)
+      if (widget.initialData == null) {
+        // CASE A: New Registration - Check if parent already exists by phone
+        var existingUserQuery = await firestore
+            .collection("users")
+            .where("phone", isEqualTo: parentPhone)
+            .where("role", isEqualTo: "parent")
+            .limit(1)
+            .get();
+
+        if (existingUserQuery.docs.isNotEmpty) {
+          parentUid = existingUserQuery.docs.first.id;
+
+          // Update existing parent's student list
+          batch.update(firestore.collection("parents").doc(parentUid), {
+            "studentIds": FieldValue.arrayUnion([docId]),
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+          batch.update(firestore.collection("users").doc(parentUid), {
+            "studentIds": FieldValue.arrayUnion([docId]),
+          });
+        } else {
+          // Create brand new parent
+          DocumentReference newUserRef = firestore.collection("users").doc();
+          parentUid = newUserRef.id;
+
+          batch.set(newUserRef, {
+            "uid": parentUid,
+            "role": "parent",
+            "name": parentName,
+            "phone": parentPhone,
+            "user_name": parentPhone,
+            "password": parentPhone, // Default password
+            "studentIds": [docId],
+            "createdAt": FieldValue.serverTimestamp(),
+            "createdBy": staffId,
+            "createdByName": staffName,
+          });
+
+          batch.set(firestore.collection("parents").doc(parentUid), {
+            "parentUid": parentUid,
+            "studentIds": [docId],
+            "parentName": parentName,
+            "phone": parentPhone,
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+        }
+      } else {
+        // CASE B: Edit Existing Student
+        parentUid = widget.initialData?['parentId'];
+
+        if (parentUid != null) {
+          batch.update(firestore.collection("parents").doc(parentUid), {
+            "parentName": parentName,
+            "phone": parentPhone,
+            "updatedAt": FieldValue.serverTimestamp(),
+          });
+          batch.update(firestore.collection("users").doc(parentUid), {
+            "name": parentName,
+            "phone": parentPhone,
+            "user_name": parentPhone,
+          });
+        }
+      }
+
+      // 4. Prepare Student Data Map (Now with guaranteed parentUid)
+      Map<String, dynamic> studentData = {
+        "id": docId,
+        "name": studentName,
+        "admissionId": finalAdmissionId,
+        "classId": classId,
+        "className": className,
+        "parentId": parentUid, // Correctly linked
+        "parentGuardian": parentName,
+        "relation": relation,
+        "fatherProfession": occupation,
+        "motherName": motherCtrl.text.trim(),
+        "phone": parentPhone,
+        "whatsapp": whatsappCtrl.text.trim(),
+        "aadhar": aadhaarCtrl.text.trim(),
+        "dob": dob,
+        "age": ageCtrl.text,
+        "religion": religion,
+        "cast": cast,
+        "place": placeCtrl.text.trim(),
+        "address": addressCtrl.text.trim(),
+        "gender": gender,
+        "medium": "ENGLISH",
+        "prevSchool": previousSchoolCtrl.text.trim(),
+        "tcNumber": '',
+        "identificationMark": identificationCtrl.text.trim(),
+        "photoUrl": _photoUrl ?? '',
+        "updatedAt": FieldValue.serverTimestamp(),
+        "isEnrolled": true,
+      };
+
+      // 5. Batch Writes for Student and Enrollment
+      DocumentReference studentRef =
+          firestore.collection("students").doc(docId);
+      if (widget.initialData == null) {
+        batch.set(studentRef, studentData);
+      } else {
+        batch.update(studentRef, studentData);
+      }
+
+      // Always create a new enrollment record for tracking history/academic year
+      DocumentReference enrollRef = firestore.collection('enrollments').doc();
+      batch.set(enrollRef, {
+        "student_id": docId,
+        "student_name": studentName,
+        "academic_year_id": academicYearId,
+        "class_id": classId,
+        "class_name": className,
+        "division_id": divisionId,
+        "division_name": divisionName,
+        "enrollment_id": finalAdmissionId,
+        "parent_phone": parentPhone,
+        "parent_id": parentUid ?? "", // Fixed the logic here
+        "roll_number": null,
+        "status": "active",
+        "photoUrl": _photoUrl ?? '',
+        "createdAt": FieldValue.serverTimestamp(),
+        "createdById": staffId,
+        "createdByName": staffName,
+      });
+
+      // 6. Execute Transactionally
+      await batch.commit();
+
+      if (mounted) {
+        context.read<StudentProvider>().fetchMyStudentsInitial();
+
+        SnackbarService().showSuccess("Student Saved Successfully");
+        Navigator.pop(context); // Return to previous screen
+      }
+    } catch (e) {
+      debugPrint("Save Error: $e");
+      SnackbarService().showError("Error: ${e.toString()}");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -147,11 +452,78 @@ class _AddStudentForTeacherScreenState
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _personalStep(),
-                _familyStep(),
-                _addressStep(),
-                _academicStep(),
-                _reviewStep(),
+                _pageWrapper(
+                  formKey: _formKeys[0],
+                  title: "Personal Information",
+                  child: PersonalInfoStep(
+                    nameCtrl: nameCtrl,
+                    ageCtrl: ageCtrl,
+                    aadhaarCtrl: aadhaarCtrl,
+                    dob: dob,
+                    gender: gender,
+                    religion: religion,
+                    cast: cast,
+                    selectedImage: _selectedImage,
+                    photoUrl: _photoUrl,
+                    onPickDob: pickDob,
+                    onPickImage: _pickImage,
+                    onGenderChanged: (v) => setState(() => gender = v),
+                    onReligionChanged: (v) => setState(() => religion = v),
+                    onCastChanged: (v) => setState(() => cast = v),
+                  ),
+                ),
+                _pageWrapper(
+                  formKey: _formKeys[1],
+                  title: "Family Information",
+                  child: FamilyInfoStep(
+                    parentCtrl: parentCtrl,
+                    motherCtrl: motherCtrl,
+                    phoneCtrl: phoneCtrl,
+                    whatsappCtrl: whatsappCtrl,
+                    relation: relation,
+                    occupation: occupation,
+                    whatsappSame: whatsappSame,
+                    occupations: occupations,
+                    onRelationChanged: (v) => setState(() => relation = v),
+                    onOccupationChanged: (v) => setState(() => occupation = v),
+                    onWhatsappSameChanged: (v) {
+                      setState(() {
+                        whatsappSame = v!;
+                        if (whatsappSame) {
+                          whatsappCtrl.text = phoneCtrl.text;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                _pageWrapper(
+                  formKey: _formKeys[2],
+                  title: "Address & Academic Information",
+                  child: AddressInfoStep(
+                    placeCtrl: placeCtrl,
+                    addressCtrl: addressCtrl,
+                    previousSchoolCtrl: previousSchoolCtrl,
+                    identificationCtrl: identificationCtrl,
+                  ),
+                ),
+                _pageWrapper(
+                  formKey: _formKeys[3],
+                  title: "Review Details",
+                  child: ReviewDetailsStep(
+                    name: nameCtrl.text,
+                    dob: dob != null ? DateFormat("dd-MMM-yyyy").format(dob!) : '',
+                    age: ageCtrl.text,
+                    gender: gender ?? "",
+                    religion: religion ?? "",
+                    cast: cast ?? "",
+                    parent: parentCtrl.text,
+                    phone: phoneCtrl.text,
+                    place: placeCtrl.text,
+                    address: addressCtrl.text,
+                    selectedImage: _selectedImage,
+                    photoUrl: _photoUrl,
+                  ),
+                ),
               ],
             ),
           ),
@@ -167,13 +539,13 @@ class _AddStudentForTeacherScreenState
       child: Column(
         children: [
           LinearProgressIndicator(
-            value: (currentStep + 1) / 5,
+            value: (currentStep + 1) / 4,
             color: AppColors.primary,
             backgroundColor: Colors.grey.shade300,
           ),
           AppSpacing.vs,
           Text(
-            "Step ${currentStep + 1} of 5",
+            "Step ${currentStep + 1} of 4",
             style: AppTypography.subtitle2.copyWith(
               color: Colors.grey.shade700,
               fontWeight: FontWeight.w600,
@@ -184,276 +556,10 @@ class _AddStudentForTeacherScreenState
     );
   }
 
-  Widget _personalStep() {
-    return _pageWrapper(
-      formKey: _formKeys[0],
-      title: "Personal Information",
-      children: [
-        AppTextField(
-          controller: nameCtrl,
-          hintText: "Full Name",
-          labelText: "Full Name",
-          prefixIcon: Icons.person_outline,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        InkWell(
-          onTap: pickDob,
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 14.w,
-              vertical: 16.h,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: AppRadius.radiusM,
-              border: Border.all(
-                color: AppColors.greyE0,
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_month, color: AppColors.darkGreen),
-                AppSpacing.hm,
-                Text(
-                  dob == null
-                      ? "Select DOB"
-                      : DateFormat("dd MMM yyyy").format(dob!),
-                  style: AppTypography.body1,
-                ),
-              ],
-            ),
-          ),
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: ageCtrl,
-          hintText: "Age",
-          labelText: "Age",
-          prefixIcon: Icons.cake_outlined,
-          readOnly: true,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        AppDropdown(
-          label: "Gender",
-          value: gender,
-          items: const ["Male", "Female", "Other"],
-          onChanged: (v) {
-            setState(() {
-              gender = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppDropdown(
-          label: "Religion",
-          value: religion,
-          items: const ["Islam", "Hindu", "Christian", "Other"],
-          onChanged: (v) {
-            setState(() {
-              religion = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: aadhaarCtrl,
-          hintText: "Aadhaar Number",
-          labelText: "Aadhaar Number",
-          prefixIcon: Icons.fingerprint,
-          keyboardType: TextInputType.number,
-          fillColor: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _familyStep() {
-    return _pageWrapper(
-      formKey: _formKeys[1],
-      title: "Family Information",
-      children: [
-        AppTextField(
-          controller: parentCtrl,
-          hintText: "Parent/Guardian",
-          labelText: "Parent/Guardian",
-          prefixIcon: Icons.person,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        AppDropdown(
-          label: "Relation",
-          value: relation,
-          items: const ["Father", "Mother", "Brother", "Sister", "Other"],
-          onChanged: (v) {
-            setState(() {
-              relation = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppDropdown(
-          label: "Occupation",
-          value: occupation,
-          items: occupations,
-          onChanged: (v) {
-            setState(() {
-              occupation = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: motherCtrl,
-          hintText: "Mother Name",
-          labelText: "Mother Name",
-          prefixIcon: Icons.woman,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: phoneCtrl,
-          hintText: "Phone Number",
-          labelText: "Phone Number",
-          prefixIcon: Icons.phone,
-          keyboardType: TextInputType.phone,
-          fillColor: Colors.white,
-          onChanged: (v) {
-            if (whatsappSame) {
-              whatsappCtrl.text = v;
-            }
-          },
-        ),
-        AppSpacing.vs,
-        Row(
-          children: [
-            Checkbox(
-              value: whatsappSame,
-              activeColor: AppColors.primary,
-              onChanged: (v) {
-                setState(() {
-                  whatsappSame = v!;
-                  if (whatsappSame) {
-                    whatsappCtrl.text = phoneCtrl.text;
-                  }
-                });
-              },
-            ),
-            Expanded(
-              child: Text(
-                "WhatsApp same as phone number",
-                style: AppTypography.body2,
-              ),
-            ),
-          ],
-        ),
-        AppSpacing.vs,
-        AppTextField(
-          controller: whatsappCtrl,
-          hintText: "WhatsApp Number",
-          labelText: "WhatsApp Number",
-          prefixIcon: Icons.chat,
-          keyboardType: TextInputType.phone,
-          readOnly: whatsappSame,
-          fillColor: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _addressStep() {
-    return _pageWrapper(
-      formKey: _formKeys[2],
-      title: "Address Information",
-      children: [
-        AppTextField(
-          controller: placeCtrl,
-          hintText: "Place",
-          labelText: "Place",
-          prefixIcon: Icons.location_on_outlined,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: addressCtrl,
-          hintText: "Address",
-          labelText: "Address",
-          prefixIcon: Icons.home_outlined,
-          maxLine: 4,
-          fillColor: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _academicStep() {
-    return _pageWrapper(
-      formKey: _formKeys[3],
-      title: "Academic Information",
-      children: [
-        AppDropdown(
-          label: "Class",
-          value: selectedClass,
-          items: classes,
-          onChanged: (v) {
-            setState(() {
-              selectedClass = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppDropdown(
-          label: "Medium",
-          value: medium,
-          items: const ["English", "Malayalam"],
-          onChanged: (v) {
-            setState(() {
-              medium = v;
-            });
-          },
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: previousSchoolCtrl,
-          hintText: "Previous School",
-          labelText: "Previous School",
-          prefixIcon: Icons.school_outlined,
-          fillColor: Colors.white,
-        ),
-        AppSpacing.vm,
-        AppTextField(
-          controller: identificationCtrl,
-          hintText: "Identification Mark",
-          labelText: "Identification Mark",
-          prefixIcon: Icons.edit_note_outlined,
-          fillColor: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _reviewStep() {
-    return _pageWrapper(
-      formKey: _formKeys[4],
-      title: "Review Details",
-      children: [
-        EnrollmentReviewTile(title: "Name", value: nameCtrl.text),
-        EnrollmentReviewTile(title: "Gender", value: gender ?? ""),
-        EnrollmentReviewTile(title: "Religion", value: religion ?? ""),
-        EnrollmentReviewTile(title: "Parent", value: parentCtrl.text),
-        EnrollmentReviewTile(title: "Phone", value: phoneCtrl.text),
-        EnrollmentReviewTile(title: "Class", value: selectedClass ?? ""),
-        EnrollmentReviewTile(title: "Medium", value: medium ?? ""),
-        EnrollmentReviewTile(title: "Place", value: placeCtrl.text),
-      ],
-    );
-  }
-
   Widget _pageWrapper({
     required GlobalKey<FormState> formKey,
     required String title,
-    required List<Widget> children,
+    required Widget child,
   }) {
     return SingleChildScrollView(
       padding: AppPadding.pM,
@@ -464,10 +570,10 @@ class _AddStudentForTeacherScreenState
           children: [
             Text(
               title,
-              style: AppTypography.h3,
+              style: AppTypography.h6,
             ),
             AppSpacing.vl,
-            ...children,
+            child,
           ],
         ),
       ),
@@ -515,8 +621,9 @@ class _AddStudentForTeacherScreenState
             if (currentStep > 0) AppSpacing.hm,
             Expanded(
               child: gradientButton(
-                text: currentStep == 4 ? "Save Student" : "Continue",
-                onPressed: nextStep,
+                text: currentStep == 3 ? "Save Student" : "Continue",
+                isLoading: currentStep == 3 ? _isLoading : false,
+                onPressed: _isLoading ? null : nextStep,
               ),
             ),
           ],
@@ -531,6 +638,11 @@ class _AddStudentForTeacherScreenState
       initialDate: DateTime(2015),
       firstDate: DateTime(1990),
       lastDate: DateTime.now(),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(primary: AppColors.primary)),
+        child: child!,
+      ),
     );
 
     if (picked != null) {
@@ -540,4 +652,11 @@ class _AddStudentForTeacherScreenState
       });
     }
   }
+}
+class CropAspectRatioPresetCustom implements CropAspectRatioPresetData {
+  @override
+  (int, int)? get data => (2, 3);
+
+  @override
+  String get name => '2x3 (customized)';
 }

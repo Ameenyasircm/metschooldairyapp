@@ -17,27 +17,42 @@ class EnrollmentReviewTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.m),
-      padding: AppPadding.pM,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: AppRadius.radiusM,
-        border: Border.all(color: AppColors.greyE0),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xs,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+          /// Title
           Expanded(
+            flex: 3,
             child: Text(
               title,
-              style: AppTypography.body1.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTypography.body2.copyWith(
+                fontWeight: FontWeight.w400,
+                color: AppColors.grey5E,
               ),
             ),
           ),
-          Text(
-            value,
-            style: AppTypography.body1,
+
+          SizedBox(width: AppSpacing.m),
+
+          /// Value
+          Expanded(
+            flex: 5,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                textAlign: TextAlign.start,
+                style: AppTypography.body2.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
         ],
       ),

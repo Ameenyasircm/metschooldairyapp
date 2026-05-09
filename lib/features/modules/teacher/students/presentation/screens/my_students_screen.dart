@@ -113,6 +113,7 @@ class MyStudentsScreen extends StatelessWidget {
                     child: gradientButton(
                       text: "  Add\nStudent",
                       onPressed: () {
+
                         // final provider = context.read<StudentProvider>();
                         // provider.clearSelection();
                         // provider.fetchInitial();
