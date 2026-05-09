@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-import 'package:met_school/core/constants/app_radius.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
+import 'package:met_school/core/theme/app_padding.dart';
+import 'package:met_school/core/theme/app_radius.dart';
+import 'package:met_school/core/theme/app_spacing.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
 
-import '../../../../../../core/constants/app_assets.dart';
-import '../../../../../../core/service/url_launcher_service.dart';
+import 'package:met_school/core/constants/app_assets.dart';
+import 'package:met_school/core/service/url_launcher_service.dart';
 import '../../data/models/tech_student_model.dart';
 
 class StudentTile extends StatelessWidget {

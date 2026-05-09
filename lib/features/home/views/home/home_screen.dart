@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
@@ -76,12 +77,12 @@ class _HomeScreenState extends State<HomeScreen> {
     // We use a SizedBox + Stack here so the layout engine knows exactly
     // how much space the hero + the overlapping collage takes up vertically.
     return SizedBox(
-      height: 365, // 350 (Hero image) + 90 (Collage overflow)
+      height: 365.h, // 350 (Hero image) + 90 (Collage overflow)
       child: Stack(
         children: [
           // 1. Hero Background & Title Card
           Container(
-            height: 350,
+            height: 350.h,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/homeMainImage.png'), // your image path

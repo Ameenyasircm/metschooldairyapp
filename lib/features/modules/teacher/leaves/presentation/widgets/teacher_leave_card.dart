@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-import 'package:met_school/core/constants/app_radius.dart';
 import 'package:met_school/core/models/leave_request_model.dart';
+import '../../../../../../core/theme/app_padding.dart';
+import '../../../../../../core/theme/app_radius.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/widgets/buttons/action_button.dart';
 import 'reject_leave_dialog.dart';
 

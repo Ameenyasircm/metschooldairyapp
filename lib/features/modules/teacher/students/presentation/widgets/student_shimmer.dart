@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-import 'package:met_school/core/constants/app_radius.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
 import 'package:shimmer/shimmer.dart';
+
+import '../../../../../../core/theme/app_padding.dart';
+import '../../../../../../core/theme/app_radius.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 
 class StudentShimmer extends StatelessWidget {
   const StudentShimmer({super.key});

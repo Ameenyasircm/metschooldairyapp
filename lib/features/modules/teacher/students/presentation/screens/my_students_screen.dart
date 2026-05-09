@@ -5,13 +5,13 @@ import 'package:met_school/core/utils/snackbarNotification/snackbar_notification
 import 'package:met_school/features/modules/teacher/students/presentation/screens/tech_student_list_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../../core/constants/app_padding.dart';
-import '../../../../../../core/constants/app_radius.dart';
-import '../../../../../../core/constants/app_spacing.dart';
-import '../../../../../../core/router/app_navigation.dart';
-import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../../core/theme/app_typography.dart';
-import '../../../../../../core/widgets/buttons/gradient_button.dart';
+import 'package:met_school/core/theme/app_padding.dart';
+import 'package:met_school/core/theme/app_radius.dart';
+import 'package:met_school/core/theme/app_spacing.dart';
+import 'package:met_school/core/router/app_navigation.dart';
+import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/core/theme/app_typography.dart';
+import 'package:met_school/core/widgets/buttons/gradient_button.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/student_attendance_history_screen.dart';
 import '../provider/student_provider.dart';
@@ -19,6 +19,7 @@ import '../../data/models/tech_student_model.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/student_shimmer.dart';
 import '../widgets/student_tile.dart';
+import 'add_students_for_teacher.dart';
 
 class MyStudentsScreen extends StatelessWidget {
   const MyStudentsScreen({super.key});
@@ -92,16 +93,30 @@ class MyStudentsScreen extends StatelessWidget {
                 Flexible(
                   flex: 2,
                     child: _buildSearchField(context)),
+                // Flexible(
+                //   child: Padding(
+                //     padding:EdgeInsets.only(right: 6.w),
+                //     child: gradientButton(
+                //       text: "Enroll",
+                //       onPressed: () {
+                //         final provider = context.read<StudentProvider>();
+                //         provider.clearSelection();
+                //         provider.fetchInitial();
+                //         NavigationService.push(context, const TechStudentListScreen());
+                //       },
+                //     ),
+                //   ),
+                // ),
                 Flexible(
                   child: Padding(
                     padding:EdgeInsets.only(right: 6.w),
                     child: gradientButton(
-                      text: "Enroll",
+                      text: "  Add\nStudent",
                       onPressed: () {
-                        final provider = context.read<StudentProvider>();
-                        provider.clearSelection();
-                        provider.fetchInitial();
-                        NavigationService.push(context, const TechStudentListScreen());
+                        // final provider = context.read<StudentProvider>();
+                        // provider.clearSelection();
+                        // provider.fetchInitial();
+                        NavigationService.push(context, const AddStudentForTeacherScreen());
                       },
                     ),
                   ),

@@ -8,11 +8,10 @@ import 'package:met_school/features/modules/parent/views/view_parent_instruction
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../../../core/constants/app_padding.dart';
-import '../../../../core/constants/app_radius.dart';
-import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_padding.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/navigation/navigation_helper.dart';
 import '../../../../providers/admin_provider.dart';

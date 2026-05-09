@@ -6,10 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
 import 'package:met_school/providers/auth_provider.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-
 import '../../../../../../core/router/app_navigation.dart';
+import '../../../../../../core/theme/app_padding.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/widgets/dialogs/logout_alert.dart';
 import '../../../../../auth/presentation/screens/login_screen.dart';
 import '../widgets/logout_screen.dart';

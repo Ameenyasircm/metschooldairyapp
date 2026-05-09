@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/constants/app_radius.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_padding.dart';
+import '../../../core/theme/app_padding.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../modules/teacher/homework/data/models/homework_model.dart';
 
 class HomeworkCard extends StatelessWidget {

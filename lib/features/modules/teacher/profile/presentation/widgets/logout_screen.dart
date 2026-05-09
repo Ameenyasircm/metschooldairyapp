@@ -2,10 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:met_school/core/theme/app_colors.dart';
-
-import '../../../../../../core/constants/app_padding.dart';
-import '../../../../../../core/constants/app_radius.dart';
-import '../../../../../../core/constants/app_spacing.dart';
+import '../../../../../../core/theme/app_padding.dart';
+import '../../../../../../core/theme/app_radius.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/theme/app_typography.dart';
 
 class LogoutTile extends StatelessWidget {

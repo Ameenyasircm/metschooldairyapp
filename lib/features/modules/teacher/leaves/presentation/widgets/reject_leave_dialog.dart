@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/utils/snackbarNotification/snackbar_notification.dart';
-
-import '../../../../../../core/constants/app_spacing.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/theme/app_typography.dart';
 import '../../../../../../core/widgets/buttons/action_button.dart';
-import '../../../../../../core/widgets/custom_textfield.dart';
+import '../../../../../../core/widgets/inputs/app_textfield.dart';
 
 class RejectLeaveDialog extends StatefulWidget {
   final Function(String reason) onReject;
