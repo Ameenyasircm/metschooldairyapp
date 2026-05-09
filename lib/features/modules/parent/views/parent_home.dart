@@ -20,6 +20,7 @@ import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
 import '../attendence/screens/parent_view_attendence_screen.dart';
+import '../events/presentation/screens/parent_event_list_screen.dart';
 import '../fee/screens/parent_view_fee.dart';
 import '../leaves/presentation/screens/leave_list_screen.dart';
 import '../notifications/presentation/provider/notification_provider.dart';
@@ -504,6 +505,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     /// HomeWorks
                     _menu(Icons.workspaces_outline, "HomeWorks", () {
                       callNext(ParentHomeworkScreen(), context);
+                    }),
+
+                    _menu(Icons.event_available_outlined, "Events", () {
+                      callNext(ParentEventListScreen(), context);
                     }),
                   ],
                 ),

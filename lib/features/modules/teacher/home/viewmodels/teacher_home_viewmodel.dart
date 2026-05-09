@@ -161,6 +161,10 @@ class TeacherHomeViewModel extends ChangeNotifier {
       icon: AppAssets.punctuality,
       onTap: () {},
     ),  QuickAction(
+      title: 'Events',
+      icon: AppAssets.event,
+      onTap: () {},
+    ),  QuickAction(
       title: 'School Timing',
       icon: AppAssets.schoolTime,
       onTap: () {},

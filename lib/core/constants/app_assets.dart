@@ -22,6 +22,7 @@ class AppAssets {
   static const String schoolTime = 'assets/icons/schoolTime.png';
   static const String timetable = 'assets/icons/timetable.png';
   static const String syllabus = 'assets/icons/syllabus.png';
+  static const String event = 'assets/icons/event.png';
 
 
 
