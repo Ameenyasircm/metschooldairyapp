@@ -65,7 +65,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     currentTeacherName = widget.teacherName;
 
     Future.microtask(() {
-      context.read<ParentProvider>().fetchStudent(currentStudentId!);
+      context.read<ParentProvider>().fetchStudent(studentId: currentStudentId??'', academicYearId: currentAcademicYearId??'');
       _initData();
       _loadStudents();
     });
@@ -110,7 +110,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     });
 
     if (mounted) {
-      context.read<ParentProvider>().fetchStudent(currentStudentId!);
+      context.read<ParentProvider>().fetchStudent(academicYearId:widget.academicYearID,studentId: currentStudentId??'');
     }
   }
 
@@ -126,7 +126,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
           final name = provider.name;
           final className = provider.className;
-          final parentName = provider.parentName;
+          final rollNumber = provider.rollNo;
+          final studentPhoto = provider.studentImage;
+          // final parentName = provider.parentName;
           final classId = provider.classId;
 
           return SingleChildScrollView(
@@ -218,7 +220,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                             child: CircleAvatar(
                               radius: 40.r,
                               backgroundColor: Colors.grey.shade200,
-                              backgroundImage: AssetImage(AppAssets.profile),
+                              backgroundImage: studentPhoto.isNotEmpty?
+                              NetworkImage(studentPhoto):
+                              AssetImage(AppAssets.profile),
                             ),
                           ),
 
@@ -237,7 +241,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                           child: CircleAvatar(
                                             radius: 20.r,
                                             backgroundColor: Colors.grey.shade200,
-                                            backgroundImage: AssetImage(AppAssets.profile),
+                                            backgroundImage: (s['studentPhoto']??'').isNotEmpty?
+                                                NetworkImage(s['studentPhoto']):AssetImage(AppAssets.profile),
                                           ),
                                         ),
                                       ),
@@ -250,7 +255,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                         style: AppTypography.h4.copyWith(fontWeight: FontWeight.bold),
                       ),
                       AppSpacing.h4,
-                      Text("$className  •  Roll No: 15",
+                      Text("$className  •  Roll No:$rollNumber",
                           style: AppTypography.body2.copyWith(color: Colors.grey.shade600)),
                     ],
                   ),
@@ -371,7 +376,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
                       callNext(
                         MessageScreen(
-                          senderName: parentName,
+                          senderName: widget.parentName,
                           conversationId: conversationId,
                           currentUserId: pId,
                           role: "parent",

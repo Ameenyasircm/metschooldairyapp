@@ -399,6 +399,7 @@ class _AddStudentForTeacherScreenState
         "division_name": divisionName,
         "enrollment_id": finalAdmissionId,
         "parent_phone": parentPhone,
+        "parentGuardian": parentName,
         "parent_id": parentUid ?? "", // Fixed the logic here
         "roll_number": null,
         "status": "active",
