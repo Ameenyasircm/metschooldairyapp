@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/core/constants/app_assets.dart';
+import 'package:met_school/features/modules/parent/views/parent_punctuality_view.dart';
 import 'package:met_school/features/modules/parent/views/parent_view_homeworks.dart';
 import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
 import 'package:met_school/providers/parent_provider.dart';
@@ -19,6 +20,7 @@ import '../../../conversation/screens/conversation_screen.dart';
 import '../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../teacher/school_calender/screens/school_calender_mobile_screen.dart';
+import '../../teacher/students/data/models/tech_student_model.dart';
 import '../attendence/screens/parent_view_attendence_screen.dart';
 import '../events/presentation/screens/parent_event_list_screen.dart';
 import '../fee/screens/parent_view_fee.dart';
@@ -510,6 +512,29 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     _menu(Icons.event_available_outlined, "Events", () {
                       callNext(ParentEventListScreen(), context);
                     }),
+
+
+                    _menu(Icons.event_available_outlined, "Punch", () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      EnrollerModel student = EnrollerModel(
+                        id: prefs.getString("id") ?? '',
+                        studentId: prefs.getString("studentId") ?? '',
+                        name: prefs.getString("studentName") ?? '',
+                        parentId: prefs.getString("parentId") ?? '',
+                        parentPhone: prefs.getString("parentPhone") ?? '',
+                        rollNumber: prefs.getInt("rollNumber") ?? 0,
+                        className: prefs.getString("className") ?? '',
+                        divisionName: prefs.getString("divisionName") ?? '',
+                      );
+                      print("id : ${student.id}");
+                      print("studentId : ${student.studentId}");
+                      print("name : ${student.name}");
+                      print("parentId : ${student.parentId}");
+                      print("parentPhone : ${student.parentPhone}");
+                      print("rollNumber : ${student.rollNumber}");
+                      print("className : ${student.className}");
+                      print("divisionName : ${student.divisionName}");
+                      callNext(ParentPunctualityScreen(student: student), context);                         }),
                   ],
                 ),
 

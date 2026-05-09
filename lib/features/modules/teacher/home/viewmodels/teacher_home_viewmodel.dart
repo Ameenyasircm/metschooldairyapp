@@ -169,6 +169,13 @@ class TeacherHomeViewModel extends ChangeNotifier {
       icon: AppAssets.schoolTime,
       onTap: () {},
     ),
+    QuickAction(
+      title: 'Logout',
+      icon: AppAssets.schoolTime,
+      onTap: () {
+
+      },
+    ),
   ];
 
   void setSelectedIndex(int index) {

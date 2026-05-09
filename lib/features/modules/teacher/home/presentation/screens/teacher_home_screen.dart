@@ -10,7 +10,9 @@ import '../../../../../../core/theme/app_padding.dart';
 import '../../../../../../core/theme/app_radius.dart';
 import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/utils/navigation/navigation_helper.dart';
+import '../../../../../../core/widgets/dialogs/logout_alert.dart';
 import '../../../../../../providers/admin_provider.dart';
+import '../../../../../auth/presentation/screens/login_screen.dart';
 import '../../../../../communication/screens/students_parents_list_screen.dart';
 import '../../../../../homework/screens/homework_list_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
@@ -185,6 +187,19 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                             final provider = context.read<AdminProvider>();
                             provider.fetchBellTiming();
                             callNext(BellTimingUserScreen(), context);
+                            break;
+                          case 6:
+                            print(' FKNRKF ');
+                            final shouldLogout = await showLogoutDialog(context);
+                            if (shouldLogout == true) {
+                              final prefs = await SharedPreferences.getInstance();
+                              /// Clear saved data
+                              await prefs.clear();
+                              NavigationService.pushAndRemoveUntil(
+                                context,
+                                LoginScreen(),
+                              );
+                            }
                             break;
                           default:
                             break;

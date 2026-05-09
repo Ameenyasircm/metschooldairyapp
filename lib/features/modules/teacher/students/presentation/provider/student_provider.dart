@@ -444,7 +444,12 @@ class StudentProvider extends ChangeNotifier {
   List<PunctualityRecordModel> records = [];
 
   /// 🔽 Fetch for one student
+  bool isRecordsLoading = false;
+
   Future<void> fetchStudentRecords(String studentId) async {
+    isRecordsLoading = true;
+    notifyListeners();
+
     final snap = await db
         .collection('students')
         .doc(studentId)
@@ -456,6 +461,7 @@ class StudentProvider extends ChangeNotifier {
         .map((e) => PunctualityRecordModel.fromMap(e.id, e.data()))
         .toList();
 
+    isRecordsLoading = false;
     notifyListeners();
   }
 
@@ -466,41 +472,56 @@ class StudentProvider extends ChangeNotifier {
     required String remark,
     required DateTime date,
   }) async {
-    final recordId = DateTime.now().millisecondsSinceEpoch.toString();
+    final recordId   = DateTime.now().millisecondsSinceEpoch.toString();
+    final point      = PunctualityCodes.pointFor(code);
+    final isPositive = PunctualityCodes.isPositive(code);
+    final monthKey   = "${date.year}-${date.month.toString().padLeft(2, '0')}";
 
     final data = {
-      "id": recordId,
-      "studentId": student.studentId,
-      "studentName": student.name,
-      "className": student.className,
+      "id":           recordId,
+      "studentId":    student.studentId,
+      "studentName":  student.name,
+      "className":    student.className,
       "divisionName": student.divisionName,
-      "code": code,
-      "remark": remark,
-      "date": Timestamp.fromDate(date),
-      "createdAt": Timestamp.now(),
+      "code":         code,
+      "remark":       remark,
+      "date":         Timestamp.fromDate(date),
+      "createdAt":    Timestamp.now(),
+      "point":        point,       // +1 or -1
+      "isPositive":   isPositive,
+      "monthKey":     monthKey,    // "2025-06"  → easy group-by later
     };
 
     final batch = db.batch();
 
-    /// 1️⃣ Subcollection
+    // 1️⃣  Student sub-collection
     final studentRef = db
         .collection('students')
         .doc(student.studentId)
         .collection('punctuality_records')
         .doc(recordId);
 
-    /// 2️⃣ Global collection
-    final globalRef =
-    db.collection('punctuality_records').doc(recordId);
+    // 2️⃣  Global collection (for class/division dashboards)
+    final globalRef = db
+        .collection('punctuality_records')
+        .doc(recordId);
 
-    batch.set(studentRef, data);
-    batch.set(globalRef, data);
+    // 3️⃣  Running total on the student document
+    //     Increment `punctualityScore` so you can read it instantly
+    //     without aggregating every time.
+    final studentDocRef = db
+        .collection('students')
+        .doc(student.studentId);
+
+    batch.set(studentRef,   data);
+    batch.set(globalRef,    data);
+    batch.update(studentDocRef, {
+      'punctualityScore': FieldValue.increment(point),
+    });
 
     await batch.commit();
-
     await fetchStudentRecords(student.studentId);
   }
-
 
 
   List<StudentWithParentModel> myStudentsWithParent = [];
