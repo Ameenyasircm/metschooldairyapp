@@ -92,6 +92,9 @@ Widget buildQuickActions(BuildContext context) {
                         case 8:
                           NavigationService.push(context, const SyllabusListScreen());
                           break;
+                        case 9:
+                          NavigationService.push(context, const SyllabusListScreen());
+                          break;
                         default:
                           break;
                       }
