@@ -27,6 +27,8 @@ import 'features/modules/teacher/attendance/presentation/provider/attendance_pro
 import 'features/modules/teacher/attendance/presentation/provider/attendance_report_view_model.dart';
 import 'features/homework/providers/homework_provider.dart' as new_hw;
 import 'features/modules/teacher/homework/presentation/provider/homework_provider.dart';
+import 'features/modules/teacher/events/data/repository/event_repository.dart';
+import 'features/modules/teacher/events/presentation/provider/event_provider.dart';
 import 'features/modules/teacher/syllabus/presentation/provider/syllabus_provider.dart';
 import 'features/modules/parent/notifications/presentation/provider/notification_provider.dart';
 import 'features/splash/splash_screen.dart';
@@ -101,6 +103,10 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(create: (_) => SyllabusProvider()),
+        Provider(create: (_) => EventRepository()),
+        ChangeNotifierProvider(
+          create: (context) => EventProvider(context.read<EventRepository>()),
+        ),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),

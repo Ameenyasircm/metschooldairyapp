@@ -17,6 +17,7 @@ import '../../../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
+import '../../../events/presentation/screens/event_list_screen.dart';
 import '../../../exams/presentation/screens/exam_coming_soon_screen.dart';
 import '../../../leaves/presentation/screens/teacher_leave_management_screen.dart';
 import '../../../profile/presentation/screens/teacher_profile_screen.dart';
@@ -177,6 +178,10 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                             NavigationService.push(context, PunctualityStudentListScreen());
                             break;
                           case 4:
+
+                            callNext(EventListScreen(), context);
+                            break;
+                            case 5:
                             final provider = context.read<AdminProvider>();
                             provider.fetchBellTiming();
                             callNext(BellTimingUserScreen(), context);
