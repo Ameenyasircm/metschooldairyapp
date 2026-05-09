@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:met_school/core/constants/app_assets.dart';
 import 'package:met_school/features/modules/parent/views/parent_view_homeworks.dart';
 import 'package:met_school/features/modules/parent/views/view_parent_instructions.dart';
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_padding.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -112,6 +111,57 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     if (mounted) {
       context.read<ParentProvider>().fetchStudent(academicYearId:widget.academicYearID,studentId: currentStudentId??'');
     }
+  }
+
+  String _getAttendanceStatus(Map<String, dynamic>? data, String key) {
+    if (data == null || data['daily_attendance'] == null) return "N/A";
+    
+    final dailyMap = data['daily_attendance'] as Map<String, dynamic>;
+    if (!dailyMap.containsKey(key)) return "N/A";
+    
+    final status = dailyMap[key]?.toString().toLowerCase();
+    if (status == null || status.isEmpty) return "N/A";
+    return status[0].toUpperCase() + status.substring(1);
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'present':
+        return Colors.green;
+      case 'absent':
+        return Colors.red;
+      case 'late':
+        return Colors.orange;
+      default:
+        return Colors.grey.shade600;
+    }
+  }
+
+  Widget _statusIndicator(String label, String status) {
+    final color = _getStatusColor(status);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTypography.body2.copyWith(fontSize: 10.sp, color: Colors.grey.shade600)),
+        Row(
+          children: [
+            Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              status,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13.sp),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -274,37 +324,54 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 AppSpacing.h12,
 
                 /// 🟢 Status
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffEAF2FF),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Today's Status", style: AppTypography.body2.copyWith(color: Colors.grey.shade600)),
-                      AppSpacing.h4,
-                      Row(
+                Builder(
+                  builder: (context) {
+                    final today = DateFormat('dd-MM-yyyy').format(DateTime.now());
+                    final morningKey = "${today}_M";
+                    final afternoonKey = "${today}_A";
+                    
+                    final morningStatus = _getAttendanceStatus(provider.studentData, morningKey);
+                    final afternoonStatus = _getAttendanceStatus(provider.studentData, afternoonKey);
+                    
+                    return Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffEAF2FF),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
-                            ),
+                          Text("Today's Status", 
+                            style: AppTypography.body2.copyWith(
+                              color: Colors.blue.shade800, 
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.sp
+                            )
                           ),
-                          SizedBox(width: 8.w),
-                          const Text(
-                            "Present",
-                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                          AppSpacing.h8,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _statusIndicator("Morning", morningStatus),
+                              ),
+                              Container(
+                                width: 1, 
+                                height: 25.h, 
+                                color: Colors.blue.withOpacity(0.2),
+                                margin: EdgeInsets.symmetric(horizontal: 8.w),
+                              ),
+                              Expanded(
+                                child: _statusIndicator("Afternoon", afternoonStatus),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    );
+                  }
                 ),
 
                 AppSpacing.h20,

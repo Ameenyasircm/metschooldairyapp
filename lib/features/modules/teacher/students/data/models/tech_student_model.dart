@@ -72,6 +72,7 @@ class TechStudentModel {
   }
 }
 class EnrollerModel {
+  final String id;
   final String studentId;
   final String name;
   final String parentId;
@@ -81,6 +82,7 @@ class EnrollerModel {
   final String divisionName;
 
   EnrollerModel({
+    required this.id,
     required this.studentId,
     required this.name,
     required this.parentId,
@@ -90,12 +92,13 @@ class EnrollerModel {
     required this.divisionName,
   });
 
-  factory EnrollerModel.fromMap(Map<String, dynamic>? map) {
+  factory EnrollerModel.fromMap(Map<String, dynamic>? map, String docId) {
     if (map == null) {
-      throw ArgumentError('TechStudentModel map cannot be null');
+      throw ArgumentError('EnrollerModel map cannot be null');
     }
 
     return EnrollerModel(
+      id: docId,
       studentId: (map['student_id'] as String?)?.trim() ?? '',
       name: (map['student_name'] as String?)?.trim() ?? '',
       parentId: (map['parent_id'] as String?)?.trim() ?? '',

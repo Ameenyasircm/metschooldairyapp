@@ -69,6 +69,7 @@ class AttendanceViewModel extends ChangeNotifier {
       for (var e in enrollments) {
         newAttendanceMap[e.studentId] = StudentAttendanceData(
           studentId: e.studentId,
+          enrollmentDocId: e.id,
           name: e.name,
           rollNo: e.rollNumber,
           parentPhone: e.parentPhone,
@@ -211,7 +212,7 @@ class AttendanceViewModel extends ChangeNotifier {
         students: _attendanceMap, classId: _classId!,
       );
 
-      await _service.saveAttendance(model);
+      await _service.saveAttendance(model, _selectedSession);
       
       // Trigger notifications for late students
       for (var data in _attendanceMap.values) {

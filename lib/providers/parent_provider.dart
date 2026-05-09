@@ -17,6 +17,8 @@ class ParentProvider with ChangeNotifier {
   String parentName = "";
   String classId = "";
 
+  Map<String, dynamic>? studentData;
+
   bool isLoading = false;
 
   Future<void> fetchStudent({
@@ -35,7 +37,8 @@ class ParentProvider with ChangeNotifier {
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        final data = snapshot.docs.first.data();
+        studentData = snapshot.docs.first.data();
+        final data = studentData!;
 
         name = data['student_name']?.toString() ?? "";
         className = data['class_name']?.toString() ?? "";
