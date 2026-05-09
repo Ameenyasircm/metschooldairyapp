@@ -259,7 +259,7 @@ class AuthProvider with ChangeNotifier {
           await prefs.setString("classId", s['classId'] ?? "");
           await prefs.setString("className", s['className'] ?? "");
           await prefs.setString("academicYearId", s['academicYearId'] ?? "");
-
+          await prefs.setString("studentId",  s['studentId']);
           if (context.mounted) {
             callNextReplacement(
               ParentMainScreen(

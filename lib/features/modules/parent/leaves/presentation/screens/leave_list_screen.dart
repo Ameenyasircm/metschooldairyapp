@@ -156,9 +156,8 @@ class _ParentLeaveListScreenState extends State<ParentLeaveListScreen> {
   Widget _leaveCard(LeaveRequestModel leave, int index) {
     final status = (leave.status ?? "").toLowerCase();
 
-    final displayStatus = status.isEmpty
-        ? "Approval Pending"
-        : status;
+    final displayStatus =
+    status.isEmpty ? "Approval Pending" : status;
 
     final color = status == "approved"
         ? Colors.green
@@ -195,8 +194,10 @@ class _ParentLeaveListScreenState extends State<ParentLeaveListScreen> {
                 ),
               ),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -213,7 +214,7 @@ class _ParentLeaveListScreenState extends State<ParentLeaveListScreen> {
             ],
           ),
 
-          AppSpacing.h8,
+          AppSpacing.h12,
 
           /// REASON
           Text(
@@ -232,11 +233,68 @@ class _ParentLeaveListScreenState extends State<ParentLeaveListScreen> {
               color: AppColors.grey5E,
             ),
           ),
+
+          /// REJECTION REASON
+          if (status == "rejected" &&
+              (leave.rejectionReason ?? "").trim().isNotEmpty) ...[
+            AppSpacing.h12,
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.red.withOpacity(0.15),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    color: Colors.red,
+                    size: 18,
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Rejection Reason",
+                          style:
+                          AppTypography.caption.copyWith(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          leave.rejectionReason ?? "",
+                          style:
+                          AppTypography.body2.copyWith(
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
-
   Widget _emptyState() {
     return Center(
       child: Column(

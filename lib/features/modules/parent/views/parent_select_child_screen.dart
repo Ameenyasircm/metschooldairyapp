@@ -75,6 +75,8 @@ class ParentStudentSelectionScreen extends StatelessWidget {
                 await prefs.setString("selectedStudentData", jsonEncode(student));
 
                 if (context.mounted) {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString("studentId",  student['studentId']);
                   callNext(
                     ParentMainScreen(
                       studentId: student['studentId'],

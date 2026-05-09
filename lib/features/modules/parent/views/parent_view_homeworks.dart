@@ -8,11 +8,10 @@ import '../../../../core/utils/loader/customLoader.dart';
 import '../../../homework/providers/homework_provider.dart';
 
 class ParentHomeworkScreen extends StatefulWidget {
-  const ParentHomeworkScreen({super.key});
+   ParentHomeworkScreen({super.key});
 
   @override
-  State<ParentHomeworkScreen> createState() =>
-      _ParentHomeworkScreenState();
+  State<ParentHomeworkScreen> createState() => _ParentHomeworkScreenState();
 }
 
 class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
@@ -41,8 +40,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.primary),
-            onPressed: () =>
-                context.read<HomeworkProvider>().fetchHomework(),
+            onPressed: () => context.read<HomeworkProvider>().fetchHomework(),
           )
         ],
       ),
@@ -62,6 +60,10 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
             itemBuilder: (context, index) {
               final hw = provider.homeworkList[index];
 
+              // ← Pull submission status from provider
+              final submissionStatus =
+                  provider.submissionStatuses[hw.id] ?? 'not_submitted';
+              final submissionDate = provider.submissionDates[hw.id];    // ← add here
               return Container(
                 margin: const EdgeInsets.only(bottom: 14),
                 padding: const EdgeInsets.all(14),
@@ -79,23 +81,23 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// SUBJECT + DATE
+                    /// SUBJECT + DUE DATE
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          hw.subject!,
+                          hw.subject ?? '',
                           style: AppTypography.body2.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
-                          DateFormat('dd MMM').format(hw.dueDate),
+                          "Due: ${DateFormat('dd MMM').format(hw.dueDate)}",
                           style: AppTypography.caption.copyWith(
                             color: _isExpired(hw.dueDate)
                                 ? Colors.red
-                                : Colors.green,
+                                : Colors.grey,
                           ),
                         ),
                       ],
@@ -124,7 +126,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
 
                     const SizedBox(height: 10),
 
-                    /// FOOTER
+                    /// FOOTER — teacher name + submission status chip
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -134,7 +136,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
                             color: AppColors.grey5E,
                           ),
                         ),
-                        _statusChip(hw.dueDate),
+                        _submissionChip(submissionStatus, submissionDate),// ← updated
                       ],
                     ),
                   ],
@@ -147,31 +149,83 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
     );
   }
 
-  Widget _statusChip(DateTime dueDate) {
-    final expired = _isExpired(dueDate);
+  /// Shows Completed / Pending / Not Submitted based on Firestore data
+  Widget _submissionChip(String status, DateTime? completedOn) {
+    late Color bgColor;
+    late Color textColor;
+    late IconData icon;
+    late String label;
+
+    switch (status) {
+      case 'completed':
+        bgColor = const Color(0xFFE8F8EE);
+        textColor = const Color(0xFF1B8E4B);
+        icon = Icons.check_circle_rounded;
+
+        label = completedOn != null
+            ? 'Completed'
+            : 'Completed';
+        break;
+
+      case 'pending':
+        bgColor = const Color(0xFFFFF4E5);
+        textColor = const Color(0xFFE38B00);
+        icon = Icons.access_time_rounded;
+        label = 'Pending';
+        break;
+
+      default:
+        bgColor = const Color(0xFFFFEAEA);
+        textColor = const Color(0xFFD92D20);
+        icon = Icons.cancel_rounded;
+        label = 'Not Submitted';
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: expired
-            ? Colors.red.withOpacity(0.1)
-            : Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        expired ? "Expired" : "Active",
-        style: TextStyle(
-          color: expired ? Colors.red : Colors.green,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: textColor.withOpacity(.15),
         ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: textColor),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+
+          if (completedOn != null && status == 'completed') ...[
+            const SizedBox(height: 3),
+            Text(
+              DateFormat('dd MMM yyyy hh:mm aa').format(completedOn),
+              style: TextStyle(
+                color: textColor.withOpacity(.75),
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
-  bool _isExpired(DateTime date) {
-    return date.isBefore(DateTime.now());
-  }
+  bool _isExpired(DateTime date) => date.isBefore(DateTime.now());
 
   Widget _emptyState() {
     return Center(
@@ -183,9 +237,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
           const SizedBox(height: 16),
           Text(
             "No homework available",
-            style: AppTypography.body2.copyWith(
-              color: AppColors.grey5E,
-            ),
+            style: AppTypography.body2.copyWith(color: AppColors.grey5E),
           ),
         ],
       ),

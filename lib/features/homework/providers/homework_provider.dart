@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../modules/teacher/homework/data/models/homework_model.dart';
@@ -5,6 +6,7 @@ import '../services/homework_service.dart';
 
 class HomeworkProvider extends ChangeNotifier {
   final HomeworkService _service = HomeworkService();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   List<HomeworkModel> _homeworkList = [];
   List<HomeworkModel> get homeworkList => _homeworkList;
@@ -22,6 +24,7 @@ class HomeworkProvider extends ChangeNotifier {
   String? _teacherId;
   String? _teacherName;
   String? _academicId;
+  String? _studentId;
 
   String? get className => _className;
   String? get divisionName => _divisionName;
@@ -35,20 +38,67 @@ class HomeworkProvider extends ChangeNotifier {
     _teacherId = prefs.getString("staffId");
     _teacherName = prefs.getString("staffName");
     _academicId = prefs.getString("academicYearId");
+    _studentId =  prefs.getString("studentId");
+    print('${prefs.getString("studentId")} JDJEDED ');
     notifyListeners();
   }
 
+  Map<String, String> _submissionStatuses = {};
+  Map<String, DateTime?> _submissionDates = {};
+
+  Map<String, String> get submissionStatuses => _submissionStatuses;
+  Map<String, DateTime?> get submissionDates => _submissionDates;
+
   Future<void> fetchHomework() async {
     if (_classId == null || _divisionId == null) await loadTeacherData();
-    
+
     _isLoading = true;
     notifyListeners();
 
     try {
-      _homeworkList = await _service.getHomeworkList(
-        classId: _classId!,
-        divisionId: _divisionId!,
-      );
+      final snapshot = await _db
+          .collection('homework')
+          .where('classId', isEqualTo: _classId)
+          .where('divisionId', isEqualTo: _divisionId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      _homeworkList = snapshot.docs
+          .map((doc) => HomeworkModel.fromMap(doc.data(), doc.id))
+          .toList();
+
+      if (_studentId != null && _homeworkList.isNotEmpty) {
+        final statusMap = <String, String>{};
+        final dateMap = <String, DateTime?>{};
+
+        await Future.wait(
+          _homeworkList.map((hw) async {
+            final submissionDoc = await _db
+                .collection('homework')
+                .doc(hw.id)
+                .collection('submissions')
+                .doc(_studentId)
+                .get();
+
+            if (submissionDoc.exists) {
+              final data = submissionDoc.data()!;
+              statusMap[hw.id] = data['status'] ?? 'pending';
+
+              final updatedAt = data['updatedAt'];
+              if (updatedAt != null) {
+                dateMap[hw.id] = (updatedAt as Timestamp).toDate();
+              }
+            } else {
+              statusMap[hw.id] = 'not_submitted';
+              dateMap[hw.id] = null;
+            }
+          }),
+        );
+
+        print('$dateMap RJFNR ');
+        _submissionStatuses = statusMap;
+        _submissionDates = dateMap;
+      }
     } catch (e) {
       debugPrint('Error fetching homework: $e');
     } finally {

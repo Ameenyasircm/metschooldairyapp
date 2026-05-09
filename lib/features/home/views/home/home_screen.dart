@@ -621,6 +621,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (studentDataList.isNotEmpty) {
         final s = studentDataList.first;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("studentId",  s['studentId']);
         NavigationService.push(
           context,
           ParentMainScreen(
