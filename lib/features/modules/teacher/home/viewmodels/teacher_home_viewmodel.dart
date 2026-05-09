@@ -139,11 +139,6 @@ class TeacherHomeViewModel extends ChangeNotifier {
       icon: AppAssets.syllabus,
       onTap: () {},
     ),
-    QuickAction(
-      title: 'Events',
-      icon: AppAssets.syllabus,
-      onTap: () {},
-    ),
   ];
   List<QuickAction> get listActions => [
     QuickAction(
