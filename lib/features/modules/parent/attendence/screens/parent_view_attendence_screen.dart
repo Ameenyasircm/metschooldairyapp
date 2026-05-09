@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/core/theme/app_colors.dart';
 import 'package:met_school/core/theme/app_typography.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-import 'package:met_school/core/constants/app_radius.dart';
 
+import '../../../../../core/theme/app_padding.dart';
+import '../../../../../core/theme/app_radius.dart';
+import '../../../../../core/theme/app_spacing.dart';
 import '../../../teacher/attendance/presentation/provider/attendance_report_view_model.dart';
 import '../../../teacher/attendance/presentation/screens/student_attendance_history_screen.dart';
 

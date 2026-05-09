@@ -147,8 +147,7 @@ class StudentProvider extends ChangeNotifier {
     } else {
       myLastDoc = result.docs.last;
       final newItems = result.docs
-          .map((e) => EnrollerModel.fromMap(e.data() as Map<String, dynamic>))
-          .toList();
+          .map((e) => EnrollerModel.fromMap(e.data() as Map<String, dynamic>,e.id)).toList();
       myAllStudents.addAll(newItems);
       _applyMyStdSearch();
     }

@@ -1,5 +1,3 @@
-// AcademicYearHomeScreen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../../providers/admin_provider.dart';
@@ -16,38 +14,52 @@ class AcademicYearHomeScreen extends StatelessWidget {
     super.key,
     required this.academicYearId,
     required this.yearName,
-    required this.userName,required this.userId
+    required this.userName,
+    required this.userId
   });
+
+  // Updated Theme Colors
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
+  static const Color bgColor = Color(0xFFF5F7FA);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgColor,
       body: Column(
         children: [
-          /// HEADER
+          /// HEADER - Updated to Primary Blue
           Container(
             height: 90,
             padding: const EdgeInsets.symmetric(horizontal: 30),
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
-              ),
+              color: primaryBlue,
             ),
             child: Row(
               children: [
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  yearName,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                const SizedBox(width: 15),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      yearName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      "Session Dashboard",
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -61,15 +73,14 @@ class AcademicYearHomeScreen extends StatelessWidget {
                 crossAxisCount: 3,
                 crossAxisSpacing: 25,
                 mainAxisSpacing: 25,
-                childAspectRatio: 2.5,
+                childAspectRatio: 2.2, // Slightly adjusted for better text fit
                 children: [
                   _moduleCard(
                     context,
                     title: "Classes",
-                    icon: Icons.class_,
-                    color: Colors.blue,
+                    icon: Icons.class_outlined,
                     onTap: () {
-                      // 💡 PRE-FETCH DIVISIONS FOR BETTER UX
+                      // Logic preserved: Pre-fetching divisions
                       context.read<AdminProvider>().fetchDivisionsGlobally(academicYearId);
 
                       Navigator.push(
@@ -77,7 +88,9 @@ class AcademicYearHomeScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => ClassesScreen(
                             academicYearId: academicYearId,
-                            academicYear: yearName, userName: userName, userId: userId,
+                            academicYear: yearName,
+                            userName: userName,
+                            userId: userId,
                           ),
                         ),
                       );
@@ -87,10 +100,9 @@ class AcademicYearHomeScreen extends StatelessWidget {
                   _moduleCard(
                     context,
                     title: "Fee Management",
-                    icon: Icons.payment,
-                    color: Colors.blue,
+                    icon: Icons.account_balance_wallet_outlined,
                     onTap: () {
-                      // 💡 PRE-FETCH DIVISIONS FOR BETTER UX
+                      // Logic preserved: Pre-fetching divisions
                       context.read<AdminProvider>().fetchDivisionsGlobally(academicYearId);
 
                       Navigator.push(
@@ -98,13 +110,14 @@ class AcademicYearHomeScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => FeeManagementMain(
                             academicYearId: academicYearId,
-                            academicYear: yearName, userName: userName, userId: userId,
+                            academicYear: yearName,
+                            userName: userName,
+                            userId: userId,
                           ),
                         ),
                       );
                     },
                   ),
-
                 ],
               ),
             ),
@@ -118,7 +131,6 @@ class AcademicYearHomeScreen extends StatelessWidget {
       BuildContext context, {
         required String title,
         required IconData icon,
-        required Color color,
         required VoidCallback onTap,
       }) {
     return InkWell(
@@ -129,21 +141,37 @@ class AcademicYearHomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withOpacity(0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              color: primaryBlue.withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             )
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 40, color: color),
+            // Icon uses Secondary Blue
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: secondaryBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 32, color: secondaryBlue),
+            ),
             const Spacer(),
-            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 5),
-            Text("Manage $title", style: const TextStyle(color: Colors.grey)),
+            Text(
+                title,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryBlue)
+            ),
+            const SizedBox(height: 4),
+            Text(
+                "Manage $title settings",
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13)
+            ),
           ],
         ),
       ),

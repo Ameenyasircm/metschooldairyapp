@@ -108,7 +108,18 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
   Widget _buildHeader(BuildContext context, AdminProvider prov) {
     return Row(
       children: [
-        const Text("Staff Management", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: primaryBlue)),
+        // --- Back Button Added Here ---
+        IconButton(
+          onPressed: () => context.read<AdminProvider>().setIndex(0),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: primaryBlue),
+          splashRadius: 22,
+          tooltip: 'Back',
+        ),
+        const SizedBox(width: 8),
+        const Text(
+            "Staff Management",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: primaryBlue)
+        ),
         const Spacer(),
         Container(
           width: 350,
@@ -140,7 +151,16 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
         ElevatedButton.icon(
           onPressed: () {
             prov.clearStaffForm();
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AddStaffScreen(userId: widget.userId, userName: widget.userName, docId: null)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => AddStaffScreen(
+                        userId: widget.userId,
+                        userName: widget.userName,
+                        docId: null
+                    )
+                )
+            );
           },
           icon: const Icon(Icons.add, size: 16, color: Colors.white),
           label: const Text("Add Staff", style: TextStyle(color: Colors.white, fontSize: 13)),

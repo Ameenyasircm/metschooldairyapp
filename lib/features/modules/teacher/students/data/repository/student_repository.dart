@@ -47,7 +47,7 @@ class StudentRepository {
       limit: 100,
       queryBuilder: (query) => query.where('class_id', isEqualTo: classId).where('division_id', isEqualTo: divisionId).orderBy('roll_number'),
     );
-    return snapshot.docs.map((doc) => EnrollerModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
+    return snapshot.docs.map((doc) => EnrollerModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
   }
 
   Future<Map<String, dynamic>?> getParentById(String parentId) async {

@@ -3,8 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/app_radius.dart';
 import '../../../../../../core/theme/app_typography.dart';
-import '../../../../../../core/constants/app_radius.dart';
 import '../../data/models/syllabus_model.dart';
 import '../screens/syllabus_view_screen.dart';
 

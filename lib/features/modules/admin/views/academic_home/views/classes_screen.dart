@@ -27,6 +27,9 @@ class ClassesScreen extends StatefulWidget {
 
 class _ClassesScreenState extends State<ClassesScreen> {
   final TextEditingController classController = TextEditingController();
+   Color primaryBlue = Color(0xFF031937);
+   Color secondaryBlue = Color(0xFF003865);
+   Color bgColor = Color(0xFFF5F7FA);
 
   @override
   void initState() {
@@ -124,6 +127,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final academicProv = context.watch<AcademicProvider>();
     final adminProv = context.watch<AdminProvider>();
 
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: Column(
@@ -132,8 +136,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
           Container(
             height: 90,
             padding: const EdgeInsets.symmetric(horizontal: 30),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF14B8A6)]),
+            decoration:  BoxDecoration(
+              gradient: LinearGradient(colors: [primaryBlue, secondaryBlue]),
             ),
             child: Row(
               children: [
@@ -207,7 +211,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.class_, color: Color(0xFF0F766E), size: 18),
+               Icon(Icons.class_, color: primaryBlue, size: 18),
               const SizedBox(width: 8),
               Text(className, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
@@ -217,8 +221,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
           const SizedBox(height: 8),
           Expanded(
             child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 20,
+              runSpacing: 10,
               children: [
                 // List existing divisions
                 ...classDivs.map((div) {
@@ -227,7 +231,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 }),
 
                 // Add Division Button (if less than 2 divisions)
-                if (classDivs.length < 2)
+                if (classDivs.length < 4)
                   InkWell(
                     onTap: () {
                       context.read<AdminProvider>().fetchAllTeachers();
@@ -269,16 +273,16 @@ class _ClassesScreenState extends State<ClassesScreen> {
       // Delete functionality on Long Press
       onLongPress: () => _showDeleteConfirmation(divData),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F766E).withOpacity(0.1),
+          color: primaryBlue.withOpacity(0.1),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFF0F766E).withOpacity(0.2)),
+          border: Border.all(color: primaryBlue.withOpacity(0.2)),
         ),
         child: Text(
           "Div ${divData['division_name']}",
-          style: const TextStyle(
-              color: Color(0xFF0F766E),
+          style:  TextStyle(
+              color: primaryBlue,
               fontSize: 12,
               fontWeight: FontWeight.bold
           ),

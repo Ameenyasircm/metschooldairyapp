@@ -45,6 +45,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   bool isWhatsappSame = false;
   DateTime? dob;
   DateTime? lastVaccination;
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
+  static const Color neutralBg = Color(0xFFF8FAFC);
 
   // Comprehensive Occupation List
   final List<String> occupations = [
@@ -121,7 +124,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: primaryTeal,
+        backgroundColor: primaryBlue,
         elevation: 0,
         toolbarHeight: 50,
         leading: const BackButton(color: Colors.white),
@@ -361,7 +364,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         const SizedBox(width: 15),
         ElevatedButton(
           onPressed: _saveStudent,
-          style: ElevatedButton.styleFrom(backgroundColor: primaryTeal, padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15)),
+          style: ElevatedButton.styleFrom(backgroundColor: primaryBlue, padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15)),
           child: Text(widget.initialData == null ? "Save Student" : "Update Student", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
       ]),

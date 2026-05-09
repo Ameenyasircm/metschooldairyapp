@@ -6,6 +6,7 @@ enum AttendanceSession { morning, afternoon }
 
 class StudentAttendanceData {
   final String studentId;
+  final String enrollmentDocId;
   final String name;
   final int rollNo;
   final String parentPhone;
@@ -20,6 +21,7 @@ class StudentAttendanceData {
 
   StudentAttendanceData({
     required this.studentId,
+    required this.enrollmentDocId,
     required this.name,
     required this.rollNo,
     this.parentPhone = '',
@@ -36,6 +38,7 @@ class StudentAttendanceData {
   factory StudentAttendanceData.fromMap(String id, Map<String, dynamic> map) {
     return StudentAttendanceData(
       studentId: id,
+      enrollmentDocId: map['enrollmentDocId'] ?? '',
       name: map['name'] ?? '',
       rollNo: map['rollNo'] ?? 0,
       parentPhone: map['parentPhone'] ?? '',
@@ -61,6 +64,7 @@ class StudentAttendanceData {
 
   Map<String, dynamic> toMap() {
     return {
+      'enrollmentDocId': enrollmentDocId,
       'name': name,
       'rollNo': rollNo,
       'parentPhone': parentPhone,

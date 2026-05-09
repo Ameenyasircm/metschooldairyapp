@@ -12,7 +12,7 @@ class AcademicYearScreen extends StatefulWidget {
   final String userId;
   final String userName;
 
-  const AcademicYearScreen({super.key, required this.userName,required this.userId});
+  const AcademicYearScreen({super.key, required this.userName, required this.userId});
 
   @override
   State<AcademicYearScreen> createState() => _AcademicYearScreenState();
@@ -22,6 +22,11 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
   final TextEditingController yearController = TextEditingController();
   DateTime? startDate;
   DateTime? endDate;
+
+  // New Theme Colors
+  static const Color primaryBlue = Color(0xFF031937);
+  static const Color secondaryBlue = Color(0xFF003865);
+  static const Color neutralBg = Color(0xFFF8FAFC);
 
   @override
   void initState() {
@@ -34,7 +39,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
     final provider = context.watch<AdminProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Modern grey-blue tint
+      backgroundColor: neutralBg,
       body: Column(
         children: [
           /// ================= WEB HEADER =================
@@ -43,7 +48,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
           /// ================= MAIN CONTENT =================
           Expanded(
             child: provider.isLoading
-                ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: secondaryBlue))
                 : provider.academicYears.isEmpty
                 ? _emptyState()
                 : _buildGrid(provider),
@@ -74,7 +79,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
             children: [
               Text(
                 "Academic Sessions",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: primaryBlue, letterSpacing: -0.5),
               ),
               Text("Manage school years and current active session", style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
             ],
@@ -82,7 +87,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
           const Spacer(),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: primaryBlue, // Primary Blue for primary action
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -102,10 +107,10 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
       padding: const EdgeInsets.all(40),
       itemCount: provider.academicYears.length,
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 450, // Ensures cards look good on any screen width
+        maxCrossAxisExtent: 450,
         crossAxisSpacing: 25,
         mainAxisSpacing: 25,
-        mainAxisExtent: 210, // Fixed height for visual consistency
+        mainAxisExtent: 210,
       ),
       itemBuilder: (context, index) {
         final doc = provider.academicYears[index];
@@ -121,7 +126,14 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: InkWell(
-        onTap: () => callNext(AcademicYearHomeScreen(academicYearId: id, yearName: data['year_name'], userName: widget.userName, userId:  widget.userId,), context),
+        onTap: () => callNext(
+            AcademicYearHomeScreen(
+              academicYearId: id,
+              yearName: data['year_name'],
+              userName: widget.userName,
+              userId: widget.userId,
+            ),
+            context),
         borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -129,7 +141,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: isCurrent ? const Color(0xFF14B8A6) : Colors.transparent, width: 2),
+            border: Border.all(color: isCurrent ? secondaryBlue : Colors.transparent, width: 2),
             boxShadow: [
               BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10)),
             ],
@@ -143,7 +155,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.calendar_month_rounded, color: Color(0xFF0F766E), size: 22),
+                    child: const Icon(Icons.calendar_month_rounded, color: secondaryBlue, size: 22),
                   ),
                   if (isCurrent)
                     Container(
@@ -154,7 +166,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
                 ],
               ),
               const Spacer(),
-              Text(data['year_name'], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+              Text(data['year_name'], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: primaryBlue)),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -171,7 +183,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
                     onPressed: () => context.read<AdminProvider>().setCurrentYear(id),
                     icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
                     label: const Text("Set Active Session"),
-                    style: TextButton.styleFrom(foregroundColor:  Color(0xFF0F766E), ),
+                    style: TextButton.styleFrom(foregroundColor: secondaryBlue),
                   ),
                 )
             ],
@@ -190,7 +202,7 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text("Add Academic Year", style: TextStyle(fontWeight: FontWeight.w900)),
+          title: const Text("Add Academic Year", style: TextStyle(fontWeight: FontWeight.w900, color: primaryBlue)),
           content: SizedBox(
             width: 400,
             child: Column(
@@ -215,9 +227,17 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
           ),
           actionsPadding: const EdgeInsets.all(20),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Color(0xFF64748B))),
+            ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F766E), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
+              ),
               onPressed: () {
                 if (yearController.text.isNotEmpty && localStartDate != null && localEndDate != null) {
                   context.read<AdminProvider>().addAcademicYear(yearName: yearController.text.trim(), startDate: localStartDate!, endDate: localEndDate!);
@@ -237,10 +257,10 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
     labelText: label,
     labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
     filled: true,
-    fillColor: const Color(0xFFF8FAFC),
+    fillColor: neutralBg,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2)),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: secondaryBlue, width: 2)),
   );
 
   Widget _dateFieldWeb(String label, DateTime? date, VoidCallback onTap) {
@@ -249,12 +269,15 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
+        decoration: BoxDecoration(color: neutralBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF64748B)),
+            const Icon(Icons.calendar_today_rounded, size: 18, color: secondaryBlue),
             const SizedBox(width: 12),
-            Text(date == null ? label : DateFormat('dd MMM yyyy').format(date), style: TextStyle(color: date == null ? const Color(0xFF64748B) : Colors.black, fontWeight: FontWeight.w500)),
+            Text(
+                date == null ? label : DateFormat('dd MMM yyyy').format(date),
+                style: TextStyle(color: date == null ? const Color(0xFF64748B) : Colors.black, fontWeight: FontWeight.w500)
+            ),
           ],
         ),
       ),
@@ -263,7 +286,27 @@ class _AcademicYearScreenState extends State<AcademicYearScreen> {
 
   Widget _emptyState() => const Center(child: Text("No academic years found. Click the button to add one.", style: TextStyle(color: Color(0xFF94A3B8))));
 
-  Future<DateTime?> _pickDate(BuildContext context) async => await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2100));
+  Future<DateTime?> _pickDate(BuildContext context) async => await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2020),
+    lastDate: DateTime(2100),
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: primaryBlue,
+            onPrimary: Colors.white,
+            onSurface: primaryBlue,
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: secondaryBlue),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
 
   String _formatDate(Timestamp timestamp) => DateFormat('dd MMM yyyy').format(timestamp.toDate());
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:met_school/core/constants/app_padding.dart';
-import 'package:met_school/core/constants/app_spacing.dart';
 import 'package:met_school/core/router/app_navigation.dart';
 import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/app_padding.dart';
+import '../../../../../../core/theme/app_spacing.dart';
 import '../../../../../../core/theme/app_typography.dart';
 import '../provider/homework_provider.dart';
 import 'add_homework_screen.dart';

@@ -231,6 +231,7 @@ class AuthProvider with ChangeNotifier {
             "teacherName": divisionData['class_teacher_name'] ?? "",
             "teacherId": divisionData['class_teacher_id'] ?? "",
             "studentName": enrollData['student_name'] ?? "",
+            "studentPhoto": enrollData['photoUrl'] ?? "",
             "className": enrollData['class_name'] ?? "",
             "classId": enrollData['class_id'] ?? "",
             "divisionId": enrollData['division_id'] ?? "",

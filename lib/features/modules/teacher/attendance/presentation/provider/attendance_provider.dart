@@ -46,6 +46,7 @@ class AttendanceProvider extends ChangeNotifier {
       rollNo: e.rollNumber,
       parentId: e.parentId,
       parentPhone: e.parentPhone,
+      enrollmentDocId: e.id,
     )).toList();
     _applySearch();
   }
