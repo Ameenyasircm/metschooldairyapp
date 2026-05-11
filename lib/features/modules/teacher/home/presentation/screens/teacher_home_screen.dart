@@ -180,26 +180,12 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                             NavigationService.push(context, PunctualityStudentListScreen());
                             break;
                           case 4:
-
                             callNext(EventListScreen(), context);
                             break;
                             case 5:
                             final provider = context.read<AdminProvider>();
                             provider.fetchBellTiming();
                             callNext(BellTimingUserScreen(), context);
-                            break;
-                          case 6:
-                            print(' FKNRKF ');
-                            final shouldLogout = await showLogoutDialog(context);
-                            if (shouldLogout == true) {
-                              final prefs = await SharedPreferences.getInstance();
-                              /// Clear saved data
-                              await prefs.clear();
-                              NavigationService.pushAndRemoveUntil(
-                                context,
-                                LoginScreen(),
-                              );
-                            }
                             break;
                           default:
                             break;

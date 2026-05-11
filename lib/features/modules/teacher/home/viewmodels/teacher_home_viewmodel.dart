@@ -160,7 +160,8 @@ class TeacherHomeViewModel extends ChangeNotifier {
       title: 'Punctuality Record',
       icon: AppAssets.punctuality,
       onTap: () {},
-    ),  QuickAction(
+    ),
+    QuickAction(
       title: 'Events',
       icon: AppAssets.event,
       onTap: () {},
@@ -168,13 +169,6 @@ class TeacherHomeViewModel extends ChangeNotifier {
       title: 'School Timing',
       icon: AppAssets.schoolTime,
       onTap: () {},
-    ),
-    QuickAction(
-      title: 'Logout',
-      icon: AppAssets.schoolTime,
-      onTap: () {
-
-      },
     ),
   ];
 
