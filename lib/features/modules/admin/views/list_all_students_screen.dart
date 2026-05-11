@@ -157,7 +157,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
             // onPressed: (){
             //   addRandomStudents(10);
             // },
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen())),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentScreen()));
+              context.read<AdminProvider>().fetchStudents(); // your firestore fetch function
+              setState(() {});
+            },
             icon: const Icon(Icons.person_add_rounded, size: 20),
             label: const Text("Add New Student", style: TextStyle(fontWeight: FontWeight.bold)),
           )
@@ -439,18 +443,28 @@ class _StudentListScreenState extends State<StudentListScreen> {
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_horiz, color: Color(0xFF94A3B8)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Rounded corners for menu
-          onSelected: (val) {
+          onSelected: (val) async {
             if (val == 'view') {
               _showStudentDetails(data);
-            } else if (val == 'edit') {
-              // Create a fresh map and explicitly ensure the docId and parentId are included
-              Map<String, dynamic> editData = Map<String, dynamic>.from(data);
+            } else if (val == 'edit')  {
+
+              final freshDoc = await FirebaseFirestore.instance
+                  .collection('students')
+                  .doc(docId)
+                  .get();
+
+              if (!freshDoc.exists) return;
+
+              Map<String, dynamic> editData =
+              freshDoc.data() as Map<String, dynamic>;
+
               editData['id'] = docId;
-              // Note: ensure 'parentId' exists in data from your Firestore fetch
 
               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => AddStudentScreen(initialData: editData))
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AddStudentScreen(initialData: editData),
+                ),
               );
             } else if (val == 'delete') {
               _showDeleteDialog(context, docId, data['name']);

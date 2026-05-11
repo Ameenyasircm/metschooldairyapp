@@ -16,7 +16,7 @@ class AddStudentScreen extends StatefulWidget {
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final _formKey = GlobalKey<FormState>();
   static const Color primaryTeal = Color(0xff00796B);
-
+  String? selectedCaste;
   // Controllers
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController admissionCtrl = TextEditingController();
@@ -56,6 +56,45 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     "Home Maker", "IT Professional", "Laborer", "Private Job",
     "Teacher/Professor", "Technician", "Other"
   ];
+
+  List<String> casteOptions = [];
+
+  void updateCasteList(String? religion) {
+    switch (religion) {
+      case "Islam":
+        casteOptions = [
+          "Mappila",
+          "Other"
+        ];
+        break;
+
+      case "Hindu":
+        casteOptions = [
+          "Nair",
+          "Ezhava",
+          "Viswakarma",
+          "SC",
+          "ST",
+          "Brahmin",
+          "Other"
+        ];
+        break;
+
+      case "Christian":
+        casteOptions = [
+          "Latin Catholic",
+          "Syro Malabar",
+          "Syro Malankara",
+          "Orthodox",
+          "Pentecostal",
+          "Other"
+        ];
+        break;
+
+      default:
+        casteOptions = ["Other"];
+    }
+  }
 
   @override
   void initState() {
@@ -100,7 +139,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
       selectedGender = data['gender'];
       selectedReligion = data['religion'];
-      selectedMedium = data['medium'];
+      selectedCaste = data['caste']??"";
+      selectedMedium = 'English';
       selectedRelation = data['relation'];
       selectedOccupation = data['fatherProfession']; // Correctly fetching occupation
 
@@ -114,6 +154,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       if (data['lastVaccination'] != null) {
         lastVaccination = (data['lastVaccination'] is DateTime) ? data['lastVaccination'] : (data['lastVaccination'] as dynamic).toDate();
       }
+    }
+    if(selectedReligion!=''&&selectedReligion!=null){
+      updateCasteList(selectedReligion);
     }
   }
 
@@ -154,8 +197,45 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   Row(children: [
                     Expanded(child: _item("Gender", _dropdown(["Male", "Female", "Other"], selectedGender, (v) => setState(() => selectedGender = v)))),
                     const SizedBox(width: 8),
-                    Expanded(child: _item("Religion", _dropdown(["Islam", "Hindu", "Christian", "Other"], selectedReligion, (v) => setState(() => selectedReligion = v)))),
+                    Expanded(
+                      child: _item(
+                        "Religion",
+                        _dropdown(
+                          ["Islam", "Hindu", "Christian", "Other"],
+                          selectedReligion,
+                              (v) {
+                            setState(() {
+                              selectedReligion = v;
+                              selectedCaste = null;
+                              updateCasteList(v);
+                            });
+                          },
+                        ),
+                      ),
+                    )
                   ]),
+                  const SizedBox(height: 10),
+
+                  _item(
+                    "Caste",
+                    _dropdown(
+                      casteOptions.isEmpty
+                          ? ["Select Religion First"]
+                          : casteOptions,
+
+                      casteOptions.contains(selectedCaste)
+                          ? selectedCaste
+                          : null,
+
+                          (v) {
+                        if (v != "Select Religion First") {
+                          setState(() {
+                            selectedCaste = v;
+                          });
+                        }
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   _item("Aadhaar Number", _field(aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true, isOptional: true)),
                   const SizedBox(height: 10),
@@ -211,7 +291,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   Row(children: [
                     Expanded(child: _item("Class", academicProv.isClassLoading ? const LinearProgressIndicator() : _classDropdown(academicProv))),
                     const SizedBox(width: 8),
-                    Expanded(child: _item("Medium", _dropdown(["English", "Malayalam"], selectedMedium, (v) => setState(() => selectedMedium = v)))),
+                    // Expanded(child: _item("Medium", _dropdown(["English", "Malayalam"], selectedMedium, (v) => setState(() => selectedMedium = v)))),
                   ]),
                   const SizedBox(height: 10),
                   // UPDATED: Show Document ID (System ID)
@@ -418,10 +498,11 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         "dob": dob,
         "age": ageCtrl.text,
         "religion": selectedReligion,
+        "caste": selectedCaste,
         "place": placeCtrl.text.trim(),
         "address": addressCtrl.text.trim(),
         "gender": selectedGender,
-        "medium": selectedMedium,
+        "medium": 'English',
         "prevSchool": prevSchoolCtrl.text.trim(),
         "tcNumber": tcNumberCtrl.text.trim(),
         "identificationMark": idMarkCtrl.text.trim(),
