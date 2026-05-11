@@ -24,6 +24,7 @@ import '../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../features/modules/parent/views/parent_bottom_nav_screen.dart';
 import '../features/modules/parent/views/parent_home.dart';
 import '../features/modules/parent/views/parent_select_child_screen.dart';
+import '../features/auth/presentation/screens/role_selection_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_home_screen.dart';
 import '../features/modules/teacher/home/presentation/screens/teacher_navbar_screen.dart';
 import '../features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart';
@@ -134,6 +135,19 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic> _convertTimestamps(Map<String, dynamic> data) {
+    return data.map((key, value) {
+      if (value is Timestamp) {
+        return MapEntry(key, value.toDate().toIso8601String());
+      } else if (value is Map<String, dynamic>) {
+        return MapEntry(key, _convertTimestamps(value));
+      } else if (value is List) {
+        return MapEntry(key, value.map((e) => e is Map<String, dynamic> ? _convertTimestamps(e) : e).toList());
+      }
+      return MapEntry(key, value);
+    });
+  }
+
   /// staff login
   bool _isStaffLoginLoading = false;
 
@@ -171,58 +185,61 @@ class AuthProvider with ChangeNotifier {
 
       final prefs = await SharedPreferences.getInstance();
 
-      /// =========================
-      /// 🎯 PARENT LOGIN
-      /// =========================
-      if (data['role'] == "parent") {
-        final academicYear = currentYear?.id;
+      final role = data['role'] ?? "";
+      final isTeacherRole = role == "teacher" || role == "staff";
+      final isTeacher = data['is_teacher'] ?? false;
+      final isParent = data['is_parent'] ?? false;
+      final academicYear = currentYear?.id ?? await currentAcademicYearId();
 
-        if (academicYear == null) {
-          SnackbarService().showError("Academic year not found.");
-          return;
-        }
+      if (academicYear == null) {
+        SnackbarService().showError("Academic year not found.");
+        return;
+      }
 
-        final enrollments = await fireStore
-            .collection("enrollments")
-            .where("parent_id", isEqualTo: doc.id)
-            .where("academic_year_id", isEqualTo: academicYear)
-            .get();
+      /// 🔍 Check if user is also a parent by looking for enrollments
+      final enrollments = await fireStore
+          .collection("enrollments")
+          .where("parent_id", isEqualTo: doc.id)
+          .where("academic_year_id", isEqualTo: academicYear)
+          .get();
 
-        if (enrollments.docs.isEmpty) {
-          SnackbarService().showError("Ensure the Student is Assigned To Class");
-          return;
-        }
+      final isParentRole = enrollments.docs.isNotEmpty;
 
-        /// ✅ SAVE LOGIN SESSION
-        await prefs.setString("password", password);
-        await prefs.setString("staffPhone", phoneNumber);
-        await prefs.setBool("isLoggedIn", true);
+      /// ✅ COMMON DATA SAVING
+      await prefs.setString("userId", doc.id);
+      await prefs.setString("userName", data['name'] ?? "");
+      await prefs.setString("phone", data['phone'] ?? "");
+      await prefs.setString("email", data['email'] ?? "");
+      await prefs.setString("profilePic", data['profile_pic'] ?? "");
+      await prefs.setString("password", password);
+      await prefs.setString("staffPhone", phoneNumber);
+      await prefs.setBool("isLoggedIn", true);
+      await prefs.setBool("isTeacher", isTeacher);
+      await prefs.setBool("isParent", isParent);
+      await prefs.setString("userData", jsonEncode(_convertTimestamps(data)));
+      _isLoggedIn = true;
 
+      /// ✅ PREPARE TEACHER DATA
+      if (isTeacherRole) {
+        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
+        await prefs.setString("divisionId", data['division_id'] ?? "");
+        await prefs.setString("divisionName", data['division_name'] ?? "");
+        await prefs.setString("classId", data['class_id'] ?? "");
+        await prefs.setString("className", data['class_name'] ?? "");
+        await prefs.setString("staffId", doc.id);
+        await prefs.setString("staffName", data['name'] ?? "");
+        await prefs.setString("academicYearId", academicYear);
+      }
 
-        _isLoggedIn = true;
-        notifyListeners();
-        /// Save common data
-        await prefs.setString("userId", doc.id);
-        await prefs.setString("userName", data['name'] ?? "");
-        await prefs.setString("phone", data['phone'] ?? "");
-        await prefs.setString("role", data['role'] ?? "");
-        await prefs.setString("email", data['email'] ?? "");
-        await prefs.setString("profilePic", data['profile_pic'] ?? "");
-
-        /// ✅ Build full student list (FIXED HERE)
-        List<Map<String, dynamic>> studentDataList = [];
-
+      /// ✅ PREPARE PARENT DATA
+      List<Map<String, dynamic>> studentDataList = [];
+      if (isParentRole) {
         for (var e in enrollments.docs) {
           final enrollData = e.data();
-
           final studentId = enrollData['student_id'];
           final divisionId = enrollData['division_id'];
 
-          final divisionDoc = await fireStore
-              .collection("divisions")
-              .doc(divisionId)
-              .get();
-
+          final divisionDoc = await fireStore.collection("divisions").doc(divisionId).get();
           final divisionData = divisionDoc.data() ?? {};
 
           studentDataList.add({
@@ -239,68 +256,59 @@ class AuthProvider with ChangeNotifier {
           });
         }
 
-        /// ✅ Save full list
         await prefs.setStringList(
           "studentDataList",
           studentDataList.map((e) => jsonEncode(e)).toList(),
         );
 
-        /// =========================
-        /// ✅ PARENT NAVIGATION (REDUCED STEP)
-        /// =========================
         if (studentDataList.isNotEmpty) {
           final s = studentDataList.first;
-
           await prefs.setString("selectedStudentData", jsonEncode(s));
-
-          /// ✅ FIXED (FROM ENROLLMENT)
-          await prefs.setString("divisionId", s['divisionId'] ?? "");
-          await prefs.setString("divisionName", s['divisionName'] ?? "");
-          await prefs.setString("classId", s['classId'] ?? "");
-          await prefs.setString("className", s['className'] ?? "");
-          await prefs.setString("academicYearId", s['academicYearId'] ?? "");
-          await prefs.setString("studentId",  s['studentId']);
-          if (context.mounted) {
-            callNextReplacement(
-              ParentMainScreen(
-                studentId: s['studentId'],
-                academicYearID: s['academicYearId'],
-                teacherName: s['teacherName'],
-                teacherID: s['teacherId'],
-                parentName: data['name'],
-              ),
-              context,
-            );
-          }
+          // Note: These might overlap with teacher data if we don't handle role switching
+          // For now we'll save them, but a better way is to save them when the role is selected
         }
       }
 
-      /// =========================
-      /// 🎯 TEACHER LOGIN (UNCHANGED)
-      /// =========================
-      else {
-        await prefs.setString("phone", data['phone'] ?? "");
-        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
-        await prefs.setString("divisionId", data['division_id'] ?? "");
-        await prefs.setString("divisionName", data['division_name'] ?? "");
-        await prefs.setString("classId", data['class_id'] ?? "");
-        await prefs.setString("className", data['class_name'] ?? "");
-        await prefs.setString("staffId", doc.id);
-        await prefs.setString("staffName", data['name'] ?? "");
-        await prefs.setBool("isLoggedIn", true);
+      notifyListeners();
 
-        _isLoggedIn = true;
-        notifyListeners();
-
-        final academicYear = await currentAcademicYearId();
-        if (academicYear != null) {
-          await prefs.setString("academicYearId", academicYear);
-        }
-
-        if (context.mounted) {
-          callNextReplacement(
-            TeacherHomeScreen(staffName:data['name'] ?? "",), context,
+      if (context.mounted) {
+        /// 🎯 ROLE NAVIGATION LOGIC
+        if (isParent && isTeacher) {
+          pushAndRemoveUntil(
+            RoleSelectionScreen(
+              teacherData: data,
+              studentDataList: studentDataList,
+              parentName: data['name'] ?? "",
+            ),
+            context,
           );
+        }
+        else if (isParentRole) {
+          await prefs.setString("role", "parent");
+          final s = studentDataList.first;
+          await prefs.setString("studentId", s['studentId']);
+          await prefs.setString("divisionId", s['divisionId'] ?? "");
+          await prefs.setString("classId", s['classId'] ?? "");
+          
+          callNextReplacement(
+            ParentMainScreen(
+              studentId: s['studentId'],
+              academicYearID: s['academicYearId'],
+              teacherName: s['teacherName'],
+              teacherID: s['teacherId'],
+              parentName: data['name'],
+            ),
+            context,
+          );
+        }
+        else if (isTeacherRole) {
+          await prefs.setString("role", "teacher");
+          callNextReplacement(
+            TeacherHomeScreen(staffName: data['name'] ?? ""),
+            context,
+          );
+        } else {
+          SnackbarService().showError("No role assigned or enrollment found.");
         }
       }
     } catch (e) {
@@ -623,17 +631,16 @@ class AuthProvider with ChangeNotifier {
   String? appVersion;
   String currentVersion='';
   String buildNumber="";
-  Future<void> getAppVersion() async {
-    PackageInfo.fromPlatform().then((value) {
-      currentVersion=value.version;
-      buildNumber = value.buildNumber;
-      appVersion=buildNumber;
-      print(appVersion.toString()+"edfesappversion");
-      notifyListeners();
-    });
+  // Change the return type to Future<String>
+  Future<String> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    currentVersion = packageInfo.version;
+    buildNumber = packageInfo.buildNumber;
+    appVersion = buildNumber;
 
+    notifyListeners();
+    return buildNumber; // Return the value explicitly
   }
-
 
   Future<bool> checkVersionExist() async {
     DatabaseEvent dataSnapshot ;
@@ -656,6 +663,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   void lockAppUpdateScreen() {
+
     mRoot.child("0").once().then((event) async {
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic> map = event.snapshot.value as Map;
@@ -737,6 +745,78 @@ class AuthProvider with ChangeNotifier {
     /// Update provider state
     _isLoggedIn = false;
     notifyListeners();
+  }
+
+  Future<void> syncUserData(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString("userId");
+    if (userId == null) return;
+
+    try {
+      final doc = await fireStore.collection("users").doc(userId).get();
+      if (!doc.exists) return;
+
+      final data = doc.data()!;
+      final role = data['role'] ?? "";
+      final isTeacherRole = role == "teacher" || role == "staff";
+      final isTeacher = data['is_teacher'] ?? false;
+      final isParent = data['is_parent'] ?? false;
+      final academicYear = currentYear?.id ?? await currentAcademicYearId();
+
+      if (academicYear == null) return;
+
+      final enrollments = await fireStore
+          .collection("enrollments")
+          .where("parent_id", isEqualTo: userId)
+          .where("academic_year_id", isEqualTo: academicYear)
+          .get();
+
+      final isParentRole = enrollments.docs.isNotEmpty;
+
+      await prefs.setString("userName", data['name'] ?? "");
+      await prefs.setBool("isTeacher", isTeacher);
+      await prefs.setBool("isParent", isParent);
+      await prefs.setString("userData", jsonEncode(_convertTimestamps(data)));
+
+      if (isTeacherRole) {
+        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
+        await prefs.setString("divisionId", data['division_id'] ?? "");
+        await prefs.setString("divisionName", data['division_name'] ?? "");
+        await prefs.setString("classId", data['class_id'] ?? "");
+        await prefs.setString("className", data['class_name'] ?? "");
+        await prefs.setString("staffName", data['name'] ?? "");
+      }
+
+      List<Map<String, dynamic>> studentDataList = [];
+      if (isParentRole) {
+        for (var e in enrollments.docs) {
+          final enrollData = e.data();
+          final divisionId = enrollData['division_id'];
+          final divisionDoc = await fireStore.collection("divisions").doc(divisionId).get();
+          final divisionData = divisionDoc.data() ?? {};
+
+          studentDataList.add({
+            "studentId": enrollData['student_id'],
+            "academicYearId": enrollData['academic_year_id'] ?? "",
+            "teacherName": divisionData['class_teacher_name'] ?? "",
+            "teacherId": divisionData['class_teacher_id'] ?? "",
+            "studentName": enrollData['student_name'] ?? "",
+            "studentPhoto": enrollData['photoUrl'] ?? "",
+            "className": enrollData['class_name'] ?? "",
+            "classId": enrollData['class_id'] ?? "",
+            "divisionId": enrollData['division_id'] ?? "",
+            "divisionName": enrollData['division_name'] ?? "",
+          });
+        }
+        await prefs.setStringList(
+          "studentDataList",
+          studentDataList.map((e) => jsonEncode(e)).toList(),
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Sync Error: $e");
+    }
   }
 
 

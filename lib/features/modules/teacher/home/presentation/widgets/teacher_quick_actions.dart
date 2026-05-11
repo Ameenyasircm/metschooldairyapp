@@ -29,7 +29,7 @@ Widget buildQuickActions(BuildContext context) {
   return Consumer<TeacherHomeViewModel>(
     builder: (context4, vm, _) {
       return SliverPadding(
-        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
         sliver: Consumer<TeacherHomeViewModel>(
           builder: (context, vm, _) {
             final actions = vm.quickActions;
