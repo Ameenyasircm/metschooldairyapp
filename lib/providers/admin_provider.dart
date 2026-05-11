@@ -849,4 +849,91 @@ class AdminProvider with ChangeNotifier {
   }
 
 
+
+  final TextEditingController qualificationController =
+  TextEditingController();
+
+  bool qualificationLoading = false;
+
+  Future<void> addQualification(BuildContext context) async {
+
+    String qualification = qualificationController.text.trim();
+
+    if (qualification.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Enter qualification")),
+      );
+      return;
+    }
+
+    try {
+
+      qualificationLoading = true;
+      notifyListeners();
+
+      String id = DateTime.now().millisecondsSinceEpoch.toString();
+
+      await db.collection('QUALIFICATIONS').doc(id).set({
+        "id": id,
+        "qualification": qualification,
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
+      qualificationController.clear();
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Qualification Added")),
+      );
+
+    } catch (e) {
+
+      debugPrint(e.toString());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error : $e")),
+      );
+
+    }
+
+    qualificationLoading = false;
+    notifyListeners();
+  }
+
+  List<Map<String, dynamic>> qualificationList = [];
+
+  bool qualificationFetchLoading = false;
+
+  Future<void> getQualifications() async {
+
+    qualificationFetchLoading = true;
+    notifyListeners();
+
+    try {
+
+      QuerySnapshot snapshot = await db
+          .collection('QUALIFICATIONS')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      qualificationList = snapshot.docs.map((e) {
+
+        final data = e.data() as Map<String, dynamic>;
+
+        return {
+          "id": data['id'] ?? '',
+          "qualification": data['qualification'] ?? '',
+        };
+
+      }).toList();
+
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    qualificationFetchLoading = false;
+    notifyListeners();
+  }
+
 }

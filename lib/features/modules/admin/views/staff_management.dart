@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/providers/admin_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../core/theme/app_colors.dart';
-import '../../../../providers/admin_provider.dart';
 import 'add_staff_screen.dart';
 
 class StaffManagementPage extends StatefulWidget {
@@ -151,6 +149,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
         ElevatedButton.icon(
           onPressed: () {
             prov.clearStaffForm();
+            prov.getQualifications();
             Navigator.push(
                 context,
                 MaterialPageRoute(

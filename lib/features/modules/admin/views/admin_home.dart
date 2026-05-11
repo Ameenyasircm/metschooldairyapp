@@ -13,6 +13,7 @@ import '../rules_timing/screens/admin_rules_and_regulations.dart';
 import '../rules_timing/screens/bell_timing_admin_screen.dart';
 import '../school_calaender/screens/admin_add_school_calender.dart';
 import 'academic_year_management.dart';
+import 'admin_menu_options.dart';
 import 'list_all_students_screen.dart';
 
 class AdminHome extends StatelessWidget {
@@ -65,6 +66,10 @@ class AdminHome extends StatelessWidget {
         return RulesAdminScreen();
       case 9:
         return ParentInstructionsAdminScreen();
+      case 10:
+        final provider = context.watch<AdminProvider>();
+        provider.getQualifications();
+        return AdminMenuOptions();
       default:
         return _buildDashboardGrid(context);
     }
@@ -108,6 +113,7 @@ class AdminHome extends StatelessWidget {
                     _buildModuleCard(context, 7, "Bell Timing", "Schedule & Slots", Icons.access_time_filled, Colors.blue),
                     _buildModuleCard(context, 8, "Rules & Regulations", "Policies & Conduct", Icons.gavel_rounded, Colors.blueGrey),
                     _buildModuleCard(context, 9, "Parent Instructions", "Guidelines for Parents", Icons.info_outline_rounded, primaryBlue),
+                    _buildModuleCard(context, 10, "Menu", "Admin Menu Options", Icons.menu, primaryBlue),
                   ],
                 ),
               ],

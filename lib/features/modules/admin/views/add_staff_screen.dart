@@ -87,12 +87,54 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                         children: [
                           _item("System Role", _dropdown(['admin', 'staff', 'teacher'], prov.selectedRole, (v) => prov.selectedRole = v)),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(child: _item("Qualification", _dropdown(['B.Ed', 'M.Ed', 'PhD', 'B.Tech'], prov.selectedQual, (v) => prov.selectedQual = v))),
-                              const SizedBox(width: 12),
-                              Expanded(child: _item("Experience (Yrs)", _field(prov.expCtrl, "e.g. 5", Icons.history, isNumber: true))),
-                            ],
+                          Consumer<AdminProvider>(
+                            builder: (contextss, val, child) {
+
+                              List<String> qualificationNames =
+                              val.qualificationList
+                                  .map((e) => e['qualification'].toString())
+                                  .toList();
+
+                              return Row(
+                                children: [
+
+                                  Expanded(
+                                    child: _item(
+
+                                      "Qualification",
+
+                                      _dropdown(
+
+                                        qualificationNames,
+
+                                        val.selectedQual,
+
+                                            (v) {
+
+                                          val.selectedQual = v;
+                                          val.notifyListeners();
+
+                                        },
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+
+                                  Expanded(
+                                    child: _item(
+                                      "Experience (Yrs)",
+                                      _field(
+                                        val.expCtrl,
+                                        "e.g. 5",
+                                        Icons.history,
+                                        isNumber: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 16),
                           _item("Aadhar Number", _field(prov.aadharCtrl, "0000 0000 0000", Icons.fingerprint, isNumber: true)),
