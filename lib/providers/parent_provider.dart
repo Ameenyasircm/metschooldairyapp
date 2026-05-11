@@ -3,11 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../features/modules/teacher/students/data/models/tech_student_model.dart';
+
 class ParentProvider with ChangeNotifier {
 
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseDatabase realtime = FirebaseDatabase.instance;
+  final FirebaseFirestore db = FirebaseFirestore.instance;
 
   String stdID = "";
   String name = "";
@@ -61,6 +64,37 @@ class ParentProvider with ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+
+
+  /// ================= FETCH STUDENT BY STUDENT ID =================
+
+  Future<EnrollerModel?> fetchStudentByStudentId(
+      String studentId) async {
+    try {
+      final query = await db
+          .collection('enrollments')
+          .where('student_id', isEqualTo: studentId)
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+
+        final doc = query.docs.first;
+
+        return EnrollerModel.fromMap(
+          doc.data(),
+          doc.id,
+        );
+      }
+
+      return null;
+
+    } catch (e) {
+      print("fetchStudentByStudentId Error : $e");
+      return null;
     }
   }
 }

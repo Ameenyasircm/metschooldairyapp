@@ -623,6 +623,14 @@ class _HomeScreenState extends State<HomeScreen> {
         final s = studentDataList.first;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("studentId",  s['studentId']);
+    //     id: prefs.getString("id") ?? '',
+    // studentId: prefs.getString("studentId") ?? '',
+    // name: prefs.getString("studentName") ?? '',
+    // parentId: prefs.getString("parentId") ?? '',
+    // parentPhone: prefs.getString("parentPhone") ?? '',
+    // rollNumber: prefs.getInt("rollNumber") ?? 0,
+    // className: prefs.getString("className") ?? '',
+    // divisionName: prefs.getString("divisionName") ?? '',
         NavigationService.push(
           context,
           ParentMainScreen(

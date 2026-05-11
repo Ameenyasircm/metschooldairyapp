@@ -514,27 +514,52 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     }),
 
 
-                    // _menu(Icons.event_available_outlined, "Punch", () async {
-                    //   final prefs = await SharedPreferences.getInstance();
-                    //   EnrollerModel student = EnrollerModel(
-                    //     id: prefs.getString("id") ?? '',
-                    //     studentId: prefs.getString("studentId") ?? '',
-                    //     name: prefs.getString("studentName") ?? '',
-                    //     parentId: prefs.getString("parentId") ?? '',
-                    //     parentPhone: prefs.getString("parentPhone") ?? '',
-                    //     rollNumber: prefs.getInt("rollNumber") ?? 0,
-                    //     className: prefs.getString("className") ?? '',
-                    //     divisionName: prefs.getString("divisionName") ?? '',
-                    //   );
-                    //   print("id : ${student.id}");
-                    //   print("studentId : ${student.studentId}");
-                    //   print("name : ${student.name}");
-                    //   print("parentId : ${student.parentId}");
-                    //   print("parentPhone : ${student.parentPhone}");
-                    //   print("rollNumber : ${student.rollNumber}");
-                    //   print("className : ${student.className}");
-                    //   print("divisionName : ${student.divisionName}");
-                    //   callNext(ParentPunctualityScreen(student: student), context);                         }),
+                    _menu(Icons.event_available_outlined, "Punctuality", () async {
+
+                      final prefs = await SharedPreferences.getInstance();
+
+                      String studentId =
+                          prefs.getString("studentId") ?? '';
+
+                      if (studentId.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Student ID not found"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final provider =
+                      Provider.of<ParentProvider>(
+                        context,
+                        listen: false,
+                      );
+
+                      EnrollerModel? student =
+                      await provider.fetchStudentByStudentId(
+                        studentId,
+                      );
+
+                      if (student != null) {
+
+                        callNext(
+                          ParentPunctualityScreen(
+                            student: student,
+                          ),
+                          context,
+                        );
+
+                      } else {
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Student not found"),
+                          ),
+                        );
+
+                      }
+                    })
                   ],
                 ),
 
