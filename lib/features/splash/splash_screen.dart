@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Provider.of<AuthProvider>(context, listen: false);
     authPro.loadCurrentAcademicYear();
     authPro.getAppVersion();
-    // authPro.lockApp();
+    authPro.lockApp();
   }
 
 
