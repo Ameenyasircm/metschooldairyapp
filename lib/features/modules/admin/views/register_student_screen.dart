@@ -1,7 +1,11 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/service/cloudinary_service.dart';
+import 'package:met_school/core/theme/app_spacing.dart';
 import 'package:met_school/providers/academic_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -51,13 +55,56 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   // Comprehensive Occupation List
   final List<String> occupations = [
-    "Agriculture/Farmer", "Business/Self Employed", "Construction Worker",
+    "Agriculture/Farmer", "Business", "Business/Self Employed", "Construction Worker",
     "Driver", "Engineer", "Government Employee", "Healthcare/Doctor/Nurse",
     "Home Maker", "IT Professional", "Laborer", "Private Job",
     "Teacher/Professor", "Technician", "Other"
   ];
 
   List<String> casteOptions = [];
+  String? photoUrl;
+  XFile? pickedImage;
+  Uint8List? imageBytes;
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Camera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source != null) {
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          pickedImage = image;
+          imageBytes = bytes;
+        });
+      }
+    }
+  }
 
   void updateCasteList(String? religion) {
     switch (religion) {
@@ -143,6 +190,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       selectedMedium = 'English';
       selectedRelation = data['relation'];
       selectedOccupation = data['fatherProfession']; // Correctly fetching occupation
+      photoUrl = data['photoUrl'];
 
       if (data['phone'] == data['whatsapp'] && data['phone'] != null && data['phone'] != "") {
         isWhatsappSame = true;
@@ -186,6 +234,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               Expanded(
                 flex: 3,
                 child: _buildPanel("Personal & Identity", Icons.person_outline, [
+                  _buildProfileImagePicker(),
+                  AppSpacing.vm,
                   _item("Full Name", _field(nameCtrl, "Student Name", Icons.badge)),
                   const SizedBox(height: 10),
                   Row(children: [
@@ -351,6 +401,56 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     );
   }
 
+  Widget _buildProfileImagePicker() {
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: imageBytes != null
+                ? MemoryImage(imageBytes!)
+                : (photoUrl != null && photoUrl!.isNotEmpty
+                    ? NetworkImage(photoUrl!)
+                    : null),
+            child: (imageBytes == null && (photoUrl == null || photoUrl!.isEmpty))
+                ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                : null,
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: InkWell(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: primaryTeal,
+                child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+              ),
+            ),
+          ),
+          if (imageBytes != null || (photoUrl != null && photoUrl!.isNotEmpty))
+            Positioned(
+              top: 0,
+              right: 0,
+              child: InkWell(
+                onTap: () => setState(() {
+                  pickedImage = null;
+                  imageBytes = null;
+                  photoUrl = null;
+                }),
+                child: const CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Colors.red,
+                  child: Icon(Icons.close, size: 14, color: Colors.white),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPanel(String title, IconData icon, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -396,11 +496,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }
 
   Widget _dropdown(List<String> items, String? val, Function(String?) onChange) {
+    // Ensure the value exists in the items to avoid assertion errors
+    final String? validatedValue = (val != null && items.contains(val)) ? val : null;
+
     return DropdownButtonFormField<String>(
-      value: val,
+      value: validatedValue,
       isExpanded: true,
       style: const TextStyle(fontSize: 13, color: Colors.black),
-      decoration: InputDecoration(isDense: true, filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       onChanged: onChange,
       validator: (v) => (v == null) ? "Required" : null,
@@ -481,6 +589,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
       String docId = widget.initialData?['id'] ?? DateTime.now().millisecondsSinceEpoch.toString();
 
+      String? finalPhotoUrl = photoUrl;
+      if (pickedImage != null && imageBytes != null) {
+        finalPhotoUrl = await CloudinaryService.uploadImage(
+          bytes: imageBytes!,
+          folder: 'student_profiles',
+          fileName: 'student_$docId',
+        );
+      }
+
       // 1. Prepare Student Data Map
       Map<String, dynamic> studentData = {
         "id": docId,
@@ -508,6 +625,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         "identificationMark": idMarkCtrl.text.trim(),
         "updatedAt": FieldValue.serverTimestamp(),
         "isEnrolled": false,
+        "photoUrl": finalPhotoUrl,
       };
 
       final batch = firestore.batch();
