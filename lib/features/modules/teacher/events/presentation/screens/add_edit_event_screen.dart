@@ -29,12 +29,18 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _remarksController = TextEditingController();
+  
+  // Task fields
+  final _taskTitleController = TextEditingController();
+  final _taskAmountController = TextEditingController();
+  final _taskNoteController = TextEditingController();
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   File? _selectedFile;
   String? _fileName;
   String _status = 'pending';
+  bool _isTaskRequired = false;
 
   @override
   void initState() {
@@ -46,6 +52,11 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
       _selectedDate = widget.event!.dateTime.toDate();
       _selectedTime = TimeOfDay.fromDateTime(widget.event!.dateTime.toDate());
       _status = widget.event!.status;
+      
+      _isTaskRequired = widget.event!.isTaskRequired;
+      _taskTitleController.text = widget.event!.taskTitle ?? '';
+      _taskAmountController.text = widget.event!.taskAmount?.toString() ?? '';
+      _taskNoteController.text = widget.event!.taskNote ?? '';
     }
   }
 
@@ -108,6 +119,10 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
           attachmentFile: _selectedFile,
           status: _status,
           teacherRemarks: _remarksController.text.trim(),
+          isTaskRequired: _isTaskRequired,
+          taskTitle: _isTaskRequired ? _taskTitleController.text.trim() : null,
+          taskAmount: _isTaskRequired ? double.tryParse(_taskAmountController.text) : null,
+          taskNote: _isTaskRequired ? _taskNoteController.text.trim() : null,
         );
 
     if (success && mounted) {
@@ -207,6 +222,81 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
                     _buildLabel('Status'),
                     _buildDropdown(),
                     AppSpacing.h16,
+
+                    /// TASK / REQUIREMENT SECTION
+                    Container(
+                      padding: AppPadding.pM,
+                      decoration: BoxDecoration(
+                        color: AppColors.greyBFB,
+                        borderRadius: AppRadius.radiusM,
+                        border: Border.all(color: AppColors.greyE0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Event Task / Submission',
+                                style: AppTypography.body1.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              Switch(
+                                value: _isTaskRequired,
+                                activeColor: AppColors.primary,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isTaskRequired = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          if (_isTaskRequired) ...[
+                            AppSpacing.h8,
+                            _buildLabel('Task Title'),
+                            AppTextField(
+                              controller: _taskTitleController,
+                              hintText: "e.g. Notebook Submission, Sports Day Fee",
+                              labelText: "What is required?",
+                              prefixIcon: Icons.task_alt,
+                              fillColor: Colors.white,
+                              validator: (value) {
+                                if (_isTaskRequired && (value == null || value.isEmpty)) {
+                                  return "Please enter task title";
+                                }
+                                return null;
+                              },
+                            ),
+                            AppSpacing.h16,
+                            _buildLabel('Optional Amount (₹)'),
+                            AppTextField(
+                              controller: _taskAmountController,
+                              hintText: "e.g. 50",
+                              labelText: "Amount (Leave blank if not applicable)",
+                              prefixIcon: Icons.currency_rupee,
+                              fillColor: Colors.white,
+                              keyboardType: TextInputType.number,
+                            ),
+                            AppSpacing.h16,
+                            _buildLabel('Instructions / Note'),
+                            AppTextField(
+                              controller: _taskNoteController,
+                              hintText: "e.g. Bring to class teacher",
+                              labelText: "Enter instructions",
+                              prefixIcon: Icons.note_alt_outlined,
+                              fillColor: Colors.white,
+                              maxLine: 2,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    AppSpacing.h16,
+
                     _buildLabel('Teacher Remarks (Optional)'),
                     AppTextField(
                       controller: _remarksController,
@@ -215,12 +305,6 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
                       prefixIcon: Icons.wysiwyg_rounded,
                       fillColor: Colors.white,
                       maxLine: 2,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please enter remarks";
-                        }
-                        return null;
-                      },
                     ),
                     AppSpacing.h16,
                     _buildLabel('Attachment (Optional)'),
@@ -278,6 +362,7 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
+          dropdownColor: Colors.white,
           value: _status,
           isExpanded: true,
           items: ['pending', 'completed', 'cancelled'].map((String value) {

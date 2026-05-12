@@ -9,6 +9,8 @@ import '../../../../../../core/theme/app_typography.dart';
 import '../../../../../../core/utils/loader/customLoader.dart';
 import '../../../../teacher/events/presentation/provider/event_provider.dart';
 import '../../../../teacher/events/presentation/widgets/event_card.dart';
+import '../../../../teacher/events/data/models/event_model.dart';
+import '../../../../teacher/events/presentation/widgets/event_status_chip.dart';
 import 'parent_event_detail_screen.dart';
 
 class ParentEventListScreen extends StatefulWidget {
@@ -110,8 +112,6 @@ class _ParentEventListScreenState extends State<ParentEventListScreen> {
             ),
           ),
 
-          AppSpacing.h16,
-
           /// EVENT LIST
           Expanded(
             child: Consumer<EventProvider>(
@@ -190,9 +190,8 @@ class _ParentEventListScreenState extends State<ParentEventListScreen> {
                         if (index ==
                             filteredEvents.length) {
 
-                          return const Padding(
-                            padding:
-                            EdgeInsets.all(16),
+                          return  Padding(
+                            padding:AppPadding.pM,
                             child: Center(
                               child:
                               CustomLoader(),
@@ -204,23 +203,28 @@ class _ParentEventListScreenState extends State<ParentEventListScreen> {
                         filteredEvents[index];
 
                         return Padding(
-                          padding:
-                          const EdgeInsets.only(
-                            bottom: 12,
+                          padding: EdgeInsets.only(
+                            bottom: 8.h,
                           ),
 
                           child: EventCard(
                             event: event,
-
+                            statusWidget: event.isTaskRequired
+                                ? FutureBuilder<StudentEventTaskModel?>(
+                                    future: provider.getMyChildTaskStatus(event.id),
+                                    builder: (context, snapshot) {
+                                      final status = snapshot.data?.status ?? 'Pending';
+                                      return EventStatusChip(status: status);
+                                    },
+                                  )
+                                : null,
                             onTap: () {
                               Navigator.push(
                                 context,
-
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      ParentEventDetailScreen(
-                                        event: event,
-                                      ),
+                                  builder: (context) => ParentEventDetailScreen(
+                                    event: event,
+                                  ),
                                 ),
                               );
                             },

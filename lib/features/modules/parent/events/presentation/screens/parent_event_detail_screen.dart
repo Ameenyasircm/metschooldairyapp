@@ -13,16 +13,9 @@ import '../../../../teacher/events/data/models/event_model.dart';
 import '../../../../teacher/events/presentation/provider/event_provider.dart';
 import '../../../../teacher/events/presentation/widgets/event_status_chip.dart';
 
-class ParentEventDetailScreen extends StatefulWidget {
+class ParentEventDetailScreen extends StatelessWidget {
   final EventModel event;
   const ParentEventDetailScreen({super.key, required this.event});
-
-  @override
-  State<ParentEventDetailScreen> createState() => _ParentEventDetailScreenState();
-}
-
-class _ParentEventDetailScreenState extends State<ParentEventDetailScreen> {
-  final _remarkController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -44,40 +37,53 @@ class _ParentEventDetailScreenState extends State<ParentEventDetailScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.event.title,
+                    event.title,
                     style: AppTypography.h5.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
-                EventStatusChip(status: widget.event.status),
+                if (!event.isTaskRequired) EventStatusChip(status: event.status),
+                if (event.isTaskRequired)
+                  FutureBuilder<StudentEventTaskModel?>(
+                    future: context.read<EventProvider>().getMyChildTaskStatus(event.id),
+                    builder: (context, snapshot) {
+                      final status = snapshot.data?.status ?? 'Pending';
+                      return _buildStudentStatusChip(status);
+                    },
+                  ),
               ],
             ),
             AppSpacing.h16,
-            _buildInfoRow(Icons.calendar_today, 'Date & Time', DateFormat('dd MMM yyyy, hh:mm a').format(widget.event.dateTime.toDate())),
-            _buildInfoRow(Icons.person, 'Posted by', widget.event.createdByName),
+            _buildInfoRow(Icons.calendar_today, 'Date & Time', DateFormat('dd MMM yyyy, hh:mm a').format(event.dateTime.toDate())),
+            if (event.isTaskRequired) ...[
+              AppSpacing.h16,
+              _buildTaskInfoSection(context),
+            ],
+
             AppSpacing.h24,
             Text('Description', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
             AppSpacing.h8,
-            Text(widget.event.description, style: AppTypography.body2.copyWith(color: AppColors.grey5E)),
-            if (widget.event.teacherRemarks != null && widget.event.teacherRemarks!.isNotEmpty) ...[
+            Text(event.description, style: AppTypography.body2.copyWith(color: AppColors.grey5E)),
+            if (event.teacherRemarks != null && event.teacherRemarks!.isNotEmpty) ...[
               AppSpacing.h24,
               Text('Teacher Remarks', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
               AppSpacing.h8,
               Container(
+                width: double.infinity,
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.05),
                   borderRadius: AppRadius.radiusM,
                   border: Border.all(color: Colors.blue.withOpacity(0.2)),
                 ),
-                child: Text(widget.event.teacherRemarks!, style: AppTypography.body2.copyWith(color: AppColors.grey5E)),
+                child: Text(event.teacherRemarks!, style: AppTypography.body2.copyWith(color: AppColors.grey5E)),
               ),
             ],
-            if (widget.event.attachmentUrl != null && widget.event.attachmentUrl!.isNotEmpty) ...[
+            if (event.attachmentUrl != null && event.attachmentUrl!.isNotEmpty) ...[
               AppSpacing.h24,
               Text('Attachment', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
               AppSpacing.h8,
               InkWell(
-                onTap: () => _launchURL(widget.event.attachmentUrl!),
+                onTap: () => _launchURL(event.attachmentUrl!),
                 child: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
@@ -96,17 +102,41 @@ class _ParentEventDetailScreenState extends State<ParentEventDetailScreen> {
               ),
             ],
             AppSpacing.h32,
-            const Divider(),
-            AppSpacing.h16,
-            Text('Your Remarks', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
-            AppSpacing.h8,
-            _buildMyRemarkSection(),
-            AppSpacing.h24,
-            Text('Other Parent Remarks', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
-            AppSpacing.h8,
-            _buildOtherParentRemarks(),
-            AppSpacing.h32,
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudentStatusChip(String status) {
+    Color bgColor;
+    Color textColor;
+    switch (status) {
+      case 'Completed':
+        bgColor = Colors.green.withOpacity(0.1);
+        textColor = Colors.green;
+        break;
+      case 'Not Completed':
+        bgColor = Colors.red.withOpacity(0.1);
+        textColor = Colors.red;
+        break;
+      default:
+        bgColor = Colors.orange.withOpacity(0.1);
+        textColor = Colors.orange;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: AppRadius.radiusS,
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: AppTypography.caption.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 10.sp,
         ),
       ),
     );
@@ -131,83 +161,101 @@ class _ParentEventDetailScreenState extends State<ParentEventDetailScreen> {
     );
   }
 
-  Widget _buildMyRemarkSection() {
-    return Column(
-      children: [
-        TextField(
-          controller: _remarkController,
-          maxLines: 2,
-          decoration: InputDecoration(
-            hintText: 'Add your comment/remark...',
-            border: OutlineInputBorder(borderRadius: AppRadius.radiusM),
-            contentPadding: EdgeInsets.all(12.w),
-          ),
-        ),
-        AppSpacing.h8,
-        Align(
-          alignment: Alignment.centerRight,
-          child: ElevatedButton(
-            onPressed: _submitRemark,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Submit Remark', style: TextStyle(color: Colors.white)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOtherParentRemarks() {
-    return StreamBuilder<List<ParentRemarkModel>>(
-      stream: context.read<EventProvider>().getRemarks(widget.event.id),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('No remarks yet.', style: AppTypography.caption.copyWith(fontStyle: FontStyle.italic));
-        }
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, index) {
-            final remark = snapshot.data![index];
-            return Container(
-              margin: EdgeInsets.only(bottom: 8.h),
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: AppColors.greyE0.withOpacity(0.1),
-                borderRadius: AppRadius.radiusM,
+  Widget _buildTaskInfoSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: AppPadding.pM,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.05),
+        borderRadius: AppRadius.radiusM,
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assignment_turned_in_outlined, color: AppColors.primary, size: 24.sp),
+              AppSpacing.hs,
+              Text(
+                'Task / Requirement',
+                style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
-              child: Column(
+            ],
+          ),
+          AppSpacing.h12,
+          Text(event.taskTitle ?? 'Task', style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold)),
+          if (event.taskAmount != null)
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text('Amount: ₹${event.taskAmount}', style: AppTypography.body2),
+            ),
+          if (event.taskNote != null && event.taskNote!.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text('Instructions: ${event.taskNote}', style: AppTypography.body2),
+            ),
+          
+          AppSpacing.h16,
+          const Divider(),
+          AppSpacing.h16,
+          
+          Text(
+            'Your Child\'s Status',
+            style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold),
+          ),
+          AppSpacing.h8,
+          
+          FutureBuilder<StudentEventTaskModel?>(
+            future: context.read<EventProvider>().getMyChildTaskStatus(event.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Text('Loading status...');
+              }
+              
+              final task = snapshot.data;
+              final status = task?.status ?? 'Pending';
+              
+              Color statusColor;
+              switch (status) {
+                case 'Completed':
+                  statusColor = Colors.green;
+                  break;
+                case 'Not Completed':
+                  statusColor = Colors.red;
+                  break;
+                default:
+                  statusColor = Colors.orange;
+              }
+              
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(remark.parentName, style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold)),
-                      Text(DateFormat('dd/MM HH:mm').format(remark.updatedAt.toDate()), style: AppTypography.caption),
-                    ],
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      status,
+                      style: AppTypography.body2.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  AppSpacing.h4,
-                  Text(remark.remark, style: AppTypography.body2),
+                  if (task?.remark != null && task!.remark!.isNotEmpty) ...[
+                    AppSpacing.h8,
+                    Text(
+                      'Teacher Remark: ${task.remark}',
+                      style: AppTypography.caption.copyWith(fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ],
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          ),
+        ],
+      ),
     );
-  }
-
-  Future<void> _submitRemark() async {
-    if (_remarkController.text.trim().isEmpty) return;
-    
-    final success = await context.read<EventProvider>().addParentRemark(widget.event.id, _remarkController.text.trim());
-    if (success) {
-      _remarkController.clear();
-      SnackbarService().showSuccess('Remark added');
-      FocusScope.of(context).unfocus();
-    } else {
-      SnackbarService().showError('Failed to add remark');
-    }
   }
 
   void _launchURL(String url) async {

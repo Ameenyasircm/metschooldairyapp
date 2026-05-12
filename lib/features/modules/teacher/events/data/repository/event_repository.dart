@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_model.dart';
 import '../services/event_service.dart';
+import '../../../students/data/models/tech_student_model.dart';
 
 class EventRepository {
   final EventService _service = EventService();
@@ -24,9 +25,26 @@ class EventRepository {
         academicYearId: academicYearId,
       );
 
-  Future<void> updateParentRemark(String eventId, ParentRemarkModel remark) =>
-      _service.updateParentRemark(eventId, remark);
+  Future<void> updateStudentTaskStatus(
+    String eventId,
+    StudentEventTaskModel task,
+  ) =>
+      _service.updateStudentTaskStatus(eventId, task);
 
-  Stream<List<ParentRemarkModel>> getRemarksStream(String eventId) =>
-      _service.getRemarksStream(eventId);
+  Stream<List<StudentEventTaskModel>> getStudentTasksStream(
+    String eventId,
+  ) =>
+      _service.getStudentTasksStream(eventId);
+
+  Future<StudentEventTaskModel?> getStudentTask(
+    String eventId,
+    String studentId,
+  ) =>
+      _service.getStudentTask(eventId, studentId);
+
+  Future<List<EnrollerModel>> getStudentsForClass(
+    String classId,
+    String divisionId,
+  ) =>
+      _service.getStudentsForClass(classId, divisionId);
 }

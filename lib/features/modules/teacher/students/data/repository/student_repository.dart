@@ -20,7 +20,7 @@ class StudentRepository {
       limit: limit,
       startAfter: lastDoc,
       queryBuilder: (query) {
-        var q = query.orderBy(isMyStudents ? 'student_name' : 'name');
+        var q = query.orderBy(isMyStudents ? 'roll_number' : 'name');
 
         if (isMyStudents) {
           if (classId != null) {

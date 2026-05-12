@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/event_model.dart';
 import '../../data/repository/event_repository.dart';
+import '../../../students/data/models/tech_student_model.dart';
 
 class EventProvider extends ChangeNotifier {
   final EventRepository repository;
@@ -82,10 +83,13 @@ class EventProvider extends ChangeNotifier {
     required String title,
     required String description,
     required DateTime dateTime,
-    String? location,
     File? attachmentFile,
     required String status,
     String? teacherRemarks,
+    bool isTaskRequired = false,
+    String? taskTitle,
+    double? taskAmount,
+    String? taskNote,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -104,7 +108,6 @@ class EventProvider extends ChangeNotifier {
         attachmentUrl = await repository.uploadAttachment(attachmentFile);
       }
 
-      // Generate ID locally if it's a new event
       final effectiveId = id ?? FirebaseFirestore.instance.collection('events').doc().id;
 
       final event = EventModel(
@@ -112,7 +115,7 @@ class EventProvider extends ChangeNotifier {
         title: title,
         description: description,
         dateTime: Timestamp.fromDate(dateTime),
-        attachmentUrl: attachmentUrl,
+        attachmentUrl: attachmentUrl ?? (id != null ? _events.firstWhere((e) => e.id == id).attachmentUrl : null),
         status: status,
         teacherRemarks: teacherRemarks,
         createdById: staffId,
@@ -121,11 +124,14 @@ class EventProvider extends ChangeNotifier {
         classId: classId,
         divisionId: divisionId,
         createdAt: Timestamp.now(),
+        isTaskRequired: isTaskRequired,
+        taskTitle: taskTitle,
+        taskAmount: taskAmount,
+        taskNote: taskNote,
       );
 
       await repository.saveEvent(event);
 
-      // Update local list immediately
       if (id == null) {
         _events.insert(0, event);
       } else {
@@ -141,38 +147,6 @@ class EventProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  Future<bool> updateStatus(String eventId, String status, {String? remarks}) async {
-    try {
-      final event = _events.firstWhere((e) => e.id == eventId);
-      final updatedEvent = EventModel(
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        dateTime: event.dateTime,
-        attachmentUrl: event.attachmentUrl,
-        status: status,
-        teacherRemarks: remarks ?? event.teacherRemarks,
-        createdById: event.createdById,
-        createdByName: event.createdByName,
-        academicYearId: event.academicYearId,
-        classId: event.classId,
-        divisionId: event.divisionId,
-        createdAt: event.createdAt,
-      );
-      await repository.saveEvent(updatedEvent);
-      
-      final index = _events.indexWhere((e) => e.id == eventId);
-      if (index != -1) {
-        _events[index] = updatedEvent;
-        notifyListeners();
-      }
-      return true;
-    } catch (e) {
-      _errorMessage = "Failed to update status: $e";
-      return false;
     }
   }
 
@@ -192,30 +166,52 @@ class EventProvider extends ChangeNotifier {
     }
   }
 
-  // Parent Remarks
-  Future<bool> addParentRemark(String eventId, String remark) async {
+  // Event Task Tracking logic
+  Future<List<EnrollerModel>> getStudentsForEvent(String eventId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final parentId = prefs.getString("parentId") ?? 'unknown';
-      final parentName = prefs.getString("parentName") ?? 'Parent';
+      final event = _events.firstWhere((e) => e.id == eventId);
+      if (event.classId != null && event.divisionId != null) {
+        return await repository.getStudentsForClass(event.classId!, event.divisionId!);
+      }
+    } catch (e) {
+       debugPrint("Error fetching students: $e");
+    }
+    return [];
+  }
 
-      final remarkModel = ParentRemarkModel(
-        id: parentId,
-        parentId: parentId,
-        parentName: parentName,
+  Future<bool> updateStudentTaskStatus({
+    required String eventId,
+    required String studentId,
+    required String studentName,
+    required String status,
+    String? remark,
+  }) async {
+    try {
+      final task = StudentEventTaskModel(
+        studentId: studentId,
+        studentName: studentName,
+        status: status,
         remark: remark,
         updatedAt: Timestamp.now(),
       );
-
-      await repository.updateParentRemark(eventId, remarkModel);
+      await repository.updateStudentTaskStatus(eventId, task);
       return true;
     } catch (e) {
-      _errorMessage = "Failed to add remark: $e";
+      _errorMessage = "Failed to update task status: $e";
       return false;
     }
   }
 
-  Stream<List<ParentRemarkModel>> getRemarks(String eventId) {
-    return repository.getRemarksStream(eventId);
+  Stream<List<StudentEventTaskModel>> getStudentTasks(String eventId) {
+    return repository.getStudentTasksStream(eventId);
+  }
+
+  Future<StudentEventTaskModel?> getMyChildTaskStatus(String eventId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString("studentId");
+    if (studentId != null) {
+      return await repository.getStudentTask(eventId, studentId);
+    }
+    return null;
   }
 }
