@@ -38,7 +38,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
           if (provider.parentInstructionsList.isEmpty && !provider.isLoading)
             TextButton.icon(
               style: TextButton.styleFrom(foregroundColor: Colors.white),
-              onPressed: () => provider.seedParentInstructionsFromImage(),
+              onPressed: (){},
               icon: const Icon(Icons.download),
               label: const Text("Load Malayalam Instructions"),
             )
@@ -60,7 +60,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: const Text(
-                "രക്ഷിതാക്കളോട്\n(Instructions to Parents)",
+                "Instructions to Parents",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,

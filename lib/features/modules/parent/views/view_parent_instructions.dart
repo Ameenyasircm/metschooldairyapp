@@ -94,21 +94,21 @@ class _ParentInstructionsScreenState extends State<ParentInstructionsScreen> {
             child: const Column(
               children: [
                 Text(
-                  "രക്ഷിതാക്കളോട്",
+                  "Instructions to Parents",
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  "Important Instructions for Parents",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
+                // SizedBox(height: 8),
+                // Text(
+                //   "Important Instructions for Parents",
+                //   style: TextStyle(
+                //     fontSize: 14,
+                //     color: Colors.white70,
+                //   ),
+                // ),
               ],
             ),
           ),
