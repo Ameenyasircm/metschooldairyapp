@@ -19,15 +19,16 @@ class EventStatusChip extends StatelessWidget {
         bgColor = Colors.green.withOpacity(0.1);
         textColor = Colors.green;
         break;
+      case 'not completed':
       case 'cancelled':
         bgColor = Colors.red.withOpacity(0.1);
         textColor = Colors.red;
         break;
       case 'pending':
       default:
-        bgColor = AppColors.primary.withOpacity(0.1);
-        textColor = AppColors.primary;
-        label = 'PENDING';
+        bgColor = Colors.orange.withOpacity(0.1);
+        textColor = Colors.orange;
+        label = status.toUpperCase();
     }
 
     return Container(

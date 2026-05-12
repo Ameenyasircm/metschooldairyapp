@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:met_school/core/router/app_navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -13,6 +14,7 @@ import '../../data/models/event_model.dart';
 import '../provider/event_provider.dart';
 import '../widgets/event_status_chip.dart';
 import 'add_edit_event_screen.dart';
+import 'event_task_tracking_screen.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final EventModel event;
@@ -23,7 +25,7 @@ class EventDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: Text('Event Details', style: AppTypography.h6.copyWith(fontWeight: FontWeight.bold)),
+        title: Text('Event Details ', style: AppTypography.h6.copyWith(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.white,
         elevation: 0,
         leading: const BackButton(color: Colors.black),
@@ -34,10 +36,6 @@ class EventDetailScreen extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (_) => AddEditEventScreen(event: event)),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () => _showDeleteConfirmation(context),
           ),
         ],
       ),
@@ -60,7 +58,11 @@ class EventDetailScreen extends StatelessWidget {
             ),
             AppSpacing.h16,
             _buildInfoRow(Icons.calendar_today, 'Date & Time', DateFormat('dd MMM yyyy, hh:mm a').format(event.dateTime.toDate())),
-            _buildInfoRow(Icons.person, 'Created By', event.createdByName),
+            if (event.isTaskRequired) ...[
+              AppSpacing.h16,
+              _buildTaskInfoSection(context),
+            ],
+
             AppSpacing.h24,
             Text('Description', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
             AppSpacing.h8,
@@ -95,16 +97,9 @@ class EventDetailScreen extends StatelessWidget {
               ),
             ],
             AppSpacing.h32,
-            const Divider(),
-            AppSpacing.h16,
-            Text('Parent Remarks', style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold)),
-            AppSpacing.h8,
-            _buildParentRemarks(context),
-            AppSpacing.h32,
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomAction(context),
     );
   }
 
@@ -127,113 +122,59 @@ class EventDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildParentRemarks(BuildContext context) {
-    return StreamBuilder<List<ParentRemarkModel>>(
-      stream: context.read<EventProvider>().getRemarks(event.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('No parent remarks yet.', style: AppTypography.caption.copyWith(fontStyle: FontStyle.italic));
-        }
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, index) {
-            final remark = snapshot.data![index];
-            return Card(
-              margin: EdgeInsets.only(bottom: 8.h),
-              child: ListTile(
-                title: Text(remark.parentName, style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold)),
-                subtitle: Text(remark.remark, style: AppTypography.caption),
-                trailing: Text(DateFormat('dd/MM').format(remark.updatedAt.toDate()), style: AppTypography.caption),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget? _buildBottomAction(BuildContext context) {
-    if (event.status == 'completed' || event.status == 'cancelled') return null;
-
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Row(
+  Widget _buildTaskInfoSection(BuildContext context) {
+    return Container(
+      padding: AppPadding.pM,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.05),
+        borderRadius: AppRadius.radiusM,
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => _updateStatus(context, 'cancelled'),
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
-              child: const Text('Cancel Event'),
+          Row(
+            children: [
+              Icon(Icons.assignment_turned_in_outlined, color: AppColors.primary, size: 24.sp),
+              AppSpacing.hs,
+              Text(
+                'Task / Requirement',
+                style: AppTypography.body1.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+            ],
+          ),
+          AppSpacing.h12,
+          Text(event.taskTitle ?? 'Task', style: AppTypography.body2.copyWith(fontWeight: FontWeight.bold)),
+          if (event.taskAmount != null)
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text('Amount: ₹${event.taskAmount}', style: AppTypography.body2),
+            ),
+          if (event.taskNote != null && event.taskNote!.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text('Note: ${event.taskNote}', style: AppTypography.body2),
+            ),
+          AppSpacing.h16,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                NavigationService.push(context, EventTaskTrackingScreen(event: event));
+              },
+              icon: const Icon(Icons.group_outlined, color: Colors.white),
+              label: Text('Track Student Status', style: AppTypography.body2.copyWith(
+                color: AppColors.white
+              )),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.radiusM),
+              ),
             ),
           ),
-          AppSpacing.hs,
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () => _updateStatus(context, 'completed'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text('Mark Completed', style: TextStyle(color: Colors.white)),
-            ),
-          ),
         ],
       ),
     );
-  }
-
-  Future<void> _updateStatus(BuildContext context, String status) async {
-    final remarksController = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Update Status to ${status.toUpperCase()}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Add optional remarks:'),
-            AppSpacing.h8,
-            TextField(controller: remarksController, decoration: const InputDecoration(hintText: 'Remarks')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirm')),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final success = await context.read<EventProvider>().updateStatus(event.id, status, remarks: remarksController.text);
-      if (success) {
-        SnackbarService().showSuccess('Event updated');
-        Navigator.pop(context);
-      }
-    }
-  }
-
-  Future<void> _showDeleteConfirmation(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Event'),
-        content: const Text('Are you sure you want to delete this event? This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final success = await context.read<EventProvider>().deleteEvent(event.id);
-      if (success) {
-        SnackbarService().showSuccess('Event deleted');
-        Navigator.pop(context);
-      }
-    }
   }
 
   void _launchURL(String url) async {

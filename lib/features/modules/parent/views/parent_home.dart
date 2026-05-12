@@ -514,7 +514,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     }),
 
 
-                    _menu(Icons.event_available_outlined, "Punctuality", () async {
+                    _menu(Icons.event, "Punctuality", () async {
 
                       final prefs = await SharedPreferences.getInstance();
 

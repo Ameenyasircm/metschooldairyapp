@@ -11,8 +11,14 @@ import 'event_status_chip.dart';
 class EventCard extends StatelessWidget {
   final EventModel event;
   final VoidCallback onTap;
+  final Widget? statusWidget;
 
-  const EventCard({super.key, required this.event, required this.onTap});
+  const EventCard({
+    super.key,
+    required this.event,
+    required this.onTap,
+    this.statusWidget,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +52,7 @@ class EventCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                EventStatusChip(status: event.status),
+                statusWidget ?? EventStatusChip(status: event.status),
               ],
             ),
             AppSpacing.h8,
@@ -60,6 +66,32 @@ class EventCard extends StatelessWidget {
                 ),
               ],
             ),
+            
+            if (event.isTaskRequired) ...[
+              AppSpacing.h8,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.assignment_turned_in_outlined, size: 12.sp, color: AppColors.primary),
+                    AppSpacing.h4,
+                    Text(
+                      event.taskTitle ?? 'Task Required',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             AppSpacing.h12,
             Text(
               event.description,

@@ -14,6 +14,12 @@ class EventModel {
   final String? classId;
   final String? divisionId;
   final Timestamp createdAt;
+  
+  // New Generic Task Fields
+  final bool isTaskRequired;
+  final String? taskTitle; // e.g. "Sports Day Contribution", "Notebook Submission"
+  final double? taskAmount; // optional amount
+  final String? taskNote; // optional instructions
 
   EventModel({
     required this.id,
@@ -29,6 +35,10 @@ class EventModel {
     this.classId,
     this.divisionId,
     required this.createdAt,
+    this.isTaskRequired = false,
+    this.taskTitle,
+    this.taskAmount,
+    this.taskNote,
   });
 
   factory EventModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -46,6 +56,10 @@ class EventModel {
       classId: map['class_id'],
       divisionId: map['division_id'],
       createdAt: map['createdAt'] as Timestamp? ?? Timestamp.now(),
+      isTaskRequired: map['isTaskRequired'] ?? false,
+      taskTitle: map['taskTitle'],
+      taskAmount: (map['taskAmount'] as num?)?.toDouble(),
+      taskNote: map['taskNote'],
     );
   }
 
@@ -63,39 +77,43 @@ class EventModel {
       'class_id': classId,
       'division_id': divisionId,
       'createdAt': createdAt,
+      'isTaskRequired': isTaskRequired,
+      'taskTitle': taskTitle,
+      'taskAmount': taskAmount,
+      'taskNote': taskNote,
     };
   }
 }
 
-class ParentRemarkModel {
-  final String id;
-  final String parentId;
-  final String parentName;
-  final String remark;
+class StudentEventTaskModel {
+  final String studentId;
+  final String studentName;
+  final String status; // 'Pending', 'Completed', 'Not Completed'
+  final String? remark;
   final Timestamp updatedAt;
 
-  ParentRemarkModel({
-    required this.id,
-    required this.parentId,
-    required this.parentName,
-    required this.remark,
+  StudentEventTaskModel({
+    required this.studentId,
+    required this.studentName,
+    required this.status,
+    this.remark,
     required this.updatedAt,
   });
 
-  factory ParentRemarkModel.fromMap(Map<String, dynamic> map, String docId) {
-    return ParentRemarkModel(
-      id: docId,
-      parentId: map['parentId'] ?? '',
-      parentName: map['parentName'] ?? '',
-      remark: map['remark'] ?? '',
+  factory StudentEventTaskModel.fromMap(Map<String, dynamic> map, String id) {
+    return StudentEventTaskModel(
+      studentId: id,
+      studentName: map['studentName'] ?? '',
+      status: map['status'] ?? 'Pending',
+      remark: map['remark'],
       updatedAt: map['updatedAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'parentId': parentId,
-      'parentName': parentName,
+      'studentName': studentName,
+      'status': status,
       'remark': remark,
       'updatedAt': updatedAt,
     };
