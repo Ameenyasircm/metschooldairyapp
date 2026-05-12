@@ -32,7 +32,7 @@ class RoleSelectionScreen extends StatelessWidget {
         child: Padding(
           padding: AppPadding.phL,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AppSpacing.vxl,
               Center(

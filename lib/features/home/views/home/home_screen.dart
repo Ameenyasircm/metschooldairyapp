@@ -6,6 +6,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/router/app_navigation.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../auth/presentation/screens/role_selection_screen.dart';
@@ -583,22 +584,49 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _socialIcon(Icons.camera_alt_outlined, Colors.pink),
+        _socialIcon(
+          Icons.camera_alt_outlined,
+          Colors.pink,
+          'https://www.instagram.com/met_publicschoolpayyanad?utm_source=qr&igsh=MWI5MDZjYTF1cXg2bw==',
+        ),
         const SizedBox(width: 24),
-        _socialIcon(Icons.facebook, const Color(0xFF1877F2)),
+
+        _socialIcon(
+          Icons.facebook,
+          const Color(0xFF1877F2),
+          'https://www.facebook.com/share/1B7NobNz11/',
+        ),
         const SizedBox(width: 24),
-        _socialIcon(Icons.play_circle_fill, Colors.red),
+
+        _socialIcon(
+          Icons.play_circle_fill,
+          Colors.red,
+          'https://youtube.com/@metpublicschoolpayyanad5294?si=8GvIioRFl1bbRFp3',
+        ),
       ],
     );
   }
 
-  Widget _socialIcon(IconData icon, Color color) {
-    return GestureDetector(
-      onTap: () {},
-      child: Icon(icon, size: 30, color: color),
+  Widget _socialIcon(IconData icon, Color color, String url) {
+    return InkWell(
+      onTap: () async {
+        final Uri uri = Uri.parse(url);
+
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(30),
+      child: CircleAvatar(
+        radius: 24,
+        backgroundColor: color.withOpacity(.1),
+        child: Icon(icon, color: color),
+      ),
     );
   }
-
   // ── Login Button ──────────────────────────────────────────────────────────
 // ── Auth tap handler (copied from old HomeScreen) ─────────────────────────
   Future<void> _handleAuthTap() async {

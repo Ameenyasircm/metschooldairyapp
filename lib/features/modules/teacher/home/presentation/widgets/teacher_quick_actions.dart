@@ -17,6 +17,7 @@ import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../exams/presentation/screens/exam_coming_soon_screen.dart';
+import '../../../fee/views/fee_students_list.dart';
 import '../../../punctuality/data/screens/students_list_punctuality.dart';
 import '../../../school_calender/screens/school_calender_mobile_screen.dart';
 import '../../../students/presentation/provider/student_provider.dart';
@@ -26,6 +27,7 @@ import '../../../leaves/presentation/screens/teacher_leave_management_screen.dar
 import '../../viewmodels/teacher_home_viewmodel.dart';
 
 Widget buildQuickActions(BuildContext context) {
+  final studentProvider = context.watch<StudentProvider>();
   return Consumer<TeacherHomeViewModel>(
     builder: (context4, vm, _) {
       return SliverPadding(
@@ -91,6 +93,12 @@ Widget buildQuickActions(BuildContext context) {
                           break;
                         case 8:
                           NavigationService.push(context, const SyllabusListScreen());
+                          break;
+                        case 9:
+                          final academicYearId = prefs.getString("academicYearId") ?? '';
+                          studentProvider.searchMyStdQuery = '';
+                          studentProvider.fetchMyStudentsInitial();
+                          NavigationService.push(context,  FeeStudentsListScreen(academicYearId:academicYearId ,));
                           break;
                         default:
                           break;
