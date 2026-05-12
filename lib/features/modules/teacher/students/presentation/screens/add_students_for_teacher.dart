@@ -208,7 +208,6 @@ class _AddStudentForTeacherScreenState
         setState(() {
           currentStep++;
         });
-
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -265,7 +264,7 @@ class _AddStudentForTeacherScreenState
       }
 
       // Form Data
-      String parentPhone = phoneCtrl.text.trim();
+      String parentPhone = whatsappCtrl.text.trim();
       String parentName = parentCtrl.text.trim();
       String studentName = nameCtrl.text.trim();
 
@@ -288,7 +287,7 @@ class _AddStudentForTeacherScreenState
         var existingUserQuery = await firestore
             .collection("users")
             .where("phone", isEqualTo: parentPhone)
-            .where("role", isEqualTo: "parent")
+            // .where("role", isEqualTo: "parent")
             .limit(1)
             .get();
 
@@ -296,13 +295,24 @@ class _AddStudentForTeacherScreenState
           parentUid = existingUserQuery.docs.first.id;
 
           // Update existing parent's student list
-          batch.update(firestore.collection("parents").doc(parentUid), {
-            "studentIds": FieldValue.arrayUnion([docId]),
-            "updatedAt": FieldValue.serverTimestamp(),
-          });
-          batch.update(firestore.collection("users").doc(parentUid), {
-            "studentIds": FieldValue.arrayUnion([docId]),
-          });
+          batch.set(
+              firestore.collection("parents").doc(parentUid),
+              {
+                "studentIds": FieldValue.arrayUnion([docId]),
+                "updatedAt": FieldValue.serverTimestamp(),
+                "parentUid": parentUid,
+                "parentName": parentName,
+                "phone": parentPhone,
+              },
+              SetOptions(merge: true));
+
+          batch.set(
+              firestore.collection("users").doc(parentUid),
+              {
+                "studentIds": FieldValue.arrayUnion([docId]),
+                "is_parent": true,
+              },
+              SetOptions(merge: true));
         } else {
           // Create brand new parent
           DocumentReference newUserRef = firestore.collection("users").doc();
@@ -311,6 +321,7 @@ class _AddStudentForTeacherScreenState
           batch.set(newUserRef, {
             "uid": parentUid,
             "role": "parent",
+            "is_parent": true,
             "name": parentName,
             "phone": parentPhone,
             "user_name": parentPhone,
@@ -326,6 +337,7 @@ class _AddStudentForTeacherScreenState
             "studentIds": [docId],
             "parentName": parentName,
             "phone": parentPhone,
+            "whatsapp_number": whatsappCtrl.text.trim(),
             "updatedAt": FieldValue.serverTimestamp(),
           });
         }
@@ -334,16 +346,24 @@ class _AddStudentForTeacherScreenState
         parentUid = widget.initialData?['parentId'];
 
         if (parentUid != null) {
-          batch.update(firestore.collection("parents").doc(parentUid), {
-            "parentName": parentName,
-            "phone": parentPhone,
-            "updatedAt": FieldValue.serverTimestamp(),
-          });
-          batch.update(firestore.collection("users").doc(parentUid), {
-            "name": parentName,
-            "phone": parentPhone,
-            "user_name": parentPhone,
-          });
+          batch.set(
+              firestore.collection("parents").doc(parentUid),
+              {
+                "parentName": parentName,
+                "phone": parentPhone,
+                "whatsapp_number": whatsappCtrl.text.trim(),
+                "updatedAt": FieldValue.serverTimestamp(),
+              },
+              SetOptions(merge: true));
+
+          batch.set(
+              firestore.collection("users").doc(parentUid),
+              {
+                "name": parentName,
+                "phone": parentPhone,
+                "user_name": parentPhone,
+              },
+              SetOptions(merge: true));
         }
       }
 
@@ -381,11 +401,7 @@ class _AddStudentForTeacherScreenState
       // 5. Batch Writes for Student and Enrollment
       DocumentReference studentRef =
           firestore.collection("students").doc(docId);
-      if (widget.initialData == null) {
-        batch.set(studentRef, studentData);
-      } else {
-        batch.update(studentRef, studentData);
-      }
+      batch.set(studentRef, studentData, SetOptions(merge: true));
 
       // Always create a new enrollment record for tracking history/academic year
       DocumentReference enrollRef = firestore.collection('enrollments').doc();

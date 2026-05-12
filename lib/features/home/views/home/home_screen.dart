@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/router/app_navigation.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../auth/presentation/screens/role_selection_screen.dart';
 import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
 import '../../../modules/parent/views/parent_select_child_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_home_screen.dart';
@@ -602,15 +603,37 @@ class _HomeScreenState extends State<HomeScreen> {
 // ── Auth tap handler (copied from old HomeScreen) ─────────────────────────
   Future<void> _handleAuthTap() async {
     final auth = context.read<AuthProvider>();
-    final prefs = await SharedPreferences.getInstance();
-    final role = prefs.getString("role");
 
     if (!auth.isLoggedIn) {
       NavigationService.push(context, LoginScreen());
       return;
     }
 
-    if (role == "parent") {
+    // Refresh user data to get latest roles and student list from DB
+    await auth.syncUserData(context);
+
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString("role");
+    final isTeacher = prefs.getBool("isTeacher") ?? false;
+    final isParent = prefs.getBool("isParent") ?? false;
+
+    if (isParent && isTeacher) {
+      final data = jsonDecode(prefs.getString("userData") ?? "{}");
+      final studentDataList = (prefs.getStringList("studentDataList") ?? [])
+          .map((e) => jsonDecode(e) as Map<String, dynamic>)
+          .toList();
+
+      NavigationService.pushAndRemoveUntil(
+        context,
+        RoleSelectionScreen(
+          teacherData: data,
+          studentDataList: studentDataList,
+          parentName: data['name'] ?? "",
+        ),
+      );
+    } else if (isParent || role == "parent") {
       final studentDataList = (prefs.getStringList("studentDataList") ?? [])
           .map((e) => jsonDecode(e) as Map<String, dynamic>)
           .toList();
@@ -621,17 +644,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (studentDataList.isNotEmpty) {
         final s = studentDataList.first;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("studentId",  s['studentId']);
-    //     id: prefs.getString("id") ?? '',
-    // studentId: prefs.getString("studentId") ?? '',
-    // name: prefs.getString("studentName") ?? '',
-    // parentId: prefs.getString("parentId") ?? '',
-    // parentPhone: prefs.getString("parentPhone") ?? '',
-    // rollNumber: prefs.getInt("rollNumber") ?? 0,
-    // className: prefs.getString("className") ?? '',
-    // divisionName: prefs.getString("divisionName") ?? '',
-        NavigationService.push(
+        await prefs.setString("studentId", s['studentId'] ?? "");
+        if (!mounted) return;
+        NavigationService.pushAndRemoveUntil(
           context,
           ParentMainScreen(
             parentName: name,
@@ -642,8 +657,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
-    } else {
-      NavigationService.push(
+    } else if (isTeacher || role == "teacher") {
+      NavigationService.pushAndRemoveUntil(
         context,
         TeacherHomeScreen(
           staffName: prefs.getString("staffName") ?? "",
