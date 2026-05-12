@@ -247,7 +247,7 @@ class AdminHome extends StatelessWidget {
   Future<void> initializeClasses() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final batch = firestore.batch();
-    final List<String> classNames = ["LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+    final List<String> classNames = ["FLY 1", "FLY 2", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
     for (int i = 0; i < classNames.length; i++) {
       String name = classNames[i];

@@ -61,7 +61,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
   String getStandardText(dynamic standard) {
     if (standard == null) return '';
     // Handle LKG & UKG first
-    if (standard == "LKG" || standard == "UKG") {
+    if (standard == "FLY 1" || standard == "FLY 2") {
       return standard;
     }
 
