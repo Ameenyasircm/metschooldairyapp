@@ -8,6 +8,7 @@ class SchoolGalleryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color primaryBlue = Color(0xFF031937);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: (){
@@ -15,7 +16,7 @@ class SchoolGalleryScreen extends StatelessWidget {
 
         }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Gallary"),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
         actions: [
         ],

@@ -57,6 +57,13 @@ class AdminProvider with ChangeNotifier {
   final TextEditingController ageCtrl = TextEditingController(); // Calculated automatically
   DateTime? dob;
 
+  bool obscurePassword = true;
+
+  void togglePasswordVisibility() {
+    obscurePassword = !obscurePassword;
+    notifyListeners();
+  }
+
   // ================= DATA FETCHING =================
 
   Future<void> fetchSubjects() async {
@@ -110,7 +117,7 @@ class AdminProvider with ChangeNotifier {
     required String classTeacherName,
     required String adminId,
     required String adminName,
-    Map<String, String> subjectTeachers = const {}, // Added back
+    Map<String, String> subjectTeachers = const {},
   }) async {
     try {
       isLoading = true;
@@ -134,36 +141,21 @@ class AdminProvider with ChangeNotifier {
         'division_name': divisionName,
         'class_teacher_id': classTeacherId,
         'class_teacher_name': classTeacherName,
-        'subject_teachers': subjectTeachers, // Included
+        'subject_teachers': subjectTeachers,
         'created_at': FieldValue.serverTimestamp(),
         'assigned_by_id': adminId,
         'assigned_by_name': adminName,
-        'is_class_teacher': true,
-
-      };
-      final usersData = {
-        'division_id': divRef.id,
-        'academic_year_id': academicYearId,
-        'class_id': classId,
-        'class_name': className,
-        'division_name': divisionName,
-        'subject_teachers': subjectTeachers, // Included
-        'created_at': FieldValue.serverTimestamp(),
-        'assigned_by_id': adminId,
-        'assigned_by_name': adminName,
-        'is_class_teacher': true,
-
       };
 
-      final teacherUpdateData = {
-        // Use a flattened structure for easy querying
+      // Data to be merged into the Teacher's profile and User document
+      final assignmentUpdate = {
         'current_assignment': {
           'class_id': classId,
           'class_name': className,
           'division_id': divRef.id,
           'division_name': divisionName,
         },
-        'is_class_teacher': true,
+        'is_class_teacher': true, // This enables the filter we created earlier
         'last_assignment_date': FieldValue.serverTimestamp(),
       };
 
@@ -178,10 +170,18 @@ class AdminProvider with ChangeNotifier {
       };
 
       // --- EXECUTE BATCH ---
+
+      // Create the new division document
       batch.set(divRef, divisionData);
-      batch.update(teacherRef, teacherUpdateData);
+
+      // Update existing teacher profile (Merge prevents deleting existing bio/phone/etc)
+      batch.set(teacherRef, assignmentUpdate, SetOptions(merge: true));
+
+      // Update existing user document (Merge prevents deleting login credentials)
+      batch.set(userRef, assignmentUpdate, SetOptions(merge: true));
+
+      // Create activity log
       batch.set(logRef, logData);
-      batch.update(userRef, usersData);
 
       await batch.commit();
 
@@ -190,7 +190,6 @@ class AdminProvider with ChangeNotifier {
 
     } catch (e) {
       debugPrint("❌ Error in assignment batch: $e");
-      // Optionally: show a Toast or SnackBar here to inform the user
       rethrow;
     } finally {
       isLoading = false;
@@ -205,10 +204,27 @@ class AdminProvider with ChangeNotifier {
     required String userName,
   }) async {
     if (isLoading) return;
-    isLoading = true;
-    notifyListeners();
+
+    final String phone = phoneCtrl.text.trim();
 
     try {
+      // 1. Check for duplicate phone number
+      final phoneCheck = await fireStore
+          .collection('users')
+          .where('phone', isEqualTo: phone)
+          .get();
+
+      // If a document exists and it's not the one we are currently editing
+      if (phoneCheck.docs.isNotEmpty) {
+        final existingUserId = phoneCheck.docs.first.id;
+        if (docId == null || existingUserId != docId) {
+          throw "The phone number $phone is already registered to another staff member.";
+        }
+      }
+
+      isLoading = true;
+      notifyListeners();
+
       final batch = fireStore.batch();
       final bool isEditing = docId != null;
       final String targetId = docId ?? "SF${DateTime.now().millisecondsSinceEpoch}";
@@ -220,10 +236,12 @@ class AdminProvider with ChangeNotifier {
       final userData = {
         "uid": targetId,
         "name": nameCtrl.text.trim(),
-        "phone": phoneCtrl.text.trim(),
+        "phone": phone,
         "role": selectedRole,
         "password": passwordCtrl.text.trim(),
         "status": status,
+
+        if (selectedRole == 'teacher' && !isEditing) "is_class_teacher": false,
         "updatedAt": FieldValue.serverTimestamp(),
         if (!isEditing) ...{
           "createdAt": FieldValue.serverTimestamp(),
@@ -235,29 +253,22 @@ class AdminProvider with ChangeNotifier {
       final profileData = {
         "uid": targetId,
         "name": nameCtrl.text.trim(),
-        "phone": phoneCtrl.text.trim(),
+        "phone": phone,
         "role": selectedRole,
         "password": passwordCtrl.text.trim(),
+        "is_class_teacher": false,
         "gender": selectedGender,
         "qualification": selectedQual,
         "total_experience": int.tryParse(expCtrl.text) ?? 0,
         "joining_date": joiningDate,
-        "dob": dob,           // 👈 Added
-        "age": int.tryParse(ageCtrl.text) ?? 0, // 👈 Added
-        "aadhar": aadharCtrl.text.trim(),       // 👈 Added
+        "dob": dob,
+        "age": int.tryParse(ageCtrl.text) ?? 0,
+        "aadhar": aadharCtrl.text.trim(),
         "address": addressCtrl.text.trim(),
         "status": status,
         "updatedAt": FieldValue.serverTimestamp(),
+        if (selectedRole == 'teacher' && !isEditing) "is_class_teacher": false,
         if (!isEditing) "createdAt": FieldValue.serverTimestamp(),
-        if (selectedRole == 'teacher') ...{
-          "designation": selectedDesignation,
-          "is_class_teacher":false,
-          // Ensure this is being treated as a List of Maps
-          "subjects": selectedSubjects.map((e) => {
-            "id": e['id'],
-            "name": e['name'],
-          }).toList(),
-        },
       };
 
       batch.set(userRef, userData, SetOptions(merge: true));
@@ -280,8 +291,8 @@ class AdminProvider with ChangeNotifier {
       clearStaffForm();
 
     } catch (e) {
-      debugPrint("❌ Firestore Batch Error: $e");
-      rethrow;
+      debugPrint("❌ Save Staff Error: $e");
+      rethrow; // This allows the UI to catch the error and show the SnackBar
     } finally {
       isLoading = false;
       notifyListeners();
@@ -303,7 +314,6 @@ class AdminProvider with ChangeNotifier {
     selectedGender = null;
     selectedDesignation = null;
     selectedQual = null;
-    selectedSubjects = [];
     joiningDate = null;
     aadharCtrl.clear();
     ageCtrl.clear();
@@ -442,10 +452,15 @@ class AdminProvider with ChangeNotifier {
 
   Future<void> fetchAllTeachers() async {
     try {
-      // Note: Ensure collection name 'staff_profiles' matches your DB
+      isLoading = true;
+      notifyListeners();
+
+      // Only fetch teachers where is_class_teacher is NOT true (or doesn't exist)
       final snapshot = await FirebaseFirestore.instance
           .collection('staff_profiles')
           .where('role', isEqualTo: 'teacher')
+      // Filter: only get teachers who haven't been assigned yet
+          .where('is_class_teacher', isNotEqualTo: true)
           .get();
 
       allTeachers = snapshot.docs.map((doc) => {
@@ -455,7 +470,10 @@ class AdminProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("Error fetching teachers: $e");
+      debugPrint("Error fetching available teachers: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -463,7 +481,7 @@ class AdminProvider with ChangeNotifier {
     required String divisionId,
     required String classId,
     required String academicYearId,
-    required String teacherId, // Added to clear teacher profile
+    required String teacherId,
     required String adminId,
     required String adminName,
   }) async {
@@ -473,29 +491,36 @@ class AdminProvider with ChangeNotifier {
 
       final batch = fireStore.batch();
 
-      // 1. Division Reference
+      // 1. References
       DocumentReference divRef = fireStore.collection('divisions').doc(divisionId);
-
-      // 2. Teacher Reference
       DocumentReference teacherRef = fireStore.collection('staff_profiles').doc(teacherId);
-
-      // 3. Log Reference
+      DocumentReference userRef = fireStore.collection('users').doc(teacherId); // 👈 Added
       DocumentReference logRef = fireStore.collection('activity_logs').doc();
 
-      // --- EXECUTE BATCH ---
-      batch.delete(divRef);
-
-      // Reset teacher's assignment fields
-      batch.update(teacherRef, {
+      // --- DATA TO CLEAR ---
+      final clearAssignment = {
         'current_assignment': FieldValue.delete(),
         'is_class_teacher': false,
-      });
+        'division_id': FieldValue.delete(), // Clear any top-level IDs you added
+      };
 
-      // Create Log
+      // --- EXECUTE BATCH ---
+
+      // Delete the division document
+      batch.delete(divRef);
+
+      // Reset teacher profile (Staff collection)
+      batch.set(teacherRef, clearAssignment, SetOptions(merge: true));
+
+      // Reset user document (Users collection) - 👈 Added for consistency
+      batch.set(userRef, clearAssignment, SetOptions(merge: true));
+
+      // Create Activity Log
       batch.set(logRef, {
         'action': 'DELETE_DIVISION',
-        'description': '$adminName deleted a division. Teacher $teacherId unassigned.',
+        'description': '$adminName deleted a division. Teacher $teacherId was unassigned.',
         'done_by_id': adminId,
+        'done_by_name': adminName,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
@@ -506,6 +531,7 @@ class AdminProvider with ChangeNotifier {
 
     } catch (e) {
       debugPrint("❌ Error deleting division: $e");
+      rethrow; // Rethrow so the UI can handle the error if needed
     } finally {
       isLoading = false;
       notifyListeners();

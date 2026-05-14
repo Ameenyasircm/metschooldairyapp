@@ -385,7 +385,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   Navigator.pop(context); // Close Dialog
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F766E),
+                  backgroundColor: primaryBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),

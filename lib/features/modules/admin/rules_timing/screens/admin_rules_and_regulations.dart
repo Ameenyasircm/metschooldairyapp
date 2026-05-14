@@ -22,6 +22,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
+    Color primaryBlue = Color(0xFF031937);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
@@ -31,7 +32,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
 
         }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Rules and Regulations"),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
         actions: [
         ],
@@ -98,7 +99,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF0F766E),
+                    foregroundColor: primaryBlue,
                     side: const BorderSide(color: Color(0xFF0F766E)),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 14),
@@ -110,7 +111,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
                 const SizedBox(width: 20),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F766E),
+                    backgroundColor: primaryBlue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 14),
@@ -182,6 +183,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
   /// 🔹 ADD / EDIT DIALOG
   void _showRuleDialog(BuildContext context, AdminProvider provider,
       {int? index, String initialText = ""}) {
+    Color primaryBlue = Color(0xFF031937);
     final controller = TextEditingController(text: initialText);
     final isEditing = index != null;
 
@@ -213,7 +215,7 @@ class _RulesAdminScreenState extends State<RulesAdminScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: primaryBlue,
               foregroundColor: Colors.white,
             ),
             onPressed: () {

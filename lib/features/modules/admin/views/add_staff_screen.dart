@@ -89,38 +89,26 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                           const SizedBox(height: 16),
                           Consumer<AdminProvider>(
                             builder: (contextss, val, child) {
-
-                              List<String> qualificationNames =
-                              val.qualificationList
+                              List<String> qualificationNames = val.qualificationList
                                   .map((e) => e['qualification'].toString())
                                   .toList();
 
                               return Row(
                                 children: [
-
                                   Expanded(
                                     child: _item(
-
                                       "Qualification",
-
                                       _dropdown(
-
                                         qualificationNames,
-
                                         val.selectedQual,
-
                                             (v) {
-
                                           val.selectedQual = v;
                                           val.notifyListeners();
-
                                         },
                                       ),
                                     ),
                                   ),
-
                                   const SizedBox(width: 12),
-
                                   Expanded(
                                     child: _item(
                                       "Experience (Yrs)",
@@ -143,31 +131,37 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                             children: [
                               Expanded(child: _item("Joining Date", _dateButton(context, prov))),
                               const SizedBox(width: 12),
-                              Expanded(child: _item("Portal Password", _field(prov.passwordCtrl, "Set password", Icons.key_outlined, isPassword: true))),
+                              Expanded(
+                                child: Consumer<AdminProvider>(
+                                  builder: (context, val, child) {
+                                    return _item(
+                                      "Portal Password",
+                                      _field(
+                                        val.passwordCtrl,
+                                        "Set password",
+                                        Icons.key_outlined,
+                                        isPassword: val.obscurePassword,
+                                        suffix: IconButton(
+                                          icon: Icon(
+                                            val.obscurePassword
+                                                ? Icons.visibility_off_outlined
+                                                : Icons.visibility_outlined,
+                                            size: 18,
+                                            color: secondaryBlue.withOpacity(0.6),
+                                          ),
+                                          onPressed: () => val.togglePasswordVisibility(),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
-
                     const SizedBox(width: 24),
-
-                    /// --- COLUMN 3: ACADEMIC ---
-                    Expanded(
-                      flex: 3,
-                      child: prov.selectedRole == 'teacher'
-                          ? _buildPanel(
-                        title: "Academic Mapping",
-                        subtitle: "Subject assignments",
-                        icon: Icons.school_rounded,
-                        children: [
-                          _item("Designation", _dropdown(['Teacher', 'Class Teacher'], prov.selectedDesignation, (v) => prov.selectedDesignation = v)),
-                          const SizedBox(height: 16),
-                          _item("Subjects Assignment", _buildSubjectGrid(prov)),
-                        ],
-                      )
-                          : _buildPlaceholder(),
-                    ),
                   ],
                 ),
               ),
@@ -238,18 +232,25 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String h, IconData i, {bool isNumber = false, bool isPassword = false, int maxLines = 1}) {
+// Updated _field to allow optional validation
+  Widget _field(TextEditingController c, String h, IconData i, {
+    bool isNumber = false,
+    bool isPassword = false,
+    int maxLines = 1,
+    Widget? suffix,
+    bool required = true, // 👈 Add this parameter
+  }) {
     return TextFormField(
       controller: c,
       obscureText: isPassword,
       maxLines: maxLines,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       style: const TextStyle(fontSize: 14, color: primaryBlue),
-      validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
-      decoration: _deco(h, i),
+      // 👈 Only validate if 'required' is true
+      validator: (v) => (required && (v == null || v.isEmpty)) ? "Required" : null,
+      decoration: _deco(h, i, suffix: suffix),
     );
   }
-
   Widget _dropdown(List<String> items, String? value, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
@@ -324,43 +325,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     ),
   );
 
-  Widget _buildSubjectGrid(AdminProvider prov) {
-    return Container(
-      height: 220,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
-      child: SingleChildScrollView(
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: prov.subjectsList.map((subject) {
-            final String subId = subject['id'].toString();
-            final String subName = subject['name'].toString();
-            final isSelected = prov.selectedSubjects.any((item) => item['id'] == subId);
-
-            return FilterChip(
-              label: Text(subName, style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : primaryBlue)),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  prov.selectedSubjects.add({"id": subId, "name": subName});
-                } else {
-                  prov.selectedSubjects.removeWhere((item) => item['id'] == subId);
-                }
-                prov.notifyListeners();
-              },
-              selectedColor: secondaryBlue,
-              checkmarkColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _deco(String hint, IconData? icon) => InputDecoration(
+  InputDecoration _deco(String hint, IconData? icon, {Widget? suffix}) => InputDecoration(
     prefixIcon: icon != null ? Icon(icon, size: 18, color: secondaryBlue.withOpacity(0.5)) : null,
+    suffixIcon: suffix,
     hintText: hint,
     isDense: true,
     filled: true,
@@ -370,49 +337,57 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: secondaryBlue, width: 1.5)),
   );
 
-  Widget _buildPlaceholder() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid)
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.lock_outline, color: Colors.grey.shade300, size: 40),
-          const SizedBox(height: 16),
-          const Text("Academic Mapping Restricted", textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
-          const Text("Please select 'Teacher' role to assign subjects.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildThemedFooter(AdminProvider prov) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey.shade200))
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           OutlinedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: prov.isLoading ? null : () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               side: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
-            child: const Text("Discard Changes", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+            child: const Text("Discard Changes",
+                style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
           ),
           const SizedBox(width: 16),
           ElevatedButton(
-            onPressed: () async {
-              if (_formKey.currentState!.validate() && prov.joiningDate != null) {
-                await prov.saveStaffFull(docId: widget.docId, userId: widget.userId, userName: widget.userName);
-                if (mounted) Navigator.pop(context);
+            onPressed: prov.isLoading
+                ? null
+                : () async {
+              bool isValid = _formKey.currentState!.validate();
+
+              if (isValid && prov.joiningDate != null) {
+                try {
+                  await prov.saveStaffFull(
+                      docId: widget.docId,
+                      userId: widget.userId,
+                      userName: widget.userName
+                  );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) {
+                    // This captures the "Already registered" error from the provider
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                        )
+                    );
+                  }
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please fill all required fields and select a joining date"))
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -420,8 +395,21 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 20),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,
+              disabledBackgroundColor: primaryBlue.withOpacity(0.6),
             ),
-            child: Text(widget.docId == null ? "Enroll Staff Member" : "Save Profile Changes", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: prov.isLoading
+                ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+                : Text(
+                widget.docId == null ? "Enroll Staff Member" : "Save Profile Changes",
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+            ),
           ),
         ],
       ),

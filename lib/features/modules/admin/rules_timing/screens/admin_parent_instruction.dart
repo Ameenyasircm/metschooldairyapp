@@ -22,6 +22,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
+    Color primaryBlue = Color(0xFF031937);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
@@ -31,7 +32,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
 
         }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Instructions to Parents"),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
         actions: [
           // 💡 TEMPORARY SEED BUTTON
@@ -107,7 +108,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF0F766E),
+                    foregroundColor: primaryBlue,
                     side: const BorderSide(color: Color(0xFF0F766E)),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 14),
@@ -173,6 +174,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
   /// 🔹 ADD / EDIT DIALOG
   void _showInstructionDialog(BuildContext context, AdminProvider provider,
       {int? index, String initialText = ""}) {
+    Color primaryBlue = Color(0xFF031937);
     final controller = TextEditingController(text: initialText);
     final isEditing = index != null;
 
@@ -204,7 +206,7 @@ class _ParentInstructionsAdminScreenState extends State<ParentInstructionsAdminS
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: primaryBlue,
               foregroundColor: Colors.white,
             ),
             onPressed: () {

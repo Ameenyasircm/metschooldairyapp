@@ -23,6 +23,7 @@ class _DivisionFeePageState extends State<DivisionFeePage> {
   final List<String> installments = ["Inst 1", "Inst 2", "Inst 3", "Inst 4"];
   String filterStatus = "ALL";
   String searchQuery = "";
+  Color primaryBlue = Color(0xFF031937);
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +43,9 @@ class _DivisionFeePageState extends State<DivisionFeePage> {
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
           ),
           bottom: TabBar(
-            labelColor: const Color(0xFF0F766E),
+            labelColor: primaryBlue,
             unselectedLabelColor:  Colors.blueAccent,
-            indicatorColor: const Color(0xFF0F766E),
+            indicatorColor: primaryBlue,
             indicatorWeight: 4,
             indicatorSize: TabBarIndicatorSize.label,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -125,7 +126,7 @@ class _DivisionFeePageState extends State<DivisionFeePage> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFF0F766E) : Colors.blueAccent,
+                        color: isSelected ? primaryBlue : Colors.blueAccent,
                       ),
                     ),
                   ),
@@ -202,6 +203,7 @@ class _EnhancedStudentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color primaryBlue = Color(0xFF031937);
     Map fees = data['fees'] ?? {};
     bool isPaid = fees.containsKey(currentInst);
     var paymentDetails = fees[currentInst];
@@ -306,8 +308,8 @@ class _EnhancedStudentRow extends StatelessWidget {
             ElevatedButton(
               onPressed: () => _showPaymentModal(context, isPaid,userId,userName),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isPaid ? Colors.white : const Color(0xFF0F766E),
-                foregroundColor: isPaid ? const Color(0xFF0F766E) : Colors.white,
+                backgroundColor: isPaid ? Colors.white : primaryBlue,
+                foregroundColor: isPaid ? primaryBlue : Colors.white,
                 elevation: 0,
                 side: isPaid ? const BorderSide(color: Color(0xFF0F766E)) : BorderSide.none,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
@@ -325,6 +327,7 @@ class _EnhancedStudentRow extends StatelessWidget {
   }
 
   void _showPaymentModal(BuildContext context, bool isPaid,String userId,String userName) {
+    Color primaryBlue = Color(0xFF031937);
     DateTime selectedDate = DateTime.now();
     TextEditingController remarkCtrl = TextEditingController(
       text: isPaid ? data['fees'][currentInst]['remark'] : "",
@@ -393,7 +396,7 @@ class _EnhancedStudentRow extends StatelessWidget {
               ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F766E),
+                backgroundColor: primaryBlue,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {

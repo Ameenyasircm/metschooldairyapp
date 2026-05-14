@@ -25,276 +25,174 @@ class DivisionDashboard extends StatefulWidget {
   State<DivisionDashboard> createState() => _DivisionDashboardState();
 }
 
-class _DivisionDashboardState extends State<DivisionDashboard> {
+class _DivisionDashboardState extends State<DivisionDashboard> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  // Theme Colors
-  final Color primaryBlue = const Color(0xFF031937);
-  final Color secondaryBlue = const Color(0xFF003865);
-  final Color bgColor = const Color(0xFFF8FAFC);
+  // Dropdown States
+  String? selectedTeacherId;
+  String? selectedTeacherName;
+  String? selectedSubject;
+
+  // Modern Web Palette
+  final Color primaryDark = const Color(0xFF0F172A); // Slate 900
+  final Color accentBlue = const Color(0xFF2563EB); // Blue 600
+  final Color bgSlate = const Color(0xFFF8FAFC);   // Slate 50
+  final Color borderGray = const Color(0xFFE2E8F0); // Slate 200
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   void dispose() {
+    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  // --- LOGIC PRESERVED ---
-  Future<void> _bulkEnroll(List<String> selectedIds, List<Map<String, dynamic>> studentDetails) async {
-    final firestore = FirebaseFirestore.instance;
-    final batch = firestore.batch();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(child: CircularProgressIndicator(color: primaryBlue)),
-    );
-
+  // --- PRESERVED LOGIC: SUBJECT TEACHER ASSIGNMENT ---
+  Future<void> _assignTeacherToSubject({bool isEdit = false}) async {
+    if (selectedTeacherId == null || selectedSubject == null) return;
     try {
-      for (var student in studentDetails) {
-        final String sId = student['id'];
-        final existing = await firestore
-            .collection('enrollments')
-            .where('student_id', isEqualTo: sId)
-            .where('academic_year_id', isEqualTo: widget.academicYearId)
-            .get();
-
-        if (existing.docs.isNotEmpty) continue;
-
-        DocumentReference enrollRef = firestore.collection('enrollments').doc();
-        batch.set(enrollRef, {
-          "student_id": sId,
-          "student_name": student['name'],
-          "academic_year_id": widget.academicYearId,
-          "class_id": widget.classId,
-          "class_name": widget.className,
-          "division_id": widget.divisionId,
-          "division_name": widget.divisionName,
-          "enrollment_id": student['admissionId'] ?? "ENR-${DateTime.now().millisecondsSinceEpoch}",
-          "parent_phone": student['phone'] ?? "",
-          "parent_id": student['parentId'] ?? "",
-          "roll_number": null,
-          "status": "active",
-          "createdAt": FieldValue.serverTimestamp(),
-          "createdById": widget.classTeacherId,
-          "createdByName": widget.classTeacherName,
-        });
-
-        DocumentReference studentRef = firestore.collection('students').doc(sId);
-        batch.update(studentRef, {
-          "isEnrolled": true,
-          "current_academic_year": widget.academicYearId,
-          "current_class_id": widget.classId,
-          "enrollment_details": {
-            "enrollment_doc_id": enrollRef.id,
-            "enrolled_at": FieldValue.serverTimestamp(),
-          }
-        });
-      }
-
-      await batch.commit();
-      if (mounted) {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enrollment completed successfully!"), backgroundColor: Colors.green),
-      );
-    } catch (e) {
-      if (mounted) Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  Future<void> autoAssignRollNumbers(String divisionId, String academicYearId) async {
-    final firestore = FirebaseFirestore.instance;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(child: CircularProgressIndicator(color: primaryBlue)),
-    );
-
-    try {
-      final querySnapshot = await firestore.collection('enrollments')
-          .where('division_id', isEqualTo: divisionId)
-          .where('academic_year_id', isEqualTo: academicYearId)
+      final subjectSnap = await FirebaseFirestore.instance
+          .collection('subjects')
+          .where('name', isEqualTo: selectedSubject)
+          .limit(1)
           .get();
 
-      List<Map<String, dynamic>> enrollmentList = [];
-      for (var doc in querySnapshot.docs) {
-        var studentDoc = await firestore.collection('students').doc(doc['student_id']).get();
-        String name = (studentDoc.data() as Map<String, dynamic>?)?['name'] ?? "ZZZ";
-        enrollmentList.add({'ref': doc.reference, 'name': name.toLowerCase()});
+      if (subjectSnap.docs.isEmpty) {
+        _showSnackBar("Subject details not found in master list", Colors.red);
+        return;
       }
 
-      enrollmentList.sort((a, b) => a['name'].compareTo(b['name']));
+      final String subjectId = subjectSnap.docs.first.id;
+      final String assignmentKey = "${widget.divisionId}_$subjectId";
 
-      final batch = firestore.batch();
-      for (int i = 0; i < enrollmentList.length; i++) {
-        batch.update(enrollmentList[i]['ref'], {'roll_number': (i + 1)});
+      final divDoc = await FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId).get();
+      final existingTeachers = (divDoc.data() as Map<String, dynamic>)['subject_teachers'] ?? {};
+
+      if (!isEdit && existingTeachers.containsKey(selectedSubject)) {
+        _showSnackBar("$selectedSubject is already assigned", Colors.orange);
+        return;
       }
+
+      final batch = FirebaseFirestore.instance.batch();
+      DocumentReference divRef = FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId);
+      DocumentReference assignRef = FirebaseFirestore.instance.collection('subject_assignments').doc(assignmentKey);
+
+      batch.update(divRef, {
+        'subject_teachers.$selectedSubject': {
+          'teacher_id': selectedTeacherId,
+          'teacher_name': selectedTeacherName,
+          'subject_id': subjectId,
+          'assigned_at': FieldValue.serverTimestamp(),
+        }
+      });
+
+      batch.set(assignRef, {
+        'assignment_id': assignmentKey,
+        'teacher_id': selectedTeacherId,
+        'teacher_name': selectedTeacherName,
+        'subject_id': subjectId,
+        'subject_name': selectedSubject,
+        'division_id': widget.divisionId,
+        'division_name': widget.divisionName,
+        'class_id': widget.classId,
+        'academic_year_id': widget.academicYearId,
+        'type': 'subject_teacher',
+        'updated_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       await batch.commit();
       if (mounted) Navigator.pop(context);
+      _showSnackBar("Assignment Successful", Colors.green);
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      debugPrint("Error: $e");
     }
   }
 
-  void _showEnrollmentSelector() {
-    List<String> selectedStudentIds = [];
-    List<Map<String, dynamic>> selectedDetails = [];
+  // --- PRESERVED LOGIC: REMOVE SUBJECT TEACHER ---
+  Future<void> _removeSubjectTeacher(String subjectName, String teacherId) async {
+    try {
+      final subjectSnap = await FirebaseFirestore.instance
+          .collection('subjects')
+          .where('name', isEqualTo: subjectName)
+          .limit(1)
+          .get();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.8,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: StatefulBuilder(builder: (context, setModalState) {
-            return Column(
-              children: [
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-                const SizedBox(height: 20),
-                const Text("Enroll Students", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('students')
-                        .where('classId', isEqualTo: widget.classId)
-                        .where('isEnrolled', isEqualTo: false)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                      final students = snapshot.data!.docs;
-                      if (students.isEmpty) return const Center(child: Text("All students are enrolled."));
+      final batch = FirebaseFirestore.instance.batch();
+      batch.update(FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId), {
+        'subject_teachers.$subjectName': FieldValue.delete()
+      });
 
-                      return ListView.builder(
-                        itemCount: students.length,
-                        itemBuilder: (context, index) {
-                          final s = students[index].data() as Map<String, dynamic>;
-                          final sId = students[index].id;
-                          final isSelected = selectedStudentIds.contains(sId);
+      if (subjectSnap.docs.isNotEmpty) {
+        String subId = subjectSnap.docs.first.id;
+        batch.delete(FirebaseFirestore.instance.collection('subject_assignments').doc("${widget.divisionId}_$subId"));
+      }
 
-                          return CheckboxListTile(
-                            activeColor: secondaryBlue,
-                            title: Text(s['name'] ?? "Unknown", style: const TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: Text("ADM: ${s['admissionId']}"),
-                            value: isSelected,
-                            onChanged: (bool? value) {
-                              setModalState(() {
-                                if (value == true) {
-                                  selectedStudentIds.add(sId);
-                                  selectedDetails.add({...s, 'id': sId});
-                                } else {
-                                  selectedStudentIds.remove(sId);
-                                  selectedDetails.removeWhere((item) => item['id'] == sId);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: selectedStudentIds.isEmpty ? null : () => _bulkEnroll(selectedStudentIds, selectedDetails),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryBlue,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    ),
-                    child: const Text("Enroll Selected", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                )
-              ],
-            );
-          }),
-        );
-      },
-    );
+      await batch.commit();
+      _showSnackBar("Assignment removed", Colors.blueGrey);
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
   }
 
-  // --- UI BUILDING ---
+  // --- PRESERVED LOGIC: UPDATE CLASS TEACHER ---
+  Future<void> _updateClassTeacher(String newTeacherId, String newTeacherName) async {
+    try {
+      final divSnap = await FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId).get();
+      final String oldTeacherId = divSnap.get('class_teacher_id');
+      final batch = FirebaseFirestore.instance.batch();
+
+      batch.update(FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId), {
+        'class_teacher_id': newTeacherId,
+        'class_teacher_name': newTeacherName,
+      });
+
+      final removeFlag = {'current_assignment': FieldValue.delete(), 'is_class_teacher': false};
+      batch.set(FirebaseFirestore.instance.collection('staff_profiles').doc(oldTeacherId), removeFlag, SetOptions(merge: true));
+      batch.set(FirebaseFirestore.instance.collection('users').doc(oldTeacherId), removeFlag, SetOptions(merge: true));
+
+      final addFlag = {
+        'current_assignment': {
+          'class_id': widget.classId,
+          'class_name': widget.className,
+          'division_id': widget.divisionId,
+          'division_name': widget.divisionName,
+        },
+        'is_class_teacher': true,
+      };
+      batch.set(FirebaseFirestore.instance.collection('staff_profiles').doc(newTeacherId), addFlag, SetOptions(merge: true));
+      batch.set(FirebaseFirestore.instance.collection('users').doc(newTeacherId), addFlag, SetOptions(merge: true));
+
+      await batch.commit();
+      _showSnackBar("Class Teacher Updated", Colors.green);
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isWeb = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Division ${widget.divisionName}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryBlue)),
-            Text("Class: ${widget.className}", style: TextStyle(fontSize: 12, color: primaryBlue.withOpacity(0.6))),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: "Auto-Assign Roll Numbers",
-            icon: Icon(Icons.sort_by_alpha_rounded, color: primaryBlue),
-            onPressed: () async {
-              bool? confirm = await _showConfirmDialog();
-              if (confirm == true) {
-                await autoAssignRollNumbers(widget.divisionId, widget.academicYearId);
-              }
-            },
-          ),
-          const SizedBox(width: 10),
-        ],
-      ),
+      backgroundColor: bgSlate,
+      appBar: _buildWebAppBar(),
       body: Column(
         children: [
-          _buildActionHeader(),
+          _buildNavigationHeader(),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('enrollments')
-                  .where('academic_year_id', isEqualTo: widget.academicYearId)
-                  .where('class_id', isEqualTo: widget.classId)
-                  .where('division_id', isEqualTo: widget.divisionId)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) return const Center(child: Text("Error loading enrollments"));
-                if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-
-                var docs = snapshot.data!.docs;
-                if (_searchQuery.isNotEmpty) {
-                  docs = docs.where((d) => d['enrollment_id'].toString().toLowerCase().contains(_searchQuery)).toList();
-                }
-
-                if (docs.isEmpty) return _emptyState();
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    final enrollmentData = docs[index].data() as Map<String, dynamic>;
-                    return _studentCard(enrollmentData);
-                  },
-                );
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildStudentSection(isWeb),
+                _buildManagementSection(isWeb),
+              ],
             ),
           ),
         ],
@@ -302,47 +200,85 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     );
   }
 
-  Widget _buildActionHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-      ),
-      child: Row(
+  PreferredSizeWidget _buildWebAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(icon: Icon(Icons.arrow_back, color: primaryDark), onPressed: () => Navigator.pop(context)),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("${widget.className} - ${widget.divisionName}",
+              style: TextStyle(color: primaryDark, fontWeight: FontWeight.bold, fontSize: 18)),
+          Text("Academic Period: ${widget.academicYearId}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
+
+    );
+  }
+
+  Widget _buildNavigationHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: borderGray)),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: accentBlue,
+        unselectedLabelColor: Colors.blueAccent,
+        indicatorColor: accentBlue,
+        indicatorWeight: 3,
+        tabs: const [
+          Tab(text: "STUDENTS"),
+          Tab(text: "FACULTY & SUBJECTS"),
+        ],
+      ),
+    );
+  }
+
+  // --- ENHANCED STUDENT VIEW ---
+  Widget _buildStudentSection(bool isWeb) {
+    return Padding(
+      padding: EdgeInsets.all(isWeb ? 30 : 15),
+      child: Column(
+        children: [
+          _buildSearchAndActionHeader(),
+          const SizedBox(height: 20),
           Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
-              decoration: InputDecoration(
-                hintText: "Search Admission No...",
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                filled: true,
-                fillColor: bgColor,
-                contentPadding: EdgeInsets.zero,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          InkWell(
-            onTap: _showEnrollmentSelector,
-            borderRadius: BorderRadius.circular(15),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
-                color: secondaryBlue,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [BoxShadow(color: secondaryBlue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: borderGray),
               ),
-              child: const Row(
-                children: [
-                  Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 18),
-                  SizedBox(width: 8),
-                  Text("Enroll", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ],
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('enrollments').where('division_id', isEqualTo: widget.divisionId).snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                  var docs = snapshot.data!.docs.where((d) {
+                    final name = d['student_name'].toString().toLowerCase();
+                    final enroll = d['enrollment_id'].toString().toLowerCase();
+                    return name.contains(_searchQuery) || enroll.contains(_searchQuery);
+                  }).toList();
+
+                  if (docs.isEmpty) return _buildEmptyState("No students found in this division");
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    itemCount: docs.length,
+                    separatorBuilder: (context, index) => Divider(height: 1, color: borderGray),
+                    itemBuilder: (context, i) {
+                      var d = docs[i].data() as Map<String, dynamic>;
+                      return ListTile(
+                        leading: CircleAvatar(backgroundColor: bgSlate, child: Text("${i+1}", style: TextStyle(color: accentBlue, fontSize: 12))),
+                        title: Text(d['student_name'], style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text("Enrollment ID: ${d['enrollment_id']}"),
+                        trailing: Text("Roll: ${d['roll_number'] ?? '-'}", style: TextStyle(color: accentBlue, fontWeight: FontWeight.bold)),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ),
@@ -351,75 +287,243 @@ class _DivisionDashboardState extends State<DivisionDashboard> {
     );
   }
 
-  Widget _studentCard(Map<String, dynamic> enrollData) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('students').doc(enrollData['student_id']).get(),
-      builder: (context, studentSnap) {
-        String studentName = studentSnap.hasData && studentSnap.data!.exists
-            ? (studentSnap.data!.data() as Map<String, dynamic>)['name'] ?? "No Name"
-            : "Loading...";
-
-        return Container(
-          margin: const EdgeInsets.only(top: 15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))],
+  Widget _buildSearchAndActionHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: borderGray)),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: TextField(
+              onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+              decoration: const InputDecoration(hintText: "Search students...", prefixIcon: Icon(Icons.search, size: 20), border: InputBorder.none),
+            ),
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            leading: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: secondaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+        ),
+        const SizedBox(width: 15),
+
+      ],
+    );
+  }
+
+  // --- ENHANCED MANAGEMENT SECTION ---
+  Widget _buildManagementSection(bool isWeb) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('divisions').doc(widget.divisionId).snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        var data = snapshot.data!.data() as Map<String, dynamic>;
+        Map<String, dynamic> subjectMap = data['subject_teachers'] ?? {};
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(isWeb ? 30 : 15),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isWeb) _buildWebSidebar(data),
+              if (isWeb) const SizedBox(width: 30),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!isWeb) _buildMobileTeacherCard(data),
+                    const SizedBox(height: 10),
+                    _buildSectionTitle("Subject Specialists", () => _showSubjectDialog()),
+                    const SizedBox(height: 15),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isWeb ? 3 : 1,
+                        childAspectRatio: isWeb ? 2.5 : 4,
+                        crossAxisSpacing: 15,
+                        mainAxisSpacing: 15,
+                      ),
+                      itemCount: subjectMap.length,
+                      itemBuilder: (context, index) {
+                        String key = subjectMap.keys.elementAt(index);
+                        return _buildSubjectGridItem(key, subjectMap[key]);
+                      },
+                    ),
+                  ],
+                ),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                enrollData['roll_number']?.toString() ?? "-",
-                style: TextStyle(color: secondaryBlue, fontWeight: FontWeight.w900, fontSize: 18),
-              ),
-            ),
-            title: Text(studentName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryBlue)),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text("ADM: ${enrollData['enrollment_id']}", style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _emptyState() {
-    return Center(
+  Widget _buildWebSidebar(Map<String, dynamic> data) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: primaryDark, borderRadius: BorderRadius.circular(16)),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.folder_open_rounded, size: 80, color: Colors.grey.shade200),
-          const SizedBox(height: 16),
-          Text("No students found", style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w600)),
+          const CircleAvatar(radius: 35, backgroundColor: Colors.white10, child: Icon(Icons.person, color: Colors.white, size: 30)),
+          const SizedBox(height: 15),
+          Text(data['class_teacher_name'] ?? "-", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text("Primary Class Teacher", style: TextStyle(color: Colors.white60, fontSize: 12)),
+
+
+          const SizedBox(height: 30),
+          ElevatedButton(
+            onPressed: () => _showClassTeacherPicker(),
+            style: ElevatedButton.styleFrom(backgroundColor: accentBlue, minimumSize: const Size(double.infinity, 45), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: const Text("Replace Teacher", style: TextStyle(color: Colors.white)),
+          )
         ],
       ),
     );
   }
 
-  Future<bool?> _showConfirmDialog() {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Assign Roll Numbers?", style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text("This will sort all enrolled students alphabetically and assign sequence numbers (1, 2, 3...)."),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text("Assign", style: TextStyle(color: secondaryBlue, fontWeight: FontWeight.bold)),
+  Widget _buildMobileTeacherCard(Map<String, dynamic> data) {
+    return Card(
+      color: primaryDark,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        title: Text(data['class_teacher_name'] ?? "-", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        subtitle: const Text("Class Teacher", style: TextStyle(color: Colors.white70)),
+        trailing: IconButton(icon: const Icon(Icons.edit, color: Colors.white), onPressed: () => _showClassTeacherPicker()),
+      ),
+    );
+  }
+
+  Widget _buildSubjectGridItem(String subject, dynamic details) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderGray)),
+      child: Row(
+        children: [
+          Container(height: 40, width: 40, decoration: BoxDecoration(color: bgSlate, borderRadius: BorderRadius.circular(8)), child: Icon(Icons.book_outlined, color: accentBlue, size: 20)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(subject, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(details['teacher_name'], style: const TextStyle(color: Colors.grey, fontSize: 12), overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_horiz, size: 20),
+            itemBuilder: (context) => [
+              PopupMenuItem(child: const Text("Edit"), onTap: () => Future.delayed(Duration.zero, () => _showSubjectDialog(editSub: subject, editId: details['teacher_id']))),
+              PopupMenuItem(child: const Text("Remove", style: TextStyle(color: Colors.red)), onTap: () => _removeSubjectTeacher(subject, details['teacher_id'])),
+            ],
+          )
         ],
+      ),
+    );
+  }
+
+  // --- HELPERS ---
+  Widget _buildSectionTitle(String title, VoidCallback onAdd) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: TextStyle(color: primaryDark, fontWeight: FontWeight.bold, fontSize: 18)),
+        TextButton.icon(onPressed: onAdd, icon: const Icon(Icons.add_circle_outline, size: 20), label: const Text("Assign New"))
+      ],
+    );
+  }
+
+  Widget _sidebarInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(children: [Icon(icon, color: Colors.white38, size: 16), const SizedBox(width: 10), Text(text, style: const TextStyle(color: Colors.white70, fontSize: 13))]),
+    );
+  }
+
+  Widget _buildEmptyState(String msg) => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.folder_open, size: 50, color: borderGray), const SizedBox(height: 10), Text(msg, style: TextStyle(color: Colors.grey.shade400))]));
+
+  void _showSnackBar(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating));
+  }
+
+  // --- REUSED DIALOGS ---
+  void _showSubjectDialog({String? editSub, String? editId}) {
+    selectedSubject = editSub;
+    selectedTeacherId = editId;
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setST) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text(editSub == null ? "Assign Specialist" : "Edit $editSub Instructor"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('staff_profiles').where('role', isEqualTo: 'teacher').snapshots(),
+                builder: (context, snap) {
+                  if (!snap.hasData) return const LinearProgressIndicator();
+                  return DropdownButtonFormField<String>(
+                    value: selectedTeacherId,
+                    decoration: const InputDecoration(labelText: "Select Teacher"),
+                    items: snap.data!.docs.map((d) => DropdownMenuItem(value: d.id, child: Text(d['name']))).toList(),
+                    onChanged: (v) => setST(() {
+                      selectedTeacherId = v;
+                      selectedTeacherName = snap.data!.docs.firstWhere((d) => d.id == v)['name'];
+                    }),
+                  );
+                },
+              ),
+              const SizedBox(height: 15),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('subjects').snapshots(),
+                builder: (context, snap) {
+                  if (!snap.hasData) return const LinearProgressIndicator();
+                  return DropdownButtonFormField<String>(
+                    value: selectedSubject,
+                    decoration: const InputDecoration(labelText: "Select Subject"),
+                    items: snap.data!.docs.map((d) => DropdownMenuItem(value: d['name'].toString(), child: Text(d['name']))).toList(),
+                    onChanged: editSub != null ? null : (v) => setST(() => selectedSubject = v),
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            ElevatedButton(onPressed: () => _assignTeacherToSubject(isEdit: editSub != null), child: const Text("Save Assignment")),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showClassTeacherPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        child: Column(
+          children: [
+            const Padding(padding: EdgeInsets.all(20), child: Text("Promote New Class Teacher", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('staff_profiles').where('role', isEqualTo: 'teacher').snapshots(),
+                builder: (context, snap) {
+                  if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                  return ListView(
+                    children: snap.data!.docs.map((d) => ListTile(
+                      leading: const CircleAvatar(child: Icon(Icons.person)),
+                      title: Text(d['name']),
+                      onTap: () { _updateClassTeacher(d.id, d['name']); Navigator.pop(context); },
+                    )).toList(),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

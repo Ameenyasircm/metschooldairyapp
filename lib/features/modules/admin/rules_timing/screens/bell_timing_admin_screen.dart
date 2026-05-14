@@ -22,7 +22,7 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
-
+    Color primaryBlue = Color(0xFF031937);
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
@@ -31,7 +31,7 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
 
         }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
         title: const Text("Bell Timing"),
-        backgroundColor: const Color(0xFF0F766E),
+        backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
       ),
       body: provider.isLoading
@@ -154,7 +154,7 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
               width: 200,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F766E),
+                  backgroundColor: primaryBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -295,6 +295,7 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
       Function(String) onSave,
       ) {
     final controller = TextEditingController(text: initial);
+    Color primaryBlue = Color(0xFF031937);
 
     showDialog(
       context: context,
@@ -316,7 +317,7 @@ class _BellTimingAdminScreenState extends State<BellTimingAdminScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
+              backgroundColor: primaryBlue,
               foregroundColor: Colors.white,
             ),
             onPressed: () {

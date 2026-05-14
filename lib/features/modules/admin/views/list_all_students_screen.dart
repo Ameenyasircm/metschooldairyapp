@@ -401,7 +401,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: const Color(0xFF0F766E).withOpacity(0.1),
+                    backgroundColor: primaryBlue.withOpacity(0.1),
                     child: Text(data['name']?[0].toUpperCase() ?? "S", style: const TextStyle(color: Color(0xFF0F766E), fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
@@ -566,7 +566,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: const Color(0xFF0F766E),
+                  backgroundColor: primaryBlue,
                   child: Text(data['name']?[0].toUpperCase() ?? "S",
                       style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
@@ -582,7 +582,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   ],
                 ),
                 const Spacer(),
-                _badge("ADMISSION ID: ${data['admissionId']}", const Color(0xFF0F766E)),
+                _badge("ADMISSION ID: ${data['admissionId']}", primaryBlue),
               ],
             ),
 
@@ -795,7 +795,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     tag: data['admissionId'] ?? 'profile',
                     child: CircleAvatar(
                       radius: 35,
-                      backgroundColor: const Color(0xFF0F766E),
+                      backgroundColor: primaryBlue,
                       child: Text(
                         data['name']?[0].toUpperCase() ?? "S",
                         style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
@@ -816,7 +816,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                           children: [
                             _badge("ID: ${data['admissionId']}", Colors.blueGrey),
                             const SizedBox(width: 8),
-                            _badge("CLASS ${data['className']}", const Color(0xFF0F766E)),
+                            _badge("CLASS ${data['className']}", primaryBlue),
                           ],
                         ),
                       ],
