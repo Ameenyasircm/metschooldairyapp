@@ -36,7 +36,7 @@ class HomeworkProvider extends ChangeNotifier {
     _divisionId = prefs.getString("divisionId");
     _divisionName = prefs.getString("divisionName");
     _teacherId = prefs.getString("staffId");
-    _teacherName = prefs.getString("staffName");
+    _teacherName = prefs.getString("name");
     _academicId = prefs.getString("academicYearId");
     _studentId =  prefs.getString("studentId");
     print('${prefs.getString("studentId")} JDJEDED ');

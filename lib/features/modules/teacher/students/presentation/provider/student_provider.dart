@@ -248,7 +248,7 @@ class StudentProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
 
       final staffId = prefs.getString("staffId")??'';
-      final staffName = prefs.getString("staffName")??'';
+      final staffName = prefs.getString("name")??'';
       final divisionName = prefs.getString("divisionName")??'';
       final divisionId = prefs.getString("divisionId")??'';
       final className = prefs.getString("className")??'';
@@ -381,7 +381,7 @@ class StudentProvider extends ChangeNotifier {
   Future<void> deleteStudent(String studentId, String remark) async {
     final prefs = await SharedPreferences.getInstance();
     final staffId = prefs.getString("staffId") ?? 'unknown';
-    final staffName = prefs.getString("staffName") ?? 'unknown';
+    final staffName = prefs.getString("name") ?? 'unknown';
 
     try {
       // 1. Fetch data before batch (as batch can't read)

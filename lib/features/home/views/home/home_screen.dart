@@ -708,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> {
       NavigationService.pushAndRemoveUntil(
         context,
         TeacherHomeScreen(
-          staffName: prefs.getString("staffName") ?? data['name'] ?? "",
+          staffName: prefs.getString("name") ?? data['name'] ?? "",
         ),
       );
     }
@@ -718,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
       NavigationService.pushAndRemoveUntil(
         context,
         TeacherHomeScreen(
-          staffName: prefs.getString("staffName") ?? data['name'] ?? "",
+          staffName: prefs.getString("name") ?? data['name'] ?? "",
         ),
       );
     } else {

@@ -6,8 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:met_school/core/service/cloudinary_service.dart';
 import 'package:met_school/core/theme/app_spacing.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'package:met_school/providers/academic_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../../teacher/home/viewmodels/teacher_home_viewmodel.dart';
 
 class AddStudentScreen extends StatefulWidget {
   final Map<String, dynamic>? initialData;
@@ -571,7 +574,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: primaryTeal)),
+      builder: (context) => const Center(child: CustomLoader()),
     );
 
     try {
@@ -710,6 +713,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       }
 
       await batch.commit();
+      await context.read<TeacherHomeViewModel>().fetchTeacherDashboardData();
 
       if (mounted) {
         Navigator.pop(context);

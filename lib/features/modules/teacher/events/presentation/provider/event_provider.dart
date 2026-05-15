@@ -98,7 +98,7 @@ class EventProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final staffId = prefs.getString("staffId") ?? '';
-      final staffName = prefs.getString("staffName") ?? '';
+      final staffName = prefs.getString("name") ?? '';
       final classId = prefs.getString("classId");
       final divisionId = prefs.getString("divisionId");
       final academicYearId = prefs.getString("academicYearId");
