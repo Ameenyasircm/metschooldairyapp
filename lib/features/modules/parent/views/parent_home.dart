@@ -317,12 +317,12 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 AppSpacing.h12,
 
                 /// 🔴 Fee
-                const Center(
-                  child: Text(
-                    "Fee Overdue ₹4,500",
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                // const Center(
+                //   child: Text(
+                //     "Fee Overdue ₹4,500",
+                //     style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                //   ),
+                // ),
 
                 AppSpacing.h12,
 

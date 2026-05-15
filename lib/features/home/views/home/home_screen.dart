@@ -179,56 +179,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ── Rotated Image Collage ─────────────────────────────────────────────────
   Widget _buildImageCollage() {
-    // Increased height to 220 so the dropped right image has plenty of room
-    return Container(
-      // color: Colors.red,
-      height: 220,
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Responsive sizes
+    final leftRightWidth = screenWidth * 0.32;
+    final leftRightHeight = leftRightWidth * 0.62;
+
+    final centerWidth = screenWidth * 0.21;
+    final centerHeight = centerWidth * 1.25;
+
+    return SizedBox(
+      height: screenWidth * 0.55,
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
         children: [
-          // 1. Left Image (Back layer)
+
+          // LEFT IMAGE
           Positioned(
-            left: 17,
-            top: 15, // Sits higher than the right image
+            left: screenWidth * 0.05,
+            top: screenWidth * 0.04,
             child: Transform.rotate(
-              angle: -14 * (math.pi / 180), // -14 degrees (steeper angle)
+              angle: -14 * (math.pi / 180),
               child: _buildCollageCard(
                 imagePath: 'assets/images/img1.png',
-                width: 130, // Landscape
-                height: 90,
+                width: leftRightWidth,
+                height: leftRightHeight,
               ),
             ),
           ),
 
-          // 2. Right Image (Back layer)
+          // RIGHT IMAGE
           Positioned(
-            right: 18,
-            top: 15, // Pushed significantly lower to match Figma
+            right: screenWidth * 0.04,
+            top: screenWidth * 0.04,
             child: Transform.rotate(
-              angle: -3 * (math.pi / 180), // rotate left
+              angle: -3 * (math.pi / 180),
               child: _buildCollageCard(
                 imagePath: 'assets/images/img3.png',
-                width: 130, // Exact landscape ratio from Figma
-                height: 90,
+                width: leftRightWidth,
+                height: leftRightHeight,
               ),
             ),
           ),
 
-          // 3. Center Image (Front layer!)
-          // Placed LAST in the children list so it renders ON TOP of the others
+          // CENTER IMAGE
           Positioned(
             top: 0,
             child: _buildCollageCard(
               imagePath: 'assets/images/img2.png',
-              width: 90,
-              height: 110, // Tallest, portrait ratio
+              width: centerWidth,
+              height: centerHeight,
             ),
           ),
         ],
       ),
     );
-  }  Widget _buildCollageCard({
+  }
+  Widget _buildCollageCard({
     required String imagePath,
     required double width,
     required double height,
