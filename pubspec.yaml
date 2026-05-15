@@ -61,6 +61,7 @@ dependencies:
   googleapis_auth: ^2.3.0
   image_picker: ^1.2.2
   image_cropper: ^12.2.1
+  fluttertoast: ^8.2.6
 
 
 dev_dependencies:

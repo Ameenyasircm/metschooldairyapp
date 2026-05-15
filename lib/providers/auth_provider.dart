@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/core/utils/navigation/navigation_helper.dart';
@@ -190,7 +191,7 @@ class AuthProvider with ChangeNotifier {
         SnackbarService().showError("Incorrect password.");
         return;
       }
-
+      await updateUserFcmToken(doc.id);
       final prefs = await SharedPreferences.getInstance();
 
       final isTeacher = data['is_teacher'] ?? false;
@@ -374,6 +375,34 @@ class AuthProvider with ChangeNotifier {
     return query.docs.isNotEmpty ? query.docs.first.id : null;
   }
 
+
+  Future<void> updateUserFcmToken(String userId) async {
+
+    try {
+
+      String? token =
+      await FirebaseMessaging.instance.getToken();
+
+      if (token == null) return;
+
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(userId)
+          .set({
+
+        "fcmId": token,
+        "lastTokenUpdatedAt":
+        FieldValue.serverTimestamp(),
+
+      }, SetOptions(merge: true));
+
+      debugPrint("FCM Token Updated");
+
+    } catch (e) {
+
+      debugPrint("FCM TOKEN ERROR : $e");
+    }
+  }
 
   void _showError(BuildContext context, String message) {
     if (context.mounted) {

@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis_auth/auth_io.dart'
+as gapis;
 import '../features/modules/admin/rules_timing/models/bell_timing_model.dart';
 import '../features/modules/admin/school_calaender/models/school_event_model.dart';
+import '../features/modules/admin/views/toast.dart';
 
 class AdminProvider with ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -941,4 +947,266 @@ class AdminProvider with ChangeNotifier {
     notifyListeners();
   }
 
+
+  /// ================================
+  /// NOTIFICATION
+  /// ================================
+
+  final TextEditingController
+  notificationTitleController =
+  TextEditingController();
+
+  final TextEditingController
+  notificationMessageController =
+  TextEditingController();
+
+  String selectedNotificationRole =
+      "PARENT";
+
+  bool notificationLoading = false;
+
+  /// SEND ADMIN NOTIFICATION
+  Future<void> sendAdminNotification(
+      BuildContext context) async {
+
+    if (notificationTitleController.text
+        .trim()
+        .isEmpty) {
+
+      showToast(
+        "Enter notification title",
+      );
+
+      return;
+    }
+
+    if (notificationMessageController.text
+        .trim()
+        .isEmpty) {
+
+      showToast(
+        "Enter notification message",
+      );
+
+      return;
+    }
+
+    try {
+
+      notificationLoading = true;
+      notifyListeners();
+
+      String notificationId =
+      DateTime.now()
+          .millisecondsSinceEpoch
+          .toString();
+
+      /// ====================================
+      /// SAVE ADMIN NOTIFICATION
+      /// ====================================
+
+      await FirebaseFirestore.instance
+          .collection("ADMIN_NOTIFICATIONS")
+          .doc(notificationId)
+          .set({
+
+        "notificationId":
+        notificationId,
+
+        "title":
+        notificationTitleController.text
+            .trim(),
+
+        "message":
+        notificationMessageController.text
+            .trim(),
+
+        "role":
+        selectedNotificationRole,
+
+        "createdAt":
+        FieldValue.serverTimestamp(),
+
+        "dateMillis":
+        DateTime.now()
+            .millisecondsSinceEpoch,
+
+        "isActive": true,
+      });
+
+      /// ====================================
+      /// GET USERS
+      /// ====================================
+
+      QuerySnapshot userSnapshot;
+
+      if (selectedNotificationRole ==
+          "TEACHER") {
+
+        userSnapshot =
+        await FirebaseFirestore.instance
+            .collection("users")
+            .where(
+          "is_teacher",
+          isEqualTo: true,
+        )
+            .get();
+
+      } else {
+
+        userSnapshot =
+        await FirebaseFirestore.instance
+            .collection("users")
+            .where(
+          "is_parent",
+          isEqualTo: true,
+        )
+            .get();
+      }
+
+      /// ====================================
+      /// COLLECT TOKENS
+      /// ====================================
+
+      List<String> tokens = [];
+
+      for (var doc in userSnapshot.docs) {
+
+        final data =
+        doc.data() as Map<String, dynamic>;
+
+        String token =
+            data['fcmId'] ?? "";
+
+        if (token.isNotEmpty) {
+          tokens.add(token);
+        }
+      }
+
+      debugPrint(
+          "TOTAL TOKENS : ${tokens.length}");
+
+      /// ====================================
+      /// SEND PUSH
+      /// ====================================
+
+      if (tokens.isNotEmpty) {
+
+        await sendPushToDevices(
+          tokens: tokens,
+          title:
+          notificationTitleController.text
+              .trim(),
+          body:
+          notificationMessageController.text
+              .trim(),
+        );
+      }
+
+      showToast(
+        "Notification sent successfully",
+      );
+
+      notificationTitleController.clear();
+      notificationMessageController.clear();
+
+    } catch (e) {
+
+      debugPrint(
+          "NOTIFICATION ERROR : $e");
+
+      showToast(
+        "Something went wrong",
+        backgroundColor: Colors.red,
+      );
+    }
+
+    notificationLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> sendPushToDevices({
+    required List<String> tokens,
+    required String title,
+    required String body,
+  }) async {
+
+    try {
+
+      final String response =
+      await rootBundle.loadString(
+        'assets/account.json',
+      );
+
+      final data = json.decode(response);
+
+      final credentials =
+      gapis.ServiceAccountCredentials
+          .fromJson(data);
+
+      final scopes = [
+        'https://www.googleapis.com/auth/firebase.messaging'
+      ];
+
+      final client =
+      await gapis.clientViaServiceAccount(
+        credentials,
+        scopes,
+      );
+
+      final String projectId =
+      data['project_id'];
+
+      final String url =
+          'https://fcm.googleapis.com/v1/projects/$projectId/messages:send';
+
+      for (String token in tokens) {
+
+        final res = await client.post(
+          Uri.parse(url),
+
+          body: jsonEncode({
+
+            'message': {
+
+              'token': token,
+
+              'notification': {
+                'title': title,
+                'body': body,
+              },
+
+              'android': {
+                'priority': 'high',
+
+                'notification': {
+                  'channel_id':
+                  'high_importance_channel',
+                },
+              },
+
+              'data': {
+                'click_action':
+                'FLUTTER_NOTIFICATION_CLICK',
+              }
+            }
+          }),
+        );
+
+        debugPrint(
+          res.statusCode == 200
+              ? "Notification Sent"
+              : "Notification Failed ${res.body}",
+        );
+      }
+
+      client.close();
+
+    } catch (e) {
+
+      debugPrint(
+        "FCM SEND ERROR : $e",
+      );
+    }
+  }
 }
