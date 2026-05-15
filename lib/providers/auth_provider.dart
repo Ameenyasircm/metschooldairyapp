@@ -310,6 +310,8 @@ class AuthProvider with ChangeNotifier {
 
       if (context.mounted) {
         /// 🎯 ROLE NAVIGATION LOGIC
+        await prefs.setString("academicYearId", academicYear);
+
         if (isParentRole && (isActuallyClassTeacher || isActuallySubjectTeacher)) {
           pushAndRemoveUntil(
             RoleSelectionScreen(
@@ -341,12 +343,11 @@ class AuthProvider with ChangeNotifier {
         else if (isActuallyClassTeacher || isActuallySubjectTeacher) {
           await prefs.setString("role", "teacher");
           await prefs.setString("staffId", doc.id);
-          await prefs.setString("staffName", data['name'] ?? "");
-          await prefs.setString("academicYearId", academicYear);
-
+          await prefs.setString("name", data['name'] ?? "");
           callNextReplacement(
             TeacherHomeScreen(staffName: data['name'] ?? ""), context,);
-        } else if (isTeacher) {
+        }
+        else if (isTeacher) {
           // Teacher but no assignments
           await prefs.setString("role", "teacher");
           callNextReplacement(
@@ -834,7 +835,7 @@ class AuthProvider with ChangeNotifier {
       final isParentRole = enrollments.docs.isNotEmpty;
 
       await prefs.setString("userName", data['name'] ?? "");
-      await prefs.setString("staffName", data['name'] ?? "");
+      await prefs.setString("name", data['name'] ?? "");
       await prefs.setBool("isTeacher", isTeacher);
       await prefs.setBool("isParent", isParentRole);
       await prefs.setString("userData", jsonEncode(_convertTimestamps(data)));

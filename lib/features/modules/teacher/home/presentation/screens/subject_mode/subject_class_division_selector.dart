@@ -34,7 +34,7 @@ class SubjectClassDivisionSelector extends StatelessWidget {
         final groupKeys = grouped.keys.toList();
 
         return SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -43,7 +43,7 @@ class SubjectClassDivisionSelector extends StatelessWidget {
                 final first = groupAssignments.first;
 
                 return Container(
-                  margin: EdgeInsets.only(bottom: 16.h),
+                  margin: EdgeInsets.only(bottom: 12.h),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: AppRadius.radiusL,

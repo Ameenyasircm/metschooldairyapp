@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../../../../../../providers/academic_provider.dart';
+import '../../../home/viewmodels/teacher_home_viewmodel.dart';
 import '../provider/student_provider.dart';
 import '../widgets/personal_info_step.dart';
 import '../widgets/family_info_step.dart';
@@ -254,7 +255,7 @@ class _AddStudentForTeacherScreenState
       final String divisionName = prefs.getString("divisionName") ?? '';
       final String academicYearId = prefs.getString("academicYearId") ?? '';
       final String staffId = prefs.getString("staffId") ?? '';
-      final String staffName = prefs.getString("staffName") ?? '';
+      final String staffName = prefs.getString("name") ?? '';
       final String? classId = prefs.getString("classId");
       final String className = prefs.getString("className") ?? '';
 
@@ -430,6 +431,7 @@ class _AddStudentForTeacherScreenState
 
       if (mounted) {
         context.read<StudentProvider>().fetchMyStudentsInitial();
+         context.read<TeacherHomeViewModel>().fetchTeacherDashboardData();
 
         SnackbarService().showSuccess("Student Saved Successfully");
         Navigator.pop(context); // Return to previous screen

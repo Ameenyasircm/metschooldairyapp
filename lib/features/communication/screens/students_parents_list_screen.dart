@@ -145,7 +145,7 @@ class _StudentsParentsListScreenState extends State<StudentsParentsListScreen> {
             // Your Original Logic (Retained)
             final prefs = await SharedPreferences.getInstance();
             final teacherId = prefs.getString("staffId") ?? "";
-            final senderName = prefs.getString("staffName") ?? "";
+            final senderName = prefs.getString("name") ?? "";
             final conversationId = await context
                 .read<ConversationProvider>()
                 .getOrCreateConversation(

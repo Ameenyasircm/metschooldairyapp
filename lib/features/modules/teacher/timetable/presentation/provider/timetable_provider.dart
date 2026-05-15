@@ -115,7 +115,7 @@ class TimetableProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final staffId = prefs.getString("staffId")??'';
-      final staffName = prefs.getString("staffName")??'';
+      final staffName = prefs.getString("name")??'';
 
       // Update memory from controllers
       controllers.forEach((day, list) {
