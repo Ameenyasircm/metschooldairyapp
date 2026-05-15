@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:met_school/core/constants/app_assets.dart';
 import 'package:met_school/core/theme/app_colors.dart';
+import 'package:met_school/providers/teacher_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../../core/enums/app_enums.dart';
 import '../data/models/quick_action.dart';
 
 class TeacherHomeViewModel extends ChangeNotifier {
@@ -18,6 +20,13 @@ class TeacherHomeViewModel extends ChangeNotifier {
   String get className => _className ?? '';
   int get studentCount => _studentCount;
   bool get isLoading => _isLoading;
+
+  TeacherProvider? _teacherProvider;
+
+  void updateProvider(TeacherProvider provider) {
+    _teacherProvider = provider;
+    notifyListeners();
+  }
 
   String get greetingText {
     final hour = DateTime.now().hour;
@@ -35,20 +44,25 @@ class TeacherHomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _divisionName = prefs.getString("divisionName");
-      _className = prefs.getString("className");
-      final divisionId = prefs.getString("divisionId");
+      if (_teacherProvider?.activeMode == TeacherMode.classTeacher) {
+        final prefs = await SharedPreferences.getInstance();
+        _divisionName = prefs.getString("divisionName");
+        _className = prefs.getString("className");
+        final divisionId = prefs.getString("divisionId");
 
-      if (divisionId != null && divisionId.isNotEmpty) {
-        final countQuery = FirebaseFirestore.instance
-            .collection('enrollments')
-            .where('class_name', isEqualTo: _className)
-            .where('division_id', isEqualTo: divisionId)
-            .count();
+        if (divisionId != null && divisionId.isNotEmpty) {
+          final countQuery = FirebaseFirestore.instance
+              .collection('enrollments')
+              .where('division_id', isEqualTo: divisionId)
+              .count();
 
-        final snapshot = await countQuery.get();
-        _studentCount = snapshot.count ?? 0;
+          final snapshot = await countQuery.get();
+          _studentCount = snapshot.count ?? 0;
+        }
+      } else if (_teacherProvider?.activeMode == TeacherMode.subjectTeacher) {
+        _className = "Subject Teacher";
+        _divisionName = "Mode";
+        _studentCount = _teacherProvider?.subjectAssignments.length ?? 0;
       }
     } catch (e) {
       debugPrint("Error fetching teacher dashboard data: $e");
@@ -58,123 +72,122 @@ class TeacherHomeViewModel extends ChangeNotifier {
     }
   }
 
-  String getStandardText(dynamic standard) {
-    if (standard == null) return '';
-    // Handle LKG & UKG first
-    if (standard == "FLY 1" || standard == "FLY 2") {
-      return standard;
+  List<QuickAction> get quickActions {
+    final mode = _teacherProvider?.activeMode ?? TeacherMode.none;
+
+    if (mode == TeacherMode.subjectTeacher) {
+      return [
+        QuickAction(
+          title: 'Homework',
+          icon: AppAssets.homeWork,
+          onTap: () {},
+        ),
+        QuickAction(
+          title: 'Punctuality Record',
+          icon: AppAssets.punctuality,
+          onTap: () {},
+        ),
+      ];
     }
 
-    // Convert to int safely
-    int? std;
-    if (standard is int) {
-      std = standard;
-    } else {
-      std = int.tryParse(standard.toString());
-    }
+    if (mode == TeacherMode.none) return [];
 
-    if (std == null) return standard.toString();
-
-    if (std >= 11 && std <= 13) {
-      return "${std}th";
-    }
-
-    switch (std % 10) {
-      case 1:
-        return "${std}st";
-      case 2:
-        return "${std}nd";
-      case 3:
-        return "${std}rd";
-      default:
-        return "${std}th";
-    }
+    return [
+      QuickAction(
+        title: 'Notice',
+        icon: AppAssets.notification,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Attendance',
+        icon: AppAssets.attendanceReport,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Homework',
+        icon: AppAssets.homeWork,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Exams',
+        icon: AppAssets.exams,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Leave Requests',
+        icon: AppAssets.leaves,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'TimeTable',
+        icon: AppAssets.timetable,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Chat',
+        icon: AppAssets.chat,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Calender',
+        icon: AppAssets.calender,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Syllabus',
+        icon: AppAssets.syllabus,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Fee',
+        icon: AppAssets.syllabus,
+        onTap: () {},
+      ),
+    ];
   }
 
+  List<QuickAction> get listActions {
+    final mode = _teacherProvider?.activeMode ?? TeacherMode.none;
 
-  List<QuickAction> get quickActions => [
-    QuickAction(
-      title: 'Notice',
-      icon: AppAssets.notification, // Changed
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Attendance',
-      icon: AppAssets.attendanceReport, // Changed
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Homework',
-      icon: AppAssets.homeWork,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Exams',
-      icon: AppAssets.exams ,
-      onTap: () {},
-    ),
+    if (mode == TeacherMode.subjectTeacher) {
+      return [];
+    }
 
-    QuickAction(
-      title: 'Leave Requests',
-      icon: AppAssets.leaves,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'TimeTable',
-      icon:AppAssets.timetable,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Chat',
-      icon:AppAssets.chat,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Calender',
-      icon: AppAssets.calender,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Syllabus',
-      icon: AppAssets.syllabus,
-      onTap: () {},
-    ),QuickAction(
-      title: 'Fee',
-      icon: AppAssets.syllabus,
-      onTap: () {},
-    ),
-  ];
-  List<QuickAction> get listActions => [
-    QuickAction(
-      title: 'Rules & Regulations',
-      icon: AppAssets.rules,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Attendance Report',
-      icon: AppAssets.attendanceReport,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'My Students',
-      icon: AppAssets.myStudents,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Punctuality Record',
-      icon: AppAssets.punctuality,
-      onTap: () {},
-    ),
-    QuickAction(
-      title: 'Events',
-      icon: AppAssets.event,
-      onTap: () {},
-    ),  QuickAction(
-      title: 'School Timing',
-      icon: AppAssets.schoolTime,
-      onTap: () {},
-    ),
-  ];
+    if (mode == TeacherMode.none) return [];
+
+    return [
+      QuickAction(
+        title: 'Rules & Regulations',
+        icon: AppAssets.rules,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Attendance Report',
+        icon: AppAssets.attendanceReport,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'My Students',
+        icon: AppAssets.myStudents,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Punctuality Record',
+        icon: AppAssets.punctuality,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'Events',
+        icon: AppAssets.event,
+        onTap: () {},
+      ),
+      QuickAction(
+        title: 'School Timing',
+        icon: AppAssets.schoolTime,
+        onTap: () {},
+      ),
+    ];
+  }
 
   void setSelectedIndex(int index) {
     if (_selectedIndex != index) {
@@ -183,3 +196,4 @@ class TeacherHomeViewModel extends ChangeNotifier {
     }
   }
 }
+

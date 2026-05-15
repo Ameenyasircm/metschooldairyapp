@@ -55,10 +55,11 @@ Widget buildQuickActions(BuildContext context) {
                       final standard = prefs.getString("className") ?? '';
                       final classId = prefs.getString("classId") ?? '';
 
-                      switch (index) {
-                        case 0:
+                      final action = actions[index];
+                      switch (action.title) {
+                        case 'Notice':
                           break;
-                        case 1:
+                        case 'Attendance':
                           NavigationService.push(context,
                               AttendanceScreen(
                                 divisionId: divisionId,
@@ -66,16 +67,16 @@ Widget buildQuickActions(BuildContext context) {
                                 academicYearId: academicYearId,
                                 teacherId: staffId, classId: classId,));
                           break;
-                        case 2:
+                        case 'Homework':
                           NavigationService.push(context, const HomeworkListScreen());
                           break;
-                        case 3:
+                        case 'Exams':
                           NavigationService.push(context, ExamComingSoonPage());
                           break;
-                        case 4:
+                        case 'Leave Requests':
                           callNext(const TeacherLeaveManagementScreen(), context);
                           break;
-                        case 5:
+                        case 'TimeTable':
                           NavigationService.push(
                               context,
                               TimetableScreen(
@@ -84,17 +85,23 @@ Widget buildQuickActions(BuildContext context) {
                                 division: divisionName,
                               ));
                           break;
-                        case 6:
+                        case 'Chat':
                           final provider = context.read<StudentProvider>();
                           provider.fetchMyStudentsInitial();
                           callNext(StudentsParentsListScreen(), context);
-                        case 7:
+                          break;
+                        case 'Calender':
                           callNext(const SchoolCalendarMobileScreen(), context);
                           break;
-                        case 8:
+                        case 'Punctuality Record':
+                          final studentProvider = context.read<StudentProvider>();
+                          studentProvider.fetchMyStudentsInitial();
+                          NavigationService.push(context, PunctualityStudentListScreen());
+                          break;
+                        case 'Syllabus':
                           NavigationService.push(context, const SyllabusListScreen());
                           break;
-                        case 9:
+                        case 'Fee':
                           final academicYearId = prefs.getString("academicYearId") ?? '';
                           studentProvider.searchMyStdQuery = '';
                           studentProvider.fetchMyStudentsInitial();

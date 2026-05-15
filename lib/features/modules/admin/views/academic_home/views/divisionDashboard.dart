@@ -102,6 +102,7 @@ class _DivisionDashboardState extends State<DivisionDashboard> with SingleTicker
         'division_id': widget.divisionId,
         'division_name': widget.divisionName,
         'class_id': widget.classId,
+        'class_name': widget.className,
         'academic_year_id': widget.academicYearId,
         'type': 'subject_teacher',
         'updated_at': FieldValue.serverTimestamp(),

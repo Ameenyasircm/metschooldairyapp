@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:met_school/core/utils/loader/customLoader.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -637,22 +638,32 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CustomLoader()),
+    );
+
     // Refresh user data to get latest roles and student list from DB
     await auth.syncUserData(context);
 
     if (!mounted) return;
+    Navigator.pop(context); // Dismiss loading
 
     final prefs = await SharedPreferences.getInstance();
-    final role = prefs.getString("role");
     final isTeacher = prefs.getBool("isTeacher") ?? false;
     final isParent = prefs.getBool("isParent") ?? false;
+    final isClassTeacher = prefs.getBool("isClassTeacher") ?? false;
+    final isSubjectTeacher = prefs.getBool("isSubjectTeacher") ?? false;
 
-    if (isParent && isTeacher) {
-      final data = jsonDecode(prefs.getString("userData") ?? "{}");
-      final studentDataList = (prefs.getStringList("studentDataList") ?? [])
-          .map((e) => jsonDecode(e) as Map<String, dynamic>)
-          .toList();
+    final data = jsonDecode(prefs.getString("userData") ?? "{}");
+    final studentDataList = (prefs.getStringList("studentDataList") ?? [])
+        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+        .toList();
 
+    /// 🎯 ROLE NAVIGATION LOGIC (Sync with AuthProvider)
+    if (isParent && (isClassTeacher || isSubjectTeacher)) {
       NavigationService.pushAndRemoveUntil(
         context,
         RoleSelectionScreen(
@@ -661,15 +672,9 @@ class _HomeScreenState extends State<HomeScreen> {
           parentName: data['name'] ?? "",
         ),
       );
-    } else if (isParent || role == "parent") {
-      final studentDataList = (prefs.getStringList("studentDataList") ?? [])
-          .map((e) => jsonDecode(e) as Map<String, dynamic>)
-          .toList();
-
-      final name = prefs.getString("staffName") ??
-          prefs.getString("userName") ??
-          "N/A";
-
+    }
+    else if (isParent) {
+      await prefs.setString("role", "parent");
       if (studentDataList.isNotEmpty) {
         final s = studentDataList.first;
         await prefs.setString("studentId", s['studentId'] ?? "");
@@ -677,20 +682,40 @@ class _HomeScreenState extends State<HomeScreen> {
         NavigationService.pushAndRemoveUntil(
           context,
           ParentMainScreen(
-            parentName: name,
+            parentName: data['name'] ?? "",
             studentId: s['studentId'],
             academicYearID: s['academicYearId'],
             teacherName: s['teacherName'],
             teacherID: s['teacherId'],
           ),
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No student enrollments found.")),
+        );
       }
-    } else if (isTeacher || role == "teacher") {
+    }
+    else if (isClassTeacher || isSubjectTeacher) {
+      await prefs.setString("role", "teacher");
       NavigationService.pushAndRemoveUntil(
         context,
         TeacherHomeScreen(
-          staffName: prefs.getString("staffName") ?? "",
+          staffName: prefs.getString("staffName") ?? data['name'] ?? "",
         ),
+      );
+    }
+    else if (isTeacher) {
+      // Teacher but no assignments
+      await prefs.setString("role", "teacher");
+      NavigationService.pushAndRemoveUntil(
+        context,
+        TeacherHomeScreen(
+          staffName: prefs.getString("staffName") ?? data['name'] ?? "",
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No active role assigned.")),
       );
     }
   }

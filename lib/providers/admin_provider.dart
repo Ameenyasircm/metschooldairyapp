@@ -155,7 +155,7 @@ class AdminProvider with ChangeNotifier {
           'division_id': divRef.id,
           'division_name': divisionName,
         },
-        'is_class_teacher': true, // This enables the filter we created earlier
+        'is_class_teacher': true,
         'last_assignment_date': FieldValue.serverTimestamp(),
       };
 
@@ -242,6 +242,7 @@ class AdminProvider with ChangeNotifier {
         "status": status,
 
         if (selectedRole == 'teacher' && !isEditing) "is_class_teacher": false,
+        if (selectedRole == 'teacher' && !isEditing) "is_teacher": true,
         "updatedAt": FieldValue.serverTimestamp(),
         if (!isEditing) ...{
           "createdAt": FieldValue.serverTimestamp(),

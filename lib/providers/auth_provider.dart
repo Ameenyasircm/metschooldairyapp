@@ -31,6 +31,8 @@ import '../features/modules/teacher/home/viewmodels/teacher_home_viewmodel.dart'
 import '../features/modules/teacher/timetable/presentation/provider/timetable_provider.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/update/update_screen.dart';
+import '../core/enums/app_enums.dart';
+import '../features/modules/teacher/home/data/models/subject_assignment_model.dart';
 import 'academic_provider.dart';
 import 'admin_provider.dart';
 import 'conversation_provider.dart';
@@ -132,6 +134,12 @@ class AuthProvider with ChangeNotifier {
   Future<void> loadLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+    
+    if (_isLoggedIn) {
+      // Load teacher mode if applicable
+      // We need context to access TeacherProvider, but loadLoginStatus is often called in constructor.
+      // Better to call loadTeacherData where TeacherProvider is available.
+    }
     notifyListeners();
   }
 
@@ -185,8 +193,6 @@ class AuthProvider with ChangeNotifier {
 
       final prefs = await SharedPreferences.getInstance();
 
-      final role = data['role'] ?? "";
-      final isTeacherRole = role == "teacher" || role == "staff";
       final isTeacher = data['is_teacher'] ?? false;
       final isParent = data['is_parent'] ?? false;
       final academicYear = currentYear?.id ?? await currentAcademicYearId();
@@ -196,7 +202,7 @@ class AuthProvider with ChangeNotifier {
         return;
       }
 
-      /// 🔍 Check if user is also a parent by looking for enrollments
+      /// 🔍 1. Check if user is also a parent by looking for enrollments
       final enrollments = await fireStore
           .collection("enrollments")
           .where("parent_id", isEqualTo: doc.id)
@@ -204,6 +210,23 @@ class AuthProvider with ChangeNotifier {
           .get();
 
       final isParentRole = enrollments.docs.isNotEmpty;
+
+      /// 🔍 2. Check Class Teacher Status
+      final currentAssignment = data['current_assignment'] as Map<String, dynamic>?;
+      final bool isActuallyClassTeacher = isTeacher && currentAssignment != null && currentAssignment.isNotEmpty;
+
+      /// 🔍 3. Check Subject Teacher Status
+      final subjectAssignmentsQuery = await fireStore
+          .collection("subject_assignments")
+          .where("teacher_id", isEqualTo: doc.id)
+          .where("academic_year_id", isEqualTo: academicYear)
+          .get();
+
+      final List<SubjectAssignmentModel> subjectAssignments = subjectAssignmentsQuery.docs
+          .map((d) => SubjectAssignmentModel.fromMap(d.data()))
+          .toList();
+
+      final bool isActuallySubjectTeacher = subjectAssignments.isNotEmpty;
 
       /// ✅ COMMON DATA SAVING
       await prefs.setString("userId", doc.id);
@@ -215,20 +238,34 @@ class AuthProvider with ChangeNotifier {
       await prefs.setString("staffPhone", phoneNumber);
       await prefs.setBool("isLoggedIn", true);
       await prefs.setBool("isTeacher", isTeacher);
-      await prefs.setBool("isParent", isParent);
+      await prefs.setBool("isParent", isParentRole); // Use enrollment check
       await prefs.setString("userData", jsonEncode(_convertTimestamps(data)));
       _isLoggedIn = true;
 
-      /// ✅ PREPARE TEACHER DATA
-      if (isTeacherRole) {
-        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
-        await prefs.setString("divisionId", data['division_id'] ?? "");
-        await prefs.setString("divisionName", data['division_name'] ?? "");
-        await prefs.setString("classId", data['class_id'] ?? "");
-        await prefs.setString("className", data['class_name'] ?? "");
-        await prefs.setString("staffId", doc.id);
-        await prefs.setString("staffName", data['name'] ?? "");
-        await prefs.setString("academicYearId", academicYear);
+      // Update TeacherProvider state if teacher
+      if (isTeacher || isActuallySubjectTeacher) {
+        final teacherProvider = Provider.of<TeacherProvider>(context, listen: false);
+        teacherProvider.setSubjectAssignments(subjectAssignments);
+        teacherProvider.setClassTeacherStatus(isActuallyClassTeacher, currentAssignment);
+
+        if (isActuallyClassTeacher) {
+          teacherProvider.setActiveMode(TeacherMode.classTeacher);
+        } else if (isActuallySubjectTeacher) {
+          teacherProvider.setActiveMode(TeacherMode.subjectTeacher);
+        } else {
+          teacherProvider.setActiveMode(TeacherMode.none);
+        }
+
+        // Save to prefs for persistence
+        await prefs.setBool("isClassTeacher", isActuallyClassTeacher);
+        await prefs.setBool("isSubjectTeacher", isActuallySubjectTeacher);
+        if (isActuallyClassTeacher) {
+          await prefs.setString("divisionId", currentAssignment?['division_id'] ?? "");
+          await prefs.setString("divisionName", currentAssignment?['division_name'] ?? "");
+          await prefs.setString("classId", currentAssignment?['class_id'] ?? "");
+          await prefs.setString("className", currentAssignment?['class_name'] ?? "");
+        }
+        await prefs.setString("teacherMode", teacherProvider.activeMode.name);
       }
 
       /// ✅ PREPARE PARENT DATA
@@ -273,7 +310,7 @@ class AuthProvider with ChangeNotifier {
 
       if (context.mounted) {
         /// 🎯 ROLE NAVIGATION LOGIC
-        if (isParent && isTeacher) {
+        if (isParentRole && (isActuallyClassTeacher || isActuallySubjectTeacher)) {
           pushAndRemoveUntil(
             RoleSelectionScreen(
               teacherData: data,
@@ -289,7 +326,7 @@ class AuthProvider with ChangeNotifier {
           await prefs.setString("studentId", s['studentId']);
           await prefs.setString("divisionId", s['divisionId'] ?? "");
           await prefs.setString("classId", s['classId'] ?? "");
-          
+
           callNextReplacement(
             ParentMainScreen(
               studentId: s['studentId'],
@@ -301,12 +338,19 @@ class AuthProvider with ChangeNotifier {
             context,
           );
         }
-        else if (isTeacherRole) {
+        else if (isActuallyClassTeacher || isActuallySubjectTeacher) {
+          await prefs.setString("role", "teacher");
+          await prefs.setString("staffId", doc.id);
+          await prefs.setString("staffName", data['name'] ?? "");
+          await prefs.setString("academicYearId", academicYear);
+
+          callNextReplacement(
+            TeacherHomeScreen(staffName: data['name'] ?? ""), context,);
+        } else if (isTeacher) {
+          // Teacher but no assignments
           await prefs.setString("role", "teacher");
           callNextReplacement(
-            TeacherHomeScreen(staffName: data['name'] ?? ""),
-            context,
-          );
+            TeacherHomeScreen(staffName: data['name'] ?? ""), context,);
         } else {
           SnackbarService().showError("No role assigned or enrollment found.");
         }
@@ -757,14 +801,30 @@ class AuthProvider with ChangeNotifier {
       if (!doc.exists) return;
 
       final data = doc.data()!;
-      final role = data['role'] ?? "";
-      final isTeacherRole = role == "teacher" || role == "staff";
       final isTeacher = data['is_teacher'] ?? false;
       final isParent = data['is_parent'] ?? false;
       final academicYear = currentYear?.id ?? await currentAcademicYearId();
 
       if (academicYear == null) return;
 
+      /// 🔍 1. Check Class Teacher Status
+      final currentAssignment = data['current_assignment'] as Map<String, dynamic>?;
+      final bool isActuallyClassTeacher = isTeacher && currentAssignment != null && currentAssignment.isNotEmpty;
+
+      /// 🔍 2. Check Subject Teacher Status
+      final subjectAssignmentsQuery = await fireStore
+          .collection("subject_assignments")
+          .where("teacher_id", isEqualTo: userId)
+          .where("academic_year_id", isEqualTo: academicYear)
+          .get();
+
+      final List<SubjectAssignmentModel> subjectAssignments = subjectAssignmentsQuery.docs
+          .map((d) => SubjectAssignmentModel.fromMap(d.data()))
+          .toList();
+
+      final bool isActuallySubjectTeacher = subjectAssignments.isNotEmpty;
+
+      /// 🔍 3. Check Parent Status
       final enrollments = await fireStore
           .collection("enrollments")
           .where("parent_id", isEqualTo: userId)
@@ -774,17 +834,34 @@ class AuthProvider with ChangeNotifier {
       final isParentRole = enrollments.docs.isNotEmpty;
 
       await prefs.setString("userName", data['name'] ?? "");
+      await prefs.setString("staffName", data['name'] ?? "");
       await prefs.setBool("isTeacher", isTeacher);
-      await prefs.setBool("isParent", isParent);
+      await prefs.setBool("isParent", isParentRole);
       await prefs.setString("userData", jsonEncode(_convertTimestamps(data)));
 
-      if (isTeacherRole) {
-        await prefs.setBool("isClassTeacher", data['is_class_teacher'] ?? false);
-        await prefs.setString("divisionId", data['division_id'] ?? "");
-        await prefs.setString("divisionName", data['division_name'] ?? "");
-        await prefs.setString("classId", data['class_id'] ?? "");
-        await prefs.setString("className", data['class_name'] ?? "");
-        await prefs.setString("staffName", data['name'] ?? "");
+      if (isTeacher || isActuallySubjectTeacher) {
+        final teacherProvider = Provider.of<TeacherProvider>(context, listen: false);
+        teacherProvider.setSubjectAssignments(subjectAssignments);
+        teacherProvider.setClassTeacherStatus(isActuallyClassTeacher, currentAssignment);
+        
+        // Only update mode if it's not set or none
+        if (teacherProvider.activeMode == TeacherMode.none) {
+           if (isActuallyClassTeacher) {
+            teacherProvider.setActiveMode(TeacherMode.classTeacher);
+          } else if (isActuallySubjectTeacher) {
+            teacherProvider.setActiveMode(TeacherMode.subjectTeacher);
+          }
+        }
+
+        await prefs.setBool("isClassTeacher", isActuallyClassTeacher);
+        await prefs.setBool("isSubjectTeacher", isActuallySubjectTeacher);
+        if (isActuallyClassTeacher) {
+          await prefs.setString("divisionId", currentAssignment?['division_id'] ?? "");
+          await prefs.setString("divisionName", currentAssignment?['division_name'] ?? "");
+          await prefs.setString("classId", currentAssignment?['class_id'] ?? "");
+          await prefs.setString("className", currentAssignment?['class_name'] ?? "");
+        }
+        await prefs.setString("teacherMode", teacherProvider.activeMode.name);
       }
 
       List<Map<String, dynamic>> studentDataList = [];
