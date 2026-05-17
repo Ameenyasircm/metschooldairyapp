@@ -9,6 +9,7 @@ import 'package:met_school/features/modules/parent/views/view_parent_instruction
 import 'package:met_school/providers/parent_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_padding.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -58,6 +59,15 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
   String? currentTeacherId;
   String? currentTeacherName;
 
+  final List<String> imageList = [
+    "assets/images/school7.jpeg",
+    "assets/images/school6.jpeg",
+    "assets/images/school2.jpeg",
+    "assets/images/school3.jpeg",
+    "assets/images/school4.jpeg",
+    "assets/images/shool5.jpeg",
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +92,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
             .map((e) => jsonDecode(e) as Map<String, dynamic>)
             .toList();
       });
+    }
+  }
+  Future<void> launchSocialUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
     }
   }
 
@@ -579,21 +599,30 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 6,
+                  itemCount: imageList.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10.w,
                     mainAxisSpacing: 10.h,
                   ),
                   itemBuilder: (context, index) {
+                    final imagePath = imageList[index];
+
+                    print('$imagePath RFRJFRNF ');
                     return InkWell(
                       onTap: () {
-                        callNext(FullScreenImageView(imagePath: "assets/images/sample.jpg", isNetwork: false), context);
+                        callNext(
+                          FullScreenImageView(
+                            imagePath: imagePath,
+                            isNetwork: false,
+                          ),
+                          context,
+                        );
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(14.r),
                         child: Image.asset(
-                          "assets/images/sample.jpg",
+                          imagePath,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             color: Colors.grey.shade300,
@@ -610,18 +639,43 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     InkWell(
-                      onTap: () {},
-                      child: const Icon(Icons.camera_alt, color: Colors.pink),
+                      onTap: () {
+                        launchSocialUrl(
+                          'https://www.instagram.com/met_publicschoolpayyanad?utm_source=qr&igsh=MWI5MDZjYTF1cXg2bw==',
+                        );
+                      },
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.pink,
+                      ),
                     ),
+
                     const SizedBox(width: 20),
+
                     InkWell(
-                      onTap: () {},
-                      child: const Icon(Icons.facebook, color: Colors.blue),
+                      onTap: () {
+                        launchSocialUrl(
+                          'https://www.facebook.com/share/1B7NobNz11/',
+                        );
+                      },
+                      child: const Icon(
+                        Icons.facebook,
+                        color: Colors.blue,
+                      ),
                     ),
+
                     const SizedBox(width: 20),
+
                     InkWell(
-                      onTap: () {},
-                      child: const Icon(Icons.play_circle, color: Colors.red),
+                      onTap: () {
+                        launchSocialUrl(
+                          'https://youtube.com/@metpublicschoolpayyanad5294?si=8GvIioRFl1bbRFp3',
+                        );
+                      },
+                      child: const Icon(
+                        Icons.play_circle,
+                        color: Colors.red,
+                      ),
                     ),
                   ],
                 ),

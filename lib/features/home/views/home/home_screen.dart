@@ -468,8 +468,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'assets/images/school1.jpeg',
       'assets/images/school2.jpeg',
       'assets/images/school3.jpeg',
-      'assets/images/school4.jpeg',
-      'assets/images/school5.jpeg',
+      'assets/images/school7.jpeg',
+      'assets/images/shool5.jpeg',
 
     ];
 
