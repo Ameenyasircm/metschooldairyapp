@@ -1006,7 +1006,7 @@ class AdminProvider with ChangeNotifier {
       /// ====================================
 
       await FirebaseFirestore.instance
-          .collection("ADMIN_NOTIFICATIONS")
+          .collection("admin_notifications")
           .doc(notificationId)
           .set({
 

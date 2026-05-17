@@ -14,6 +14,7 @@ import 'package:met_school/features/modules/teacher/syllabus/presentation/screen
 import '../../../../../communication/screens/students_parents_list_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/bellTiming_screen.dart';
 import '../../../../../mobile_rules_regulations/screens/rules_list_screen.dart';
+import '../../../LessonPlan/views/teacher_lesson_plan.dart';
 import '../../../attendance/presentation/screens/attendance_report_screen.dart';
 import '../../../attendance/presentation/screens/attendance_screen.dart';
 import '../../../exams/presentation/screens/exam_coming_soon_screen.dart';
@@ -106,6 +107,9 @@ Widget buildQuickActions(BuildContext context) {
                           studentProvider.searchMyStdQuery = '';
                           studentProvider.fetchMyStudentsInitial();
                           NavigationService.push(context,  FeeStudentsListScreen(academicYearId:academicYearId ,));
+                          break;
+                        case 'Lesson Plan':
+                          NavigationService.push(context, const LessonPlanScreen());
                           break;
                         default:
                           break;

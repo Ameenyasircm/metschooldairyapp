@@ -20,7 +20,7 @@ class AppSpacing {
   static SizedBox get vl => SizedBox(height: 24.h);
   static SizedBox get vxl => SizedBox(height: 32.h);
   static SizedBox get vxxl => SizedBox(height: 40.h);
-
+  static SizedBox h14 = SizedBox(height: 14.h);
   // Horizontal Spacing
   static SizedBox get hxs => SizedBox(width: 4.w);
   static SizedBox get hs => SizedBox(width: 8.w);
@@ -43,6 +43,8 @@ class AppSpacing {
   static SizedBox get h60 => SizedBox(height: 60.h);
   static SizedBox get h80 => SizedBox(height: 80.h);
   static SizedBox get h100 => SizedBox(height: 100.h);
+  static SizedBox h30 = SizedBox(height: 30.h);
+  static SizedBox h10 = SizedBox(height: 10.h);
 
   static SizedBox get w2 => SizedBox(width: 2.w);
   static SizedBox get w4 => SizedBox(width: 4.w);

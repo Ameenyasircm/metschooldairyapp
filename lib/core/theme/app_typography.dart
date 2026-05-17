@@ -85,6 +85,14 @@ class AppTypography {
     // height: 1.2,
   );
 
+  // Body3 — 13px Medium
+  static TextStyle body3 = GoogleFonts.inter(
+    fontSize: 13.sp,
+    color: AppColors.black,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
+
   // Caption — 12px Medium (125%)
   static TextStyle caption = GoogleFonts.inter(
     fontSize: 12.sp,

@@ -143,6 +143,11 @@ class TeacherHomeViewModel extends ChangeNotifier {
         icon: AppAssets.syllabus,
         onTap: () {},
       ),
+      QuickAction(
+        title: 'Lesson Plan',
+        icon: AppAssets.attendanceReport,
+        onTap: () {},
+      ),
     ];
   }
 

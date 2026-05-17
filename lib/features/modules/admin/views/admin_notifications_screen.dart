@@ -183,7 +183,7 @@ class _AdminNotificationsScreenState
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
-                    .collection("ADMIN_NOTIFICATIONS")
+                    .collection("admin_notifications")
                     .orderBy(
                   "dateMillis",
                   descending: true,
