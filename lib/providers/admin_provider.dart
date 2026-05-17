@@ -1209,4 +1209,90 @@ class AdminProvider with ChangeNotifier {
       );
     }
   }
+
+
+  // ── LESSON PLANS ──────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> lessonPlanList = [];
+  bool lessonPlanLoading = false;
+  String lessonPlanFilter = "All"; // All | Pending | Approved
+  Map<String, dynamic>? selectedLessonPlan;
+
+  final List<String> lessonPlanFilters = ["All", "Pending", "Approved"];
+
+  void setLessonPlanFilter(String filter) {
+    lessonPlanFilter = filter;
+    notifyListeners();
+  }
+
+  void setSelectedLessonPlan(Map<String, dynamic>? plan) {
+    selectedLessonPlan = plan;
+    notifyListeners();
+  }
+
+  List<Map<String, dynamic>> get filteredLessonPlans {
+    if (lessonPlanFilter == "All") return lessonPlanList;
+    return lessonPlanList.where((plan) {
+      return (plan['STATUS'] ?? '').toString().toLowerCase() ==
+          lessonPlanFilter.toLowerCase();
+    }).toList();
+  }
+
+  /// FETCH — call once; use StreamBuilder in screen for real-time
+  Stream<List<Map<String, dynamic>>> fetchLessonPlansStream() {
+    return db
+        .collection("lesson_plans")
+        .orderBy("CREATED_AT", descending: true)
+        .snapshots()
+        .map((snapshot) {
+      lessonPlanList = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      return lessonPlanList;
+    });
+  }
+
+  /// APPROVE
+  Future<void> approveLessonPlan({
+    required BuildContext context,
+    required Map<String, dynamic> plan,
+  }) async {
+    try {
+      lessonPlanLoading = true;
+      notifyListeners();
+
+      final id = plan['ID'];
+      final now = Timestamp.fromDate(DateTime.now());
+
+      await db.collection("lesson_plans").doc(id).update({
+        "STATUS": "Approved",
+        "APPROVED_AT": now,
+      });
+
+      // refresh selected panel
+      if (selectedLessonPlan?['ID'] == id) {
+        selectedLessonPlan = {
+          ...selectedLessonPlan!,
+          "STATUS": "Approved",
+          "APPROVED_AT": now,
+        };
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Lesson Plan Approved Successfully"),
+          backgroundColor: Colors.teal,
+        ),
+      );
+    } catch (e) {
+      debugPrint("APPROVE LESSON PLAN ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+
+    lessonPlanLoading = false;
+    notifyListeners();
+  }
+
 }

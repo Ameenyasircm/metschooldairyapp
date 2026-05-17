@@ -15,6 +15,7 @@ import '../school_calaender/screens/admin_add_school_calender.dart';
 import 'academic_year_management.dart';
 import 'admin_menu_options.dart';
 import 'admin_notifications_screen.dart';
+import 'admin_view_lesson_plan.dart';
 import 'list_all_students_screen.dart';
 
 class AdminHome extends StatelessWidget {
@@ -71,6 +72,8 @@ class AdminHome extends StatelessWidget {
 
         return AdminNotificationsScreen();
       case 11:
+        return const AdminLessonPlanScreen();
+      case 12:
         final provider = context.watch<AdminProvider>();
         provider.getQualifications();
         return AdminMenuOptions();
@@ -119,7 +122,15 @@ class AdminHome extends StatelessWidget {
                     _buildModuleCard(context, 8, "Rules & Regulations", "Policies & Conduct", Icons.gavel_rounded, Colors.blueGrey),
                     _buildModuleCard(context, 9, "Parent Instructions", "Guidelines for Parents", Icons.info_outline_rounded, primaryBlue),
                     _buildModuleCard(context, 10, "Notifications", "Send Notifications", Icons.notification_add, Colors.green),
-                    _buildModuleCard(context, 11, "Menu", "Admin Menu Options", Icons.menu, primaryBlue),
+                    _buildModuleCard(
+                      context, 11,
+                      "Lesson Plans",
+                      "Review & Approve Plans",
+                      Icons.menu_book_outlined,
+                      Colors.teal,
+                    ),
+                    _buildModuleCard(context, 12, "Menu", "Admin Menu Options", Icons.menu, primaryBlue),
+
                   ],
                 ),
               ],
