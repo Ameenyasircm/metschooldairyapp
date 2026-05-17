@@ -55,9 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeroBanner(),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 _buildTopStudents(),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 _buildEvents(),
                 const SizedBox(height: 15),
                 _buildPhotoGrid(),
@@ -90,7 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // We use a SizedBox + Stack here so the layout engine knows exactly
     // how much space the hero + the overlapping collage takes up vertically.
     return SizedBox(
-      height: 365.h, // 350 (Hero image) + 90 (Collage overflow)
+      height: 360.h, // 350 (Hero image) + 90 (Collage overflow)
+      // color: Colors.red,
       child: Stack(
         children: [
           // 1. Hero Background & Title Card
@@ -339,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // final double degrees = 0;
               // final double radians = 0;
 
-              final double degrees = (random.nextDouble() * 16) - 8;
+              final double degrees = (random.nextDouble() * 16) - 10;
               final double radians = degrees * (math.pi / 180);
 
               return Transform.rotate(
@@ -356,8 +357,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Updated: Avatar definition with larger sizes and organic layering ---
   Widget _buildStudentAvatar(String studentImagePath) {
     return SizedBox(
-      width: 110,
-      height: 110,
+      width: 95,
+      height: 95,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -368,8 +369,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Image.asset(
               studentImagePath,
               // Increased width/height from 90 so it reaches the inside of the yellow lines
-              width: 98,
-              height: 98,
+              width: 90,
+              height: 90,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   Container(color: Colors.grey.shade300),
