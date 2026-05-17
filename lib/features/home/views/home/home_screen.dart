@@ -316,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('🏆', style: TextStyle(fontSize: 32)),
         const SizedBox(height: 6),
         const Text(
-          'Top Students',
+          'SSLC Toppers',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
