@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/router/app_navigation.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../auth/presentation/screens/role_selection_screen.dart';
+import '../../../modules/parent/views/image_full_screen_view.dart';
 import '../../../modules/parent/views/parent_bottom_nav_screen.dart';
 import '../../../modules/parent/views/parent_select_child_screen.dart';
 import '../../../modules/teacher/home/presentation/screens/teacher_home_screen.dart';
@@ -26,11 +27,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // ── Sample data ──────────────────────────────────────────────────────────
   final List<Map<String, String>> _events = [
-    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
-    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
-    {'title': 'Arts Club Inauguration', 'date': '12-Apr'},
+    {
+      'title': 'School Reopening Ceremony (Praveshanolsavam)',
+      'date': '01-Jun',
+    },
+    {
+      'title': 'Environment Day Celebration',
+      'date': '05-Jun',
+    },
+    {
+      'title': 'Reading Day Celebration',
+      'date': '19-Jun',
+    },
   ];
-
+  bool isAboutExpanded = false;
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
@@ -198,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // LEFT IMAGE
           Positioned(
             left: screenWidth * 0.05,
-            top: screenWidth * 0.04,
+            top: screenWidth * 0.1,
             child: Transform.rotate(
               angle: -14 * (math.pi / 180),
               child: _buildCollageCard(
@@ -212,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // RIGHT IMAGE
           Positioned(
             right: screenWidth * 0.04,
-            top: screenWidth * 0.04,
+            top: screenWidth * 0.05,
             child: Transform.rotate(
               angle: -3 * (math.pi / 180),
               child: _buildCollageCard(
@@ -225,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // CENTER IMAGE
           Positioned(
-            top: 0,
+            top: screenWidth * 0.03,
             child: _buildCollageCard(
               imagePath: 'assets/images/img2.png',
               width: centerWidth,
@@ -283,17 +293,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTopStudents() {
     // A list of student image assets (using generic names for this example)
     final List<String> studentImages = [
-      'assets/images/std1.png',
-      'assets/images/std2.png',
-      'assets/images/std3.png',
-      'assets/images/std4.png',
+      'assets/images/sslc1.jpeg',
+      'assets/images/sslc3.jpeg',
+      'assets/images/sslc4.jpeg',
+      'assets/images/sslc2.jpeg',
+
       // Add more as needed
     ];
 
     // Placeholder list to match your original itemCount of 5
     // for this example, we'll just cycle the 4 images.
     final List<String> cyclicalImages = List.generate(
-      5, // original item count
+      4, // original item count
           (index) => studentImages[index % studentImages.length],
     );
 
@@ -325,6 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               // Generate a random angle for each avatar
               // between -8 degrees and +8 degrees for a subtle, varied tilt.
+              // final double degrees = 0;
+              // final double radians = 0;
+
               final double degrees = (random.nextDouble() * 16) - 8;
               final double radians = degrees * (math.pi / 180);
 
@@ -342,27 +356,28 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Updated: Avatar definition with larger sizes and organic layering ---
   Widget _buildStudentAvatar(String studentImagePath) {
     return SizedBox(
-      width: 110, // Increased overall width
-      height: 110, // Increased overall height
+      width: 110,
+      height: 110,
       child: Stack(
         alignment: Alignment.center,
         children: [
           // 1. The Student Image (Bottom Layer)
-          ClipOval(
-            // Round the inner image organically to fit behind the frame
+          ClipRRect(
+            // Changed from ClipOval to ClipRRect to match the squarish frame
+            borderRadius: BorderRadius.circular(32.0), // Tweak this radius if needed
             child: Image.asset(
               studentImagePath,
-              width: 90, // Keep the student image slightly smaller than the frame
-              height: 90,
+              // Increased width/height from 90 so it reaches the inside of the yellow lines
+              width: 98,
+              height: 98,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Container(color: Colors.grey.shade300), // Placeholder if asset fails
+                  Container(color: Colors.grey.shade300),
             ),
           ),
 
           // 2. The Yellow Border Asset (Top Layer)
           Image.asset(
-            // Changed generic border asset name to a more descriptive specific asset file
             'assets/images/yellowBorder.png',
             width: 105,
             height: 105,
@@ -371,8 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-  // ── Events ────────────────────────────────────────────────────────────────
+  }  // ── Events ────────────────────────────────────────────────────────────────
   Widget _buildEvents() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -417,11 +431,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    event['title']!,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
+                  SizedBox(width: MediaQuery.of(context).size.width*0.6,
+                    child: Text(
+                      event['title']!,
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -447,11 +465,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPhotoGrid() {
     // Replace these with your actual image paths
     final List<String> imagePaths = [
-      'assets/images/gallary1.png',
-      'assets/images/gallary2.png',
-      'assets/images/gallary3.png',
-      'assets/images/gallary4.png',
-      'assets/images/gallary5.png',
+      'assets/images/school1.jpeg',
+      'assets/images/school2.jpeg',
+      'assets/images/school3.jpeg',
+      'assets/images/school4.jpeg',
+      'assets/images/school5.jpeg',
 
     ];
 
@@ -496,35 +514,77 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _photoCard(String imagePath) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      // ClipRRect ensures the image stays inside the rounded corners
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          // Optional: Add an error builder in case the asset is missing during testing
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(Icons.image, size: 32, color: Colors.white54),
-            );
-          },
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FullScreenImageView(
+              imagePath: imagePath,
+              isNetwork: false,
+            ),
+          ),
+        );
+      },
+      child: Hero(
+        tag: imagePath,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(10),
+          ),
+
+          // ClipRRect ensures the image stays inside the rounded corners
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+
+              // Optional: Add an error builder in case the asset is missing during testing
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(
+                    Icons.image,
+                    size: 32,
+                    color: Colors.white54,
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
-
   // ── About Section ─────────────────────────────────────────────────────────
   Widget _buildAboutSection() {
+
+    final String shortText =
+        'Muslim Education Trust runs MET Public School with a strong commitment '
+        'to providing quality education rooted in academic excellence and moral values.\n\n'
+
+        'Established in 1987 and registered under the Government of Kerala, '
+        'the institution achieved recognition as a High School on 05/07/2021 '
+        'through Government Order GO.(MS) NO.157/2021/GEDN, Thiruvananthapuram.';
+
+    final String fullText =
+        '$shortText'
+
+        'The school focuses on the all-round development of children by nurturing '
+        'knowledge, character, leadership, and compassion.\n\n'
+
+        'With a vision to prepare students for success in both worldly life and '
+        'the hereafter, MET Public School fosters meaningful learning experiences, '
+        'transferable skills, global leadership qualities, permanent moral values, '
+        'and a deep sense of humanism.';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           const Text(
             'About Our School',
             style: TextStyle(
@@ -533,26 +593,31 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.black87,
             ),
           ),
+
           const SizedBox(height: 10),
+
           Text(
-            'Lorem ipsum dolor sit amet consectetur. At et viverra orci senectus velit '
-                'tristique odio sem. Tempus ipsum massa est a eu nibh urna aenean quis. Odio '
-                'nibh pharetra sapien in feugiat. Et porttitor eu elementum non eget amet. '
-                'Porta in ut nibh integer turpis aliquam feugiat. Proin neque tellus orci '
-                'velit eget placerat ut viverra facilisis. Id amet ac in est non. Et eget '
-                'pellentesque pharetra pretium auctor tempor eros.',
+            isAboutExpanded ? fullText : shortText,
+            textAlign: TextAlign.justify,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade700,
-              height: 1.6,
+              height: 1.8,
+              letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 12),
+
+          // const SizedBox(height: 12),
+
           GestureDetector(
-            onTap: () {},
-            child: const Text(
-              'Read More',
-              style: TextStyle(
+            onTap: () {
+              setState(() {
+                isAboutExpanded = !isAboutExpanded;
+              });
+            },
+            child: Text(
+              isAboutExpanded ? 'Read Less' : 'Read More',
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.blue,
                 decoration: TextDecoration.underline,
@@ -563,16 +628,28 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
   // ── Contact Row ───────────────────────────────────────────────────────────
   Widget _buildContactRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () async {
+          final Uri phoneUri = Uri(
+            scheme: 'tel',
+            path: '+919633397444',
+          );
+
+          if (await canLaunchUrl(phoneUri)) {
+            await launchUrl(phoneUri);
+          }
+        },
         child: Row(
           children: [
-            const Icon(Icons.phone_outlined, size: 22, color: Colors.black87),
+            const Icon(
+              Icons.phone_outlined,
+              size: 22,
+              color: Colors.black87,
+            ),
             const SizedBox(width: 8),
             const Text(
               'Contact Us',
@@ -587,7 +664,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
   // ── Social Icons ──────────────────────────────────────────────────────────
   Widget _buildSocialIcons() {
     return Row(
