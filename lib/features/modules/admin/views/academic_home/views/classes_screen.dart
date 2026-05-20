@@ -27,17 +27,15 @@ class ClassesScreen extends StatefulWidget {
 
 class _ClassesScreenState extends State<ClassesScreen> {
   final TextEditingController classController = TextEditingController();
-   Color primaryBlue = Color(0xFF031937);
-   Color secondaryBlue = Color(0xFF003865);
-   Color bgColor = Color(0xFFF5F7FA);
+  Color primaryBlue = const Color(0xFF031937);
+  Color secondaryBlue = const Color(0xFF003865);
+  Color bgColor = const Color(0xFFF8FAFC); // Brighter slate for a premium interface backdrop
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       context.read<AcademicProvider>().fetchClasses();
-      // Fetch initial divisions to ensure the grid is populated
-      // Assuming fetchDivisions exists or divisions are loaded via a stream/listener
     });
   }
 
@@ -47,38 +45,33 @@ class _ClassesScreenState extends State<ClassesScreen> {
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar for better UX
             Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-
             Text(
               "Delete Division ${divData['division_name']}?",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
             ),
             const SizedBox(height: 12),
-
             Text(
               "This will unassign ${divData['class_teacher_name']} and remove this division from className. This action cannot be undone.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14, height: 1.4),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.5),
             ),
-            const SizedBox(height: 32),
-
-            // Primary Action: Delete (TextButton for a cleaner look)
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -94,27 +87,24 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade600,
+                  backgroundColor: const Color(0xFFDC2626),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text("Delete Division", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Secondary Action: Cancel
             SizedBox(
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: Text("Keep Division", style: TextStyle(color: Colors.grey.shade700)),
+                child: const Text("Keep Division", style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -122,33 +112,38 @@ class _ClassesScreenState extends State<ClassesScreen> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final academicProv = context.watch<AcademicProvider>();
     final adminProv = context.watch<AdminProvider>();
 
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgColor,
       body: Column(
         children: [
           /// HEADER
           Container(
-            height: 90,
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            decoration:  BoxDecoration(
-              gradient: LinearGradient(colors: [primaryBlue, secondaryBlue]),
+            height: 80, // Optimized tracking size
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryBlue, const Color(0xFF0F2942)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              border: const Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
             ),
             child: Row(
               children: [
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 const Text(
-                  "Classes & Divisions",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  "Classes & Divisions Directory",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5),
                 ),
                 const Spacer(),
               ],
@@ -158,30 +153,25 @@ class _ClassesScreenState extends State<ClassesScreen> {
           /// BODY
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               child: academicProv.isClassLoading || adminProv.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : GridView.builder(
-                // Use the new formatted list
                 itemCount: academicProv.formattedClasses.length,
+                // Grid sizing constraint optimization payload
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 300,
-                  mainAxisExtent: 180,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
+                  maxCrossAxisExtent: 260, // Reduced from 300 to shrink card sizes beautifully
+                  mainAxisExtent: 155,     // Tailored down from 180 to keep alignment compact
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
                 ),
                 itemBuilder: (context, index) {
-                  // Access the Map directly
                   final classMap = academicProv.formattedClasses[index];
                   final String classId = classMap['id'] ?? "";
                   final String className = classMap['name'] ?? "";
 
-                  // Filter divisions using the classId
-                  // Note: Ensure adminProv.divisionsList still uses DocumentSnapshots
-                  // or update it similarly to formattedClasses for consistency.
                   final classDivs = adminProv.divisionsList.where((d) {
                     final dData = d.data() as Map<String, dynamic>;
-                    // Use .toString() to ensure comparison works even if types vary
                     return dData['class_id'].toString() == classId;
                   }).toList();
 
@@ -197,13 +187,17 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildActionableClassCard(String classId, String className, List<dynamic> classDivs) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4))
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
         ],
       ),
       child: Column(
@@ -211,39 +205,55 @@ class _ClassesScreenState extends State<ClassesScreen> {
         children: [
           Row(
             children: [
-               Icon(Icons.class_, color: primaryBlue, size: 18),
-              const SizedBox(width: 8),
-              Text(className, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: primaryBlue.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(Icons.school_rounded, color: primaryBlue, size: 14),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  className,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
-          const Divider(height: 24),
-          const Text("Divisions", style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          const Divider(height: 20, color: Color(0xFFF1F5F9)),
+          const Text("ACTIVE DIVISIONS", style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8), fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+          const SizedBox(height: 10),
           Expanded(
             child: Wrap(
-              spacing: 20,
-              runSpacing: 10,
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                // List existing divisions
                 ...classDivs.map((div) {
                   final divData = div.data() as Map<String, dynamic>;
                   return _divisionBadge(divData, className);
                 }),
 
-                // Add Division Button (if less than 2 divisions)
                 if (classDivs.length < 4)
                   InkWell(
                     onTap: () {
                       context.read<AdminProvider>().fetchAllTeachers();
                       _showAddDivisionDialog(classId, className);
                     },
+                    borderRadius: BorderRadius.circular(6),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: const Color(0xFFF8FAFC),
+                        border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(Icons.add, size: 16, color: Colors.grey),
+                      child: const Icon(Icons.add_rounded, size: 14, color: Color(0xFF64748B)),
                     ),
                   )
               ],
@@ -256,7 +266,6 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _divisionBadge(Map<String, dynamic> divData, String className) {
     return InkWell(
-      // Navigate on Tap - Passing all relevant data
       onTap: () {
         callNext(
           DivisionDashboard(
@@ -265,26 +274,27 @@ class _ClassesScreenState extends State<ClassesScreen> {
             className: className,
             academicYearId: widget.academicYearId,
             classTeacherName: divData['class_teacher_name'],
-            classTeacherId: divData['class_teacher_id'], classId:divData['class_id'] ,
+            classTeacherId: divData['class_teacher_id'],
+            classId: divData['class_id'],
           ),
           context,
         );
       },
-      // Delete functionality on Long Press
       onLongPress: () => _showDeleteConfirmation(divData),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: primaryBlue.withOpacity(0.1),
+          color: const Color(0xFFEFF6FF),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: primaryBlue.withOpacity(0.2)),
+          border: Border.all(color: const Color(0xFFBFDBFE)),
         ),
         child: Text(
           "Div ${divData['division_name']}",
-          style:  TextStyle(
-              color: primaryBlue,
-              fontSize: 12,
-              fontWeight: FontWeight.bold
+          style: TextStyle(
+            color: primaryBlue,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
@@ -304,71 +314,90 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text("Add Division to $className",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Division Name",
-                    hintText: "e.g., A, B, or C",
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  textCapitalization: TextCapitalization.characters,
-                  onChanged: (val) => setDialogState(() {}),
-                ),
-                const SizedBox(height: 20),
-                if (prov.allTeachers.isEmpty && prov.isLoading)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CircularProgressIndicator(strokeWidth: 3),
-                    ),
-                  )
-                else if (prov.allTeachers.isEmpty)
-                  const Text(
-                    "No teachers found. Add staff first.",
-                    style: TextStyle(color: Colors.red, fontSize: 12),
-                  )
-                else
-                  DropdownButtonFormField<String>(
-                    value: selectedTeacherId,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: "Select Class Teacher",
-                      border: OutlineInputBorder(),
+            title: Text(
+              "Add Division to $className",
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Color(0xFF0F172A)),
+            ),
+            content: SizedBox(
+              width: 380,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 12),
+                  const Text("Division Identifier Tag", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569))),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: nameCtrl,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "e.g., A, B, or C",
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.all(12),
                       isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
                     ),
-                    hint: const Text("Select Teacher", style: TextStyle(fontSize: 14)),
-                    items: prov.allTeachers.map((t) {
-                      return DropdownMenuItem(
-                        value: t['uid'].toString(),
-                        child: Text(t['name'], style: const TextStyle(fontSize: 14)),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      setDialogState(() {
-                        selectedTeacherId = val;
-                        selectedTeacherName = prov.allTeachers
-                            .firstWhere((t) => t['uid'] == val)['name'];
-                      });
-                    },
+                    textCapitalization: TextCapitalization.characters,
+                    onChanged: (val) => setDialogState(() {}),
                   ),
-              ],
+                  const SizedBox(height: 16),
+                  const Text("Assign Classroom Teacher", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569))),
+                  const SizedBox(height: 6),
+                  if (prov.allTeachers.isEmpty && prov.isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      ),
+                    )
+                  else if (prov.allTeachers.isEmpty)
+                    const Text(
+                      "No teachers found. Add staff first.",
+                      style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w500),
+                    )
+                  else
+                    DropdownButtonFormField<String>(
+                      value: selectedTeacherId,
+                      isExpanded: true,
+                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        isDense: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                      ),
+                      hint: const Text("Select Teacher", style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                      items: prov.allTeachers.map((t) {
+                        return DropdownMenuItem(
+                          value: t['uid'].toString(),
+                          child: Text(t['name'], style: const TextStyle(fontSize: 14)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selectedTeacherId = val;
+                          selectedTeacherName = prov.allTeachers
+                              .firstWhere((t) => t['uid'] == val)['name'];
+                        });
+                      },
+                    ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+                child: const Text("Cancel", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
               ),
               ElevatedButton(
                 onPressed: (selectedTeacherId == null || nameCtrl.text.trim().isEmpty)
                     ? null
                     : () async {
-                  // 1. Create the division and wait for completion
                   await prov.addDivision(
                     academicYearId: widget.academicYearId,
                     classId: classId,
@@ -378,18 +407,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     classTeacherName: selectedTeacherName!,
                     adminId: widget.userId,
                     adminName: widget.userName,
-                    subjectTeachers: {},
+                    subjectTeachers: const {},
                   );
 
                   if (!mounted) return;
-                  Navigator.pop(context); // Close Dialog
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryBlue,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
-                child: const Text("Create Division"),
+                child: const Text("Create Division", style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ],
           );
