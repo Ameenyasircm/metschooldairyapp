@@ -10,6 +10,7 @@ import 'package:met_school/core/theme/app_spacing.dart';
 import 'package:met_school/core/theme/app_typography.dart';
 import 'package:met_school/core/widgets/inputs/app_dropdown.dart';
 import 'package:met_school/core/widgets/inputs/app_textfield.dart';
+import 'package:met_school/core/constants/app_constants.dart';
 
 class PersonalInfoStep extends StatelessWidget {
   final TextEditingController nameCtrl;
@@ -142,15 +143,18 @@ class PersonalInfoStep extends StatelessWidget {
         AppDropdown(
           label: "Religion",
           value: religion,
-          items: const ["Islam", "Hindu", "Christian", "Other"],
+          items: AppConstants.religions,
           onChanged: onReligionChanged,
         ),
         AppSpacing.vm,
         AppDropdown(
+          key: ValueKey(religion),
           label: "Cast",
           value: cast,
-          items: const ["General", "OBC", "SC", "ST"],
-          onChanged: onCastChanged,
+          items: religion != null
+              ? AppConstants.religionCasteMap[religion] ?? ["Other"]
+              : ["Select Religion First"],
+          onChanged: religion != null ? onCastChanged : null,
         ),
         AppSpacing.vm,
         AppTextField(

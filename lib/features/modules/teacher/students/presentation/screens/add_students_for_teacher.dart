@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/utils/snackbarNotification/snackbar_notification.dart';
 import '../../../../../../providers/academic_provider.dart';
+import '../../../../../../core/constants/app_constants.dart';
 import '../../../home/viewmodels/teacher_home_viewmodel.dart';
 import '../provider/student_provider.dart';
 import '../widgets/personal_info_step.dart';
@@ -88,6 +89,14 @@ class _AddStudentForTeacherScreenState
           phoneCtrl.text == whatsappCtrl.text && phoneCtrl.text.isNotEmpty;
 
       _photoUrl = data['photoUrl'];
+
+      // Initialize feeType from DB value
+      if (data['fee_type'] != null) {
+        feeType = AppConstants.feeTypes.entries
+            .firstWhere((element) => element.value == data['fee_type'],
+                orElse: () => MapEntry("Monthly", "monthly"))
+            .key;
+      }
     }
   }
 
@@ -119,6 +128,7 @@ class _AddStudentForTeacherScreenState
   String? relation;
   String? occupation;
   String? medium;
+  String? feeType = "Monthly";
 
   final occupations = [
     "Farmer",
@@ -395,6 +405,7 @@ class _AddStudentForTeacherScreenState
         "tcNumber": '',
         "identificationMark": identificationCtrl.text.trim(),
         "photoUrl": _photoUrl ?? '',
+        "fee_type": AppConstants.feeTypes[feeType] ?? "monthly",
         "updatedAt": FieldValue.serverTimestamp(),
         "isEnrolled": true,
       };
@@ -418,6 +429,7 @@ class _AddStudentForTeacherScreenState
         "parent_phone": parentPhone,
         "parentGuardian": parentName,
         "parent_id": parentUid ?? "", // Fixed the logic here
+        "fee_type": AppConstants.feeTypes[feeType] ?? "monthly",
         "roll_number": null,
         "status": "active",
         "photoUrl": _photoUrl ?? '',
@@ -487,7 +499,12 @@ class _AddStudentForTeacherScreenState
                     onPickDob: pickDob,
                     onPickImage: _pickImage,
                     onGenderChanged: (v) => setState(() => gender = v),
-                    onReligionChanged: (v) => setState(() => religion = v),
+                    onReligionChanged: (v) {
+                      setState(() {
+                        religion = v;
+                        cast = null; // Reset cast when religion changes
+                      });
+                    },
                     onCastChanged: (v) => setState(() => cast = v),
                   ),
                 ),
@@ -523,6 +540,8 @@ class _AddStudentForTeacherScreenState
                     addressCtrl: addressCtrl,
                     previousSchoolCtrl: previousSchoolCtrl,
                     identificationCtrl: identificationCtrl,
+                    feeType: feeType,
+                    onFeeTypeChanged: (v) => setState(() => feeType = v),
                   ),
                 ),
                 _pageWrapper(
@@ -539,6 +558,7 @@ class _AddStudentForTeacherScreenState
                     phone: phoneCtrl.text,
                     place: placeCtrl.text,
                     address: addressCtrl.text,
+                    feeType: feeType ?? "",
                     selectedImage: _selectedImage,
                     photoUrl: _photoUrl,
                   ),

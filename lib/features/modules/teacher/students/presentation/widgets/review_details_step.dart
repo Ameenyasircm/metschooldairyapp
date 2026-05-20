@@ -14,6 +14,7 @@ class ReviewDetailsStep extends StatelessWidget {
   final String phone;
   final String place;
   final String address;
+  final String feeType;
   final File? selectedImage;
   final String? photoUrl;
 
@@ -29,6 +30,7 @@ class ReviewDetailsStep extends StatelessWidget {
     required this.phone,
     required this.place,
     required this.address,
+    required this.feeType,
     this.selectedImage,
     this.photoUrl,
   });
@@ -57,6 +59,7 @@ class ReviewDetailsStep extends StatelessWidget {
         EnrollmentReviewTile(title: "Phone", value: phone),
         EnrollmentReviewTile(title: "Place", value: place),
         EnrollmentReviewTile(title: "Address", value: address),
+        EnrollmentReviewTile(title: "Fee Type", value: feeType),
       ],
     );
   }

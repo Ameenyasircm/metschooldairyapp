@@ -7,6 +7,7 @@ import 'package:met_school/core/utils/navigation/navigation_helper.dart';
 import 'package:met_school/providers/teacher_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../../../core/utils/loader/customLoader.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_padding.dart';
 import '../../../../../../core/theme/app_spacing.dart';
@@ -25,7 +26,11 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<TeacherProvider>().fetchLessonPlans("TEACHER_001");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<TeacherProvider>().fetchLessonPlans("TEACHER_001");
+      }
+    });
   }
 
   // ── Delete confirmation dialog ─────────────────────────────
@@ -151,9 +156,11 @@ class _LessonPlanScreenState extends State<LessonPlanScreen> {
       body: Column(
         children: [
           Expanded(
-            child: provider.lessonPlanList.isEmpty
-                ? _emptyWidget()
-                : ListView.builder(
+            child: provider.isLoading
+                ? const Center(child: CustomLoader())
+                : provider.lessonPlanList.isEmpty
+                    ? _emptyWidget()
+                    : ListView.builder(
               padding: AppPadding.pM,
               itemCount: provider.lessonPlanList.length,
               itemBuilder: (context, index) {

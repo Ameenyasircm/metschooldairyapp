@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:met_school/core/constants/app_constants.dart';
 import 'package:met_school/core/theme/app_spacing.dart';
+import 'package:met_school/core/widgets/inputs/app_dropdown.dart';
 import 'package:met_school/core/widgets/inputs/app_textfield.dart';
 
 class AddressInfoStep extends StatelessWidget {
@@ -7,6 +9,8 @@ class AddressInfoStep extends StatelessWidget {
   final TextEditingController addressCtrl;
   final TextEditingController previousSchoolCtrl;
   final TextEditingController identificationCtrl;
+  final String? feeType;
+  final ValueChanged<String?> onFeeTypeChanged;
 
   const AddressInfoStep({
     super.key,
@@ -14,12 +18,21 @@ class AddressInfoStep extends StatelessWidget {
     required this.addressCtrl,
     required this.previousSchoolCtrl,
     required this.identificationCtrl,
+    required this.feeType,
+    required this.onFeeTypeChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        AppDropdown(
+          label: "Fee Type",
+          value: feeType,
+          items: AppConstants.feeTypes.keys.toList(),
+          onChanged: onFeeTypeChanged,
+        ),
+        AppSpacing.vm,
         AppTextField(
           controller: placeCtrl,
           hintText: "Place",

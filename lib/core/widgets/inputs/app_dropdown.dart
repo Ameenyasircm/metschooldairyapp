@@ -8,7 +8,7 @@ class AppDropdown extends StatelessWidget {
   final String label;
   final String? value;
   final List<String> items;
-  final Function(String?) onChanged;
+  final ValueChanged<String?>? onChanged;
   final String? Function(String?)? validator;
 
   const AppDropdown({
@@ -16,7 +16,7 @@ class AppDropdown extends StatelessWidget {
     required this.label,
     required this.value,
     required this.items,
-    required this.onChanged,
+    this.onChanged,
     this.validator,
   });
 
@@ -34,17 +34,17 @@ class AppDropdown extends StatelessWidget {
       style: AppTypography.body1,
       decoration: InputDecoration(
         labelText: label,
-        suffixIcon: Icon(Icons.arrow_drop_down_circle_outlined),
+        suffixIcon: const Icon(Icons.arrow_drop_down_circle_outlined),
         labelStyle: AppTypography.body1.copyWith(color: AppColors.grey5E),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: AppRadius.radiusM,
-          borderSide: BorderSide(color: AppColors.greyE0),
+          borderSide: const BorderSide(color: AppColors.greyE0),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusM,
-          borderSide: BorderSide(color: AppColors.greyE0),
+          borderSide: const BorderSide(color: AppColors.greyE0),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusM,
