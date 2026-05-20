@@ -21,9 +21,10 @@ import 'list_all_students_screen.dart';
 class AdminHome extends StatelessWidget {
   final String userid, userName, phone;
 
-  // New Theme Colors
+  // Theme Colors
   static const Color primaryBlue = Color(0xFF031937);
   static const Color secondaryBlue = Color(0xFF003865);
+  static const Color borderSlate = Color(0xFFE2E8F0);
 
   const AdminHome({
     super.key,
@@ -37,9 +38,9 @@ class AdminHome extends StatelessWidget {
     final currentIndex = context.select((AdminProvider p) => p.currentIndex);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9), // Slate background for a modern feel
+      backgroundColor: const Color(0xFFF8FAFC), // Brighter background for clean dashboard contrast
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
         child: KeyedSubtree(
           key: ValueKey(currentIndex),
           child: _buildBody(context, currentIndex),
@@ -69,7 +70,6 @@ class AdminHome extends StatelessWidget {
       case 9:
         return ParentInstructionsAdminScreen();
       case 10:
-
         return AdminNotificationsScreen();
       case 11:
         return const AdminLessonPlanScreen();
@@ -85,52 +85,48 @@ class AdminHome extends StatelessWidget {
 
   Widget _buildDashboardGrid(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTopHeader(context),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   "System Modules",
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
                     color: primaryBlue,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
                 GridView(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  // Max extent reduced to 300 to create smaller cards per grid segment
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 350,
-                    crossAxisSpacing: 25,
-                    mainAxisSpacing: 25,
-                    childAspectRatio: 1.8,
+                    maxCrossAxisExtent: 300,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 2.1,
                   ),
                   children: [
                     _buildModuleCard(context, 1, "Staff Management", "Manage Teachers & Roles", Icons.badge_outlined, primaryBlue),
-                    _buildModuleCard(context, 2, "Academic Year", "Manage Academic Years", Icons.calendar_today_outlined, Colors.indigo),
-                    _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.blueGrey),
+                    _buildModuleCard(context, 2, "Academic Year", "Manage Academic Years", Icons.calendar_today_outlined, Colors.indigo.shade700),
+                    _buildModuleCard(context, 3, "School Gallery", "Upload Event Photos", Icons.collections_outlined, Colors.blueGrey.shade600),
                     _buildModuleCard(context, 4, "Student Management", "Manage Students Data", Icons.school_outlined, secondaryBlue),
                     _buildModuleCard(context, 5, "Parent Management", "Manage Parent Data", Icons.people_alt_outlined, secondaryBlue),
-                    _buildModuleCard(context, 6, "School Calendar", "Events & Holidays", Icons.calendar_month, Colors.deepPurple),
-                    _buildModuleCard(context, 7, "Bell Timing", "Schedule & Slots", Icons.access_time_filled, Colors.blue),
-                    _buildModuleCard(context, 8, "Rules & Regulations", "Policies & Conduct", Icons.gavel_rounded, Colors.blueGrey),
+                    _buildModuleCard(context, 6, "School Calendar", "Events & Holidays", Icons.calendar_month_outlined, Colors.deepPurple.shade600),
+                    _buildModuleCard(context, 7, "Bell Timing", "Schedule & Slots", Icons.access_time_rounded, Colors.blue.shade700),
+                    _buildModuleCard(context, 8, "Rules & Regulations", "Policies & Conduct", Icons.gavel_rounded, Colors.blueGrey.shade600),
                     _buildModuleCard(context, 9, "Parent Instructions", "Guidelines for Parents", Icons.info_outline_rounded, primaryBlue),
-                    _buildModuleCard(context, 10, "Notifications", "Send Notifications", Icons.notification_add, Colors.green),
-                    _buildModuleCard(
-                      context, 11,
-                      "Lesson Plans",
-                      "Review & Approve Plans",
-                      Icons.menu_book_outlined,
-                      Colors.teal,
-                    ),
-                    _buildModuleCard(context, 12, "Menu", "Admin Menu Options", Icons.menu, primaryBlue),
-
+                    _buildModuleCard(context, 10, "Notifications", "Send Notifications", Icons.notification_add_outlined, Colors.blueGrey.shade700),
+                    _buildModuleCard(context, 11, "Lesson Plans", "Review & Approve Plans", Icons.menu_book_outlined, Colors.teal.shade700),
+                    _buildModuleCard(context, 12, "Menu", "Admin Menu Options", Icons.menu_rounded, primaryBlue),
                   ],
                 ),
               ],
@@ -143,13 +139,13 @@ class AdminHome extends StatelessWidget {
 
   Widget _buildTopHeader(BuildContext context) {
     return Container(
-      height: 140,
+      height: 100, // Reduced from 140 for a crisp, low-profile admin banner
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 48),
       decoration: const BoxDecoration(
         color: primaryBlue,
         gradient: LinearGradient(
-          colors: [primaryBlue, secondaryBlue],
+          colors: [primaryBlue, Color(0xFF0F2942)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -157,44 +153,41 @@ class AdminHome extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Image.asset('assets/images/metTextLogo.png', height: 90, errorBuilder: (c, e, s) => const SizedBox()),
-                  const SizedBox(width: 15),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-            ],
+          Image.asset(
+            'assets/images/metTextLogo.png',
+            height: 55, // Optimized scaling context
+            errorBuilder: (c, e, s) => const SizedBox(),
           ),
           Row(
             children: [
               // User Info Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  color: Colors.white.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.account_circle_outlined, color: Colors.white70, size: 20),
-                    const SizedBox(width: 10),
-                    Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    const Icon(Icons.account_circle_outlined, color: Colors.white60, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      userName,
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.2),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 20),
-              // Logout Button
+              const SizedBox(width: 16),
+              // Logout Action
               IconButton(
                 onPressed: () => _showLogoutDialog(context),
-                icon: const Icon(Icons.logout_rounded, color: Colors.white70),
-                tooltip: "Logout",
+                icon: const Icon(Icons.logout_rounded, color: Colors.white60, size: 20),
+                style: IconButton.styleFrom(
+                  hoverColor: Colors.white.withOpacity(0.05),
+                ),
+                tooltip: "Logout Profile",
               ),
             ],
           ),
@@ -208,50 +201,60 @@ class AdminHome extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => context.read<AdminProvider>().setIndex(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(24),
+        child: Container(
+          padding: const EdgeInsets.all(16), // Tightened padding constraint
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: borderSlate),
             boxShadow: [
-              BoxShadow(color: primaryBlue.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))
+              BoxShadow(
+                color: const Color(0xFF0F172A).withOpacity(0.015),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Left-aligned compact status icon accent container
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: accentColor.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: accentColor, size: 24),
+                child: Icon(icon, color: accentColor, size: 20),
               ),
-              const Spacer(),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryBlue),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(width: 14),
+
+              // Text layout structural hierarchy
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryBlue, letterSpacing: -0.2),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text("Manage", style: TextStyle(color: accentColor, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5)),
-                  const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 10, color: accentColor),
-                ],
-              )
+
+              // Arrow action indicator
+              Icon(Icons.chevron_right_rounded, size: 16, color: accentColor.withOpacity(0.7)),
             ],
           ),
         ),
@@ -291,31 +294,35 @@ class AdminHome extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
-          width: 380,
-          padding: const EdgeInsets.all(28),
+          width: 360,
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle),
-                child: Icon(Icons.logout_rounded, color: Colors.red.shade400, size: 30),
+                child: Icon(Icons.logout_rounded, color: Colors.red.shade500, size: 26),
               ),
-              const SizedBox(height: 20),
-              const Text("Logout", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              const Text("Are you sure you want to logout\nfrom your admin account?", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5)),
-              const SizedBox(height: 28),
+              const SizedBox(height: 16),
+              const Text("Confirm Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryBlue)),
+              const SizedBox(height: 8),
+              const Text("Are you sure you want to logout\nfrom your admin account?", textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.4)),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                      child: const Text("Cancel"),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: borderSlate),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Cancel", style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -325,8 +332,14 @@ class AdminHome extends StatelessWidget {
                         Navigator.pop(context);
                         context.read<AuthProvider>().logout(context);
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
-                      child: const Text("Yes, Logout"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade500,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Yes, Logout", style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],

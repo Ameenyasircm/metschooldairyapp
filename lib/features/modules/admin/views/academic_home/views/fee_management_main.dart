@@ -18,6 +18,7 @@ class FeeManagementMain extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final feeProv = Provider.of<FeeProvider>(context);
+    const Color primaryBlue = Color(0xFF031937);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
@@ -29,8 +30,10 @@ class FeeManagementMain extends StatelessWidget {
         title: const Text("Fee Management", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
+
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: double.infinity,
@@ -44,6 +47,13 @@ class FeeManagementMain extends StatelessWidget {
               ],
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.only(left: 25, top: 25, right: 25),
+            child: Text(
+              "Divisions List",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryBlue),
+            ),
+          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: feeProv.getDivisionsStream(),
@@ -52,8 +62,12 @@ class FeeManagementMain extends StatelessWidget {
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(25),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4, crossAxisSpacing: 20, mainAxisSpacing: 20, childAspectRatio: 1.4,
+                  // Grid sizing is reduced beautifully here by capping maximum card width width
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 260,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.6,
                   ),
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
@@ -61,7 +75,9 @@ class FeeManagementMain extends StatelessWidget {
                     return _DivisionTile(
                       id: div['division_id'],
                       name: "${div['class_name']} - ${div['division_name']}",
-                      academicYearId: academicYearId, userId: userId, userName: userName,
+                      academicYearId: academicYearId,
+                      userId: userId,
+                      userName: userName,
                     );
                   },
                 );
@@ -75,30 +91,74 @@ class FeeManagementMain extends StatelessWidget {
 }
 
 class _DivisionTile extends StatelessWidget {
-  final String id, name, academicYearId,userId,userName;
-  const _DivisionTile({required this.id, required this.name, required this.academicYearId,required this.userId,required this.userName});
+  final String id, name, academicYearId, userId, userName;
+  const _DivisionTile({
+    required this.id,
+    required this.name,
+    required this.academicYearId,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.push(context, MaterialPageRoute(
-          builder: (_) => DivisionFeePage(divisionId: id, name: name, academicYearId: academicYearId, userId: userId, userName: userName,))),
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              backgroundColor: Color(0xFFF1F5F9),
-              child: Icon(Icons.class_outlined, color: Color(0xFF0F766E)),
+    const Color primaryBlue = Color(0xFF031937);
+
+    return Container(
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))]
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => DivisionFeePage(
+                divisionId: id,
+                name: name,
+                academicYearId: academicYearId,
+                userId: userId,
+                userName: userName,
+              ))),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.class_outlined, color: Color(0xFF0F766E), size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: primaryBlue),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        "Collect Fees",
+                        style: TextStyle(fontSize: 11, color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                      )
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF94A3B8)),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          ],
+          ),
         ),
       ),
     );

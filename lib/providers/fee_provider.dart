@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class FeeProvider extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -23,8 +22,8 @@ class FeeProvider extends ChangeNotifier {
     required String installmentKey,
     required bool isPaid,
     required DateTime paymentDate,
-    required String userId,     // Pass current user ID
-    required String userName,   // Pass current user Name
+    required String userId,
+    required String userName,
     String? remark,
   }) async {
     try {
@@ -33,11 +32,11 @@ class FeeProvider extends ChangeNotifier {
         await ref.update({
           'fees.$installmentKey': {
             'status': 'PAID',
-            'date': Timestamp.fromDate(paymentDate), // Now a proper Timestamp
+            'date': Timestamp.fromDate(paymentDate),
             'remark': remark ?? '',
             'updated_by_id': userId,
             'updated_by_name': userName,
-            'updated_at': FieldValue.serverTimestamp(), // Track when the change happened
+            'updated_at': FieldValue.serverTimestamp(),
           }
         });
       } else {
