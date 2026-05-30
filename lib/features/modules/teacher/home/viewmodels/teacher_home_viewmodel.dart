@@ -140,7 +140,7 @@ class TeacherHomeViewModel extends ChangeNotifier {
       ),
       QuickAction(
         title: 'Fee',
-        icon: AppAssets.syllabus,
+        icon: AppAssets.fees,
         onTap: () {},
       ),
       QuickAction(

@@ -19,19 +19,35 @@ class SubjectClassDivisionSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<TeacherProvider>(
       builder: (context, provider, _) {
-        final assignments = provider.subjectAssignments;
-        
-        // Group assignments by Class and Division
-        final Map<String, List<SubjectAssignmentModel>> grouped = {};
-        for (var assignment in assignments) {
-          final key = "${assignment.className} - ${assignment.divisionName}";
-          if (!grouped.containsKey(key)) {
-            grouped[key] = [];
-          }
-          grouped[key]!.add(assignment);
-        }
+        final groupKeys = provider.sortedGroupKeys;
+        final grouped = provider.groupedAssignments;
 
-        final groupKeys = grouped.keys.toList();
+        // Handle empty state gracefully
+        if (groupKeys.isEmpty) {
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.assignment_late_outlined,
+                    size: 64.sp,
+                    color: AppColors.grey5E.withOpacity(0.5),
+                  ),
+                  AppSpacing.vm,
+                  Text(
+                    "No class assignments found.",
+                    style: AppTypography.body1.copyWith(
+                      color: AppColors.grey5E,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -39,7 +55,11 @@ class SubjectClassDivisionSelector extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final key = groupKeys[index];
-                final groupAssignments = grouped[key]!;
+                
+                // Null safety: fallback to empty list
+                final groupAssignments = grouped[key] ?? [];
+                if (groupAssignments.isEmpty) return const SizedBox.shrink();
+                
                 final first = groupAssignments.first;
 
                 return Container(
@@ -56,7 +76,9 @@ class SubjectClassDivisionSelector extends StatelessWidget {
                     ],
                   ),
                   child: Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                    ),
                     child: ExpansionTile(
                       leading: Container(
                         padding: AppPadding.pS,
@@ -64,7 +86,11 @@ class SubjectClassDivisionSelector extends StatelessWidget {
                           color: AppColors.primary.withOpacity(0.1),
                           borderRadius: AppRadius.radiusM,
                         ),
-                        child: Icon(Icons.class_outlined, color: AppColors.primary, size: 24.sp),
+                        child: Icon(
+                          Icons.class_outlined,
+                          color: AppColors.primary,
+                          size: 24.sp,
+                        ),
                       ),
                       title: Text(
                         first.className,
@@ -77,12 +103,19 @@ class SubjectClassDivisionSelector extends StatelessWidget {
                       children: [
                         const Divider(height: 1),
                         ...groupAssignments.map((assignment) => ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 4.h,
+                          ),
                           title: Text(
                             assignment.subjectName,
                             style: AppTypography.body2.copyWith(fontWeight: FontWeight.w600),
                           ),
-                          trailing: Icon(Icons.arrow_forward_ios, size: 14.sp, color: AppColors.grey5E),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14.sp,
+                            color: AppColors.grey5E,
+                          ),
                           onTap: () {
                             NavigationService.push(
                               context,

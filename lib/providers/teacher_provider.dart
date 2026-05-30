@@ -17,11 +17,15 @@ class TeacherProvider with ChangeNotifier {
 
   TeacherMode _activeMode = TeacherMode.none;
   List<SubjectAssignmentModel> _subjectAssignments = [];
+  Map<String, List<SubjectAssignmentModel>> _groupedAssignments = {};
+  List<String> _sortedGroupKeys = [];
   bool _isClassTeacher = false;
   Map<String, dynamic>? _currentAssignment;
 
   TeacherMode get activeMode => _activeMode;
   List<SubjectAssignmentModel> get subjectAssignments => _subjectAssignments;
+  Map<String, List<SubjectAssignmentModel>> get groupedAssignments => _groupedAssignments;
+  List<String> get sortedGroupKeys => _sortedGroupKeys;
   bool get isClassTeacher => _isClassTeacher;
   Map<String, dynamic>? get currentAssignment => _currentAssignment;
 
@@ -57,7 +61,41 @@ class TeacherProvider with ChangeNotifier {
 
   void setSubjectAssignments(List<SubjectAssignmentModel> assignments) {
     _subjectAssignments = assignments;
+    _processAssignments();
     notifyListeners();
+  }
+
+  void _processAssignments() {
+    _groupedAssignments = {};
+    for (var assignment in _subjectAssignments) {
+      final key = "${assignment.className} - ${assignment.divisionName}";
+      _groupedAssignments.putIfAbsent(key, () => []).add(assignment);
+    }
+
+    _sortedGroupKeys = _groupedAssignments.keys.toList()
+      ..sort((a, b) {
+        int getPriority(String key) {
+          final name = key.split(' - ').first.toUpperCase();
+          if (name.startsWith('FLY')) return 1;
+          if (name.startsWith('CLASS')) return 2;
+          return 3;
+        }
+
+        int getNumber(String key) {
+          final name = key.split(' - ').first;
+          return int.tryParse(name.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        }
+
+        final pA = getPriority(a);
+        final pB = getPriority(b);
+        if (pA != pB) return pA.compareTo(pB);
+
+        final nA = getNumber(a);
+        final nB = getNumber(b);
+        if (nA != nB) return nA.compareTo(nB);
+
+        return a.compareTo(b);
+      });
   }
 
   void setClassTeacherStatus(bool status, Map<String, dynamic>? assignment) {

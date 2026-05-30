@@ -232,7 +232,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               ListTile(
                 tileColor: Colors.white,
                 leading: Icon(Icons.school, color: AppColors.primary),
-                title: const Text("Class Teacher Mode"),
+                title: Text("Class Teacher Mode",style: AppTypography.body2),
                 trailing: provider.activeMode == TeacherMode.classTeacher
                     ? Icon(Icons.check_circle, color: AppColors.primary)
                     : null,
@@ -244,7 +244,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.book, color: AppColors.primary),
-                title: const Text("Subject Teacher Mode"),
+                title:  Text("Subject Teacher Mode",style: AppTypography.body2,),
                 trailing: provider.activeMode == TeacherMode.subjectTeacher
                     ? Icon(Icons.check_circle, color: AppColors.primary)
                     : null,

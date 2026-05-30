@@ -245,15 +245,19 @@ class AuthProvider with ChangeNotifier {
 
       // Update TeacherProvider state if teacher
       if (isTeacher || isActuallySubjectTeacher) {
+        print("isTeacher || isActuallySubjectTeacher");
         final teacherProvider = Provider.of<TeacherProvider>(context, listen: false);
         teacherProvider.setSubjectAssignments(subjectAssignments);
         teacherProvider.setClassTeacherStatus(isActuallyClassTeacher, currentAssignment);
 
         if (isActuallyClassTeacher) {
+          print("isActuallyClassTeacher");
           teacherProvider.setActiveMode(TeacherMode.classTeacher);
         } else if (isActuallySubjectTeacher) {
+          print("isActuallySubjectTeacher");
           teacherProvider.setActiveMode(TeacherMode.subjectTeacher);
         } else {
+          print("else teacher");
           teacherProvider.setActiveMode(TeacherMode.none);
         }
 
@@ -261,10 +265,10 @@ class AuthProvider with ChangeNotifier {
         await prefs.setBool("isClassTeacher", isActuallyClassTeacher);
         await prefs.setBool("isSubjectTeacher", isActuallySubjectTeacher);
         if (isActuallyClassTeacher) {
-          await prefs.setString("divisionId", currentAssignment?['division_id'] ?? "");
-          await prefs.setString("divisionName", currentAssignment?['division_name'] ?? "");
-          await prefs.setString("classId", currentAssignment?['class_id'] ?? "");
-          await prefs.setString("className", currentAssignment?['class_name'] ?? "");
+          await prefs.setString("divisionId", currentAssignment['division_id'] ?? "");
+          await prefs.setString("divisionName", currentAssignment['division_name'] ?? "");
+          await prefs.setString("classId", currentAssignment['class_id'] ?? "");
+          await prefs.setString("className", currentAssignment['class_name'] ?? "");
         }
         await prefs.setString("teacherMode", teacherProvider.activeMode.name);
       }
