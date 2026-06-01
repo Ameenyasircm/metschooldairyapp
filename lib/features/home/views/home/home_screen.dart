@@ -604,7 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
               fontSize: 14,
               color: Colors.grey.shade700,
               height: 1.8,
-              letterSpacing: 0.3,
+              letterSpacing: 0.1,
             ),
           ),
 
